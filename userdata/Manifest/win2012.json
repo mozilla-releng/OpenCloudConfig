@@ -522,7 +522,7 @@
           "ComponentName": "MozillaBuildSetup"
         }
       ],
-      "Source": "https://hg.mozilla.org/hgcustom/version-control-tools/file/tip/hgext/robustcheckout/__init__.py",
+      "Source": "https://hg.mozilla.org/hgcustom/version-control-tools/raw-file/872711d14420/hgext/robustcheckout/__init__.py",
       "Target": "C:\\mozilla-build\\robustcheckout.py"
     },
     {
@@ -1035,7 +1035,7 @@
       "ComponentName": "HgShared",
       "ComponentType": "DirectoryCreate",
       "Comment": "required by hg caches",
-      "Path": "y:\\hg-shared"
+      "Path": "C:\\builds\\hg-shared"
     },
     {
       "ComponentName": "HgSharedAccessRights",
@@ -1043,7 +1043,7 @@
       "Comment": "allows builds to use `hg share ...`",
       "Command": "icacls.exe",
       "Arguments": [
-        "y:\\hg-shared",
+        "C:\\builds\\hg-shared",
         "/grant",
         "Everyone:(OI)(CI)F"
       ],
@@ -1051,6 +1051,94 @@
         {
           "ComponentType": "DirectoryCreate",
           "ComponentName": "HgShared"
+        }
+      ]
+    },
+    {
+      "ComponentName": "MozillaCentralCacheCreate",
+      "ComponentType": "CommandRun",
+      "Comment": "required by firefox builds",
+      "Command": "C:\\mozilla-build\\python\\Scripts\\hg.exe",
+      "Arguments": [
+        "clone",
+        "-U",
+        "https://hg.mozilla.org/mozilla-central",
+        "C:\\builds\\hg-shared\\mozilla-central"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "Mercurial"
+        },
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "HgShared"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\builds\\hg-shared\\mozilla-central\\.hg"
+        ]
+      }
+    },
+    {
+      "ComponentName": "MozillaCentralCacheUpdate",
+      "ComponentType": "CommandRun",
+      "Comment": "keeps the cache up to date on subsequent runs/reboots",
+      "Command": "C:\\mozilla-build\\python\\Scripts\\hg.exe",
+      "Arguments": [
+        "pull",
+        "-R",
+        "C:\\builds\\hg-shared\\mozilla-central"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "MozillaCentralCacheCreate"
+        }
+      ]
+    },
+    {
+      "ComponentName": "BuildToolsCacheCreate",
+      "ComponentType": "CommandRun",
+      "Comment": "required by firefox builds",
+      "Command": "C:\\mozilla-build\\python\\Scripts\\hg.exe",
+      "Arguments": [
+        "clone",
+        "-U",
+        "https://hg.mozilla.org/build/tools",
+        "C:\\builds\\hg-shared\\build\\tools"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "Mercurial"
+        },
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "HgShared"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\builds\\hg-shared\\build\\tools\\.hg"
+        ]
+      }
+    },
+    {
+      "ComponentName": "BuildToolsCacheUpdate",
+      "ComponentType": "CommandRun",
+      "Comment": "keeps the cache up to date on subsequent runs/reboots",
+      "Command": "C:\\mozilla-build\\python\\Scripts\\hg.exe",
+      "Arguments": [
+        "pull",
+        "-R",
+        "C:\\builds\\hg-shared\\build\\tools"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "BuildToolsCacheCreate"
         }
       ]
     }

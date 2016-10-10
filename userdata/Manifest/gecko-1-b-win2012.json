@@ -956,7 +956,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v5.2.0/generic-worker-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v6.0.0/generic-worker-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe"
     },
     {
@@ -1026,7 +1026,7 @@
             "Arguments": [
               "--version"
             ],
-            "Match": "generic-worker 5.2.0"
+            "Match": "generic-worker 6.0.0"
           }
         ]
       }

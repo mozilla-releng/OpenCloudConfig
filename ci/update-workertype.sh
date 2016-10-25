@@ -56,12 +56,12 @@ case "${tc_worker_type}" in
     ;;
   *-win2012*)
     aws_base_ami_search_term=${aws_base_ami_search_term:='Windows_Server-2012-R2_RTM-English-64Bit-Base*'}
-    aws_instance_type=${aws_instance_type:='c3.2xlarge'}
+    aws_instance_type=${aws_instance_type:='c4.4xlarge'}
     aws_instance_hdd_size=${aws_instance_hdd_size:=60}
     aws_base_ami_id="$(aws ec2 describe-images --region ${aws_region} --owners amazon --filters "Name=platform,Values=windows" "Name=state,Values=available" "Name=name,Values=${aws_base_ami_search_term}" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
     ami_description="Gecko try builder for Windows; TaskCluster worker: ${tc_worker_type}, version ${aws_client_token}, https://github.com/mozilla-releng/OpenCloudConfig/tree/${GITHUB_HEAD_SHA}"}
     occ_manifest="https://github.com/mozilla-releng/OpenCloudConfig/blob/${GITHUB_HEAD_SHA}/userdata/Manifest/win2012.json"
-    gw_users_dir='Z:\'
+    gw_users_dir='C:\Users'
     root_username=Administrator
     worker_username=GenericWorker
     pt_prefix='win2012'
@@ -80,7 +80,7 @@ userdata=${userdata/ROOTPASSWORDTOKEN/$root_password}
 userdata=${userdata/WORKERPASSWORDTOKEN/$worker_password}
 
 curl --silent http://taskcluster/aws-provisioner/v1/worker-type/${tc_worker_type} | jq '.' > ./${tc_worker_type}-pre.json
-cat ./${tc_worker_type}-pre.json | jq --arg gwusersdir $gw_users_dir --arg occmanifest $occ_manifest -c 'del(.workerType, .lastModified) | .secrets."generic-worker".config.usersDir = $gwusersdir | .secrets."generic-worker".config.workerTypeMetadata."machine-setup".manifest = $occmanifest' > ./${tc_worker_type}.json
+cat ./${tc_worker_type}-pre.json | jq --arg gwusersdir $gw_users_dir --arg occmanifest $occ_manifest --arg awsinstancetype $aws_instance_type -c 'del(.workerType, .lastModified) | .secrets."generic-worker".config.usersDir = $gwusersdir | .secrets."generic-worker".config.workerTypeMetadata."machine-setup".manifest = $occmanifest | .instanceTypes[0].instanceType = $awsinstancetype' > ./${tc_worker_type}.json
 echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] active amis (pre-update): $(cat ./${tc_worker_type}.json | jq -c '[.regions[] | {region: .region, ami: .launchSpec.ImageId}]')"
 
 echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] latest base ami for: ${aws_base_ami_search_term}, in region: ${aws_region}, is: ${aws_base_ami_id}"
@@ -101,7 +101,14 @@ do
 done
 
 # create ami, get ami id, tag ami, wait for ami availability
-aws_ami_id=`aws ec2 create-image --region ${aws_region} --instance-id ${aws_instance_id} --name "${tc_worker_type} version ${aws_client_token}" --description "${ami_description}" | sed -n 's/^ *"ImageId": *"\(.*\)" *$/\1/p'`
+case "${aws_instance_type}" in
+  c4.4xlarge) # include block device mappings for instance types without free ephemerals (two small ebs volumes for caches and tasks)
+    aws_ami_id=`aws ec2 create-image --region ${aws_region} --instance-id ${aws_instance_id} --name "${tc_worker_type} version ${aws_client_token}" --description "${ami_description}" --block-device-mappings "[{\"DeviceName\": \"/dev/sdb\",\"Ebs\":{\"VolumeSize\":10,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}},{\"DeviceName\": \"/dev/sdc\",\"Ebs\":{\"VolumeSize\":10,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]" | sed -n 's/^ *"ImageId": *"\(.*\)" *$/\1/p'`
+    ;;
+  *) # assume free ephemerals
+    aws_ami_id=`aws ec2 create-image --region ${aws_region} --instance-id ${aws_instance_id} --name "${tc_worker_type} version ${aws_client_token}" --description "${ami_description}" | sed -n 's/^ *"ImageId": *"\(.*\)" *$/\1/p'`
+    ;;
+esac
 echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] ami: ${aws_ami_id} creation in progress: https://${aws_region}.console.aws.amazon.com/ec2/v2/home?region=${aws_region}#Images:visibility=owned-by-me;search=${aws_ami_id}"
 aws ec2 create-tags --region ${aws_region} --resources "${aws_ami_id}" --tags "Key=WorkerType,Value=${tc_worker_type}"
 sleep 30

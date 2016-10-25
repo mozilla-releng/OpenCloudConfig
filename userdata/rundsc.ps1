@@ -361,6 +361,17 @@ switch -wildcard ($workerType) {
   }
 }
 
+$instanceType = ((Invoke-WebRequest -Uri 'http://169.254.169.254/latest/meta-data/instance-type' -UseBasicParsing).Content)
+Write-Log -message ('instanceType: {0}, dnsRegion: {1}.' -f $az, $dnsRegion) -severity 'INFO'
+switch -wildcard ($instanceType) {
+  'c4.*' {
+    $useEphemeralVolumes = $false
+  }
+  default {
+    $useEphemeralVolumes = $true
+  }
+}
+
 # install recent powershell (required by DSC) (requires reboot)
 if ($PSVersionTable.PSVersion.Major -lt 4) {
   & sc.exe @('config', 'wuauserv', 'start=', 'demand')
@@ -484,7 +495,7 @@ if ($rebootReasons.length) {
     Remove-Item -Path $lock -force
     & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
   } elseif ($isWorker) {
-    if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
+    if ($useEphemeralVolumes -and (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue))) { # if the Z: drive isn't mapped, but shopuld be, map it.
       Map-DriveLetters
     }
     if (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue) {
@@ -502,9 +513,10 @@ if ($rebootReasons.length) {
       }
       if ((@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -eq 0)) {
         Write-Log -message 'no generic-worker process detected.' -severity 'INFO'
-        & format @('Z:', '/fs:ntfs', '/v:""', '/q', '/y')
-        Write-Log -message 'Z: drive formatted.' -severity 'INFO'
-        #& net @('user', 'GenericWorker', (Get-ItemProperty -path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -name 'DefaultPassword').DefaultPassword)
+        if ($useEphemeralVolumes) {
+          & format @('Z:', '/fs:ntfs', '/v:""', '/q', '/y')
+          Write-Log -message 'Z: drive formatted.' -severity 'INFO'
+        }
         Remove-Item -Path $lock -force
         & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
       } else {

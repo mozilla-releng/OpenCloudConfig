@@ -1051,36 +1051,12 @@
       "ComponentName": "HgShared",
       "ComponentType": "DirectoryCreate",
       "Comment": "allows builds to use `hg robustcheckout ...`",
-      "Path": "y:\\hg-shared"
+      "Path": "c:\\builds\\hg-shared"
     },
     {
       "ComponentName": "HgSharedAccessRights",
       "ComponentType": "CommandRun",
       "Comment": "allows builds to use `hg robustcheckout ...`",
-      "Command": "icacls.exe",
-      "Arguments": [
-        "y:\\hg-shared",
-        "/grant",
-        "Everyone:(OI)(CI)F"
-      ],
-      "DependsOn": [
-        {
-          "ComponentType": "DirectoryCreate",
-          "ComponentName": "HgShared"
-        }
-      ]
-    },
-    {
-      "ComponentName": "LegacyHgShared",
-      "ComponentType": "DirectoryCreate",
-      "Comment": "allows builds to use `hg share ...`",
-      "Comment": "required by hg caches",
-      "Path": "c:\\builds\\hg-shared"
-    },
-    {
-      "ComponentName": "LegacyHgSharedAccessRights",
-      "ComponentType": "CommandRun",
-      "Comment": "allows builds to use `hg share ...`",
       "Command": "icacls.exe",
       "Arguments": [
         "c:\\builds\\hg-shared",
@@ -1091,50 +1067,6 @@
         {
           "ComponentType": "DirectoryCreate",
           "ComponentName": "LegacyHgShared"
-        }
-      ]
-    },
-    {
-      "ComponentName": "MozillaCentralCacheCreate",
-      "ComponentType": "CommandRun",
-      "Comment": "required by firefox builds",
-      "Command": "C:\\Program Files\\Mercurial\\hg.exe",
-      "Arguments": [
-        "clone",
-        "-U",
-        "https://hg.mozilla.org/mozilla-central",
-        "C:\\builds\\hg-shared\\mozilla-central"
-      ],
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "Mercurial"
-        },
-        {
-          "ComponentType": "DirectoryCreate",
-          "ComponentName": "LegacyHgShared"
-        }
-      ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\builds\\hg-shared\\mozilla-central\\.hg"
-        ]
-      }
-    },
-    {
-      "ComponentName": "MozillaCentralCacheUpdate",
-      "ComponentType": "CommandRun",
-      "Comment": "keeps the cache up to date on subsequent runs/reboots",
-      "Command": "C:\\Program Files\\Mercurial\\hg.exe",
-      "Arguments": [
-        "pull",
-        "-R",
-        "C:\\builds\\hg-shared\\mozilla-central"
-      ],
-      "DependsOn": [
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "MozillaCentralCacheCreate"
         }
       ]
     }

@@ -990,7 +990,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v7.1.3/generic-worker-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v7.3.0/generic-worker-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe"
     },
     {
@@ -1060,7 +1060,7 @@
             "Arguments": [
               "--version"
             ],
-            "Match": "generic-worker 7.1.3"
+            "Match": "generic-worker 7.3.0"
           }
         ]
       }

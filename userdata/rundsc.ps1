@@ -367,6 +367,11 @@ function New-LocalCache {
   }
 }
 
+# SourceRepo is in place to toggle between production and testing environments
+#$evn:SourceRepo = mozilla-releng
+$SourceRepo = "markcor"
+Write-host "$SourceRepo"
+
 $lock = 'C:\dsc\in-progress.lock'
 if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
   Write-Log -message 'userdata run aborted. lock file exists.' -severity 'INFO'

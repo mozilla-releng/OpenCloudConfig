@@ -505,7 +505,7 @@ if ($rebootReasons.length) {
     Remove-Item -Path 'C:\dsc\HaltOnIdle.ps1' -confirm:$false -force
     Write-Log -message 'C:\dsc\HaltOnIdle.ps1 deleted.' -severity 'INFO'
   }
-  (New-Object Net.WebClient).DownloadFile(('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/HaltOnIdle.ps1?{0}' -f [Guid]::NewGuid()), 'C:\dsc\HaltOnIdle.ps1')
+  (New-Object Net.WebClient).DownloadFile(("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/HaltOnIdle.ps1?{0}" -f [Guid]::NewGuid()), 'C:\dsc\HaltOnIdle.ps1')
   Write-Log -message 'C:\dsc\HaltOnIdle.ps1 downloaded.' -severity 'INFO'
   & schtasks @('/create', '/tn', 'HaltOnIdle', '/sc', 'minute', '/mo', '2', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\HaltOnIdle.ps1', '/f')
   Write-Log -message 'scheduled task: HaltOnIdle, created.' -severity 'INFO'
@@ -538,7 +538,7 @@ if ($rebootReasons.length) {
 
     # run dsc #####################################################################################################################################################
     Start-Transcript -Path $transcript -Append
-    Run-RemoteDesiredStateConfig -url 'https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/DynamicConfig.ps1' -workerType $workerType
+    Run-RemoteDesiredStateConfig -url "https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/DynamicConfig.ps1" -workerType $workerType
     Stop-Transcript
     # end run dsc #################################################################################################################################################
     
@@ -574,7 +574,7 @@ if ($rebootReasons.length) {
       Remove-Item -Path 'C:\dsc\rundsc.ps1' -confirm:$false -force
       Write-Log -message 'C:\dsc\rundsc.ps1 deleted.' -severity 'INFO'
     }
-    (New-Object Net.WebClient).DownloadFile(('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/rundsc.ps1?{0}' -f [Guid]::NewGuid()), 'C:\dsc\rundsc.ps1')
+    (New-Object Net.WebClient).DownloadFile(("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/rundsc.ps1?{0}" -f [Guid]::NewGuid()), 'C:\dsc\rundsc.ps1')
     Write-Log -message 'C:\dsc\rundsc.ps1 downloaded.' -severity 'INFO'
     & schtasks @('/create', '/tn', 'RunDesiredStateConfigurationAtStartup', '/sc', 'onstart', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\rundsc.ps1', '/f')
     Write-Log -message 'scheduled task: RunDesiredStateConfigurationAtStartup, created.' -severity 'INFO'

@@ -372,6 +372,12 @@ function New-LocalCache {
 $SourceRepo = "markcor"
 Write-host "$SourceRepo"
 
+if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
+  $LocationType = "AWS"
+} else {
+  $LocationType = "DataCenter"
+}
+
 $lock = 'C:\dsc\in-progress.lock'
 if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
   Write-Log -message 'userdata run aborted. lock file exists.' -severity 'INFO'

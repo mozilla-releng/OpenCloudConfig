@@ -74,16 +74,18 @@ Configuration DynamicConfig {
     TestScript = { return $false }
   }
 
-  $instancekey = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/meta-data/public-keys' -UseBasicParsing).Content
-  if ($instancekey.StartsWith('0=aws-provisioner-v1-managed:')) {
-    # provisioned worker
-    $workerType = $instancekey.Split(':')[1]
-  } else {
-    # ami creation instance
-    $workerType = $instancekey.Replace('0=mozilla-taskcluster-worker-', '')
-  }
-  if ($workerType) {
-    $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/{0}.json?{1}' -f $workerType, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+  If ($LocationType -eq "AWS") { 
+    $instancekey = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/meta-data/public-keys' -UseBasicParsing).Content
+    if ($instancekey.StartsWith('0=aws-provisioner-v1-managed:')) {
+      # provisioned worker
+      $workerType = $instancekey.Split(':')[1]
+    } else {
+      # ami creation instance
+      $workerType = $instancekey.Replace('0=mozilla-taskcluster-worker-', '')
+    }
+    if ($workerType) {
+      $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/{0}.json?{1}' -f $workerType, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+    }
   } else {
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {

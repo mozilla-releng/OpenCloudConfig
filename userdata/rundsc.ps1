@@ -507,15 +507,18 @@ if ($rebootReasons.length) {
   Remove-Item -Path $lock -force
   & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
 } else {
-  # create a scheduled task to run HaltOnIdle continuously
-  if (Test-Path -Path 'C:\dsc\HaltOnIdle.ps1' -ErrorAction SilentlyContinue) {
-    Remove-Item -Path 'C:\dsc\HaltOnIdle.ps1' -confirm:$false -force
-    Write-Log -message 'C:\dsc\HaltOnIdle.ps1 deleted.' -severity 'INFO'
-  }
-  (New-Object Net.WebClient).DownloadFile(("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/HaltOnIdle.ps1?{0}" -f [Guid]::NewGuid()), 'C:\dsc\HaltOnIdle.ps1')
-  Write-Log -message 'C:\dsc\HaltOnIdle.ps1 downloaded.' -severity 'INFO'
-  & schtasks @('/create', '/tn', 'HaltOnIdle', '/sc', 'minute', '/mo', '2', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\HaltOnIdle.ps1', '/f')
-  Write-Log -message 'scheduled task: HaltOnIdle, created.' -severity 'INFO'
+if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
+  $LocationType = "AWS"
+    # create a scheduled task to run HaltOnIdle continuously
+    if (Test-Path -Path 'C:\dsc\HaltOnIdle.ps1' -ErrorAction SilentlyContinue) {
+      Remove-Item -Path 'C:\dsc\HaltOnIdle.ps1' -confirm:$false -force
+      Write-Log -message 'C:\dsc\HaltOnIdle.ps1 deleted.' -severity 'INFO'
+    }
+    (New-Object Net.WebClient).DownloadFile(("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/HaltOnIdle.ps1?{0}" -f [Guid]::NewGuid()), 'C:\dsc\HaltOnIdle.ps1')
+    Write-Log -message 'C:\dsc\HaltOnIdle.ps1 downloaded.' -severity 'INFO'
+    & schtasks @('/create', '/tn', 'HaltOnIdle', '/sc', 'minute', '/mo', '2', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\HaltOnIdle.ps1', '/f')
+    Write-Log -message 'scheduled task: HaltOnIdle, created.' -severity 'INFO'
+}
 
   if (($runDscOnWorker) -or (-not ($isWorker))) {
 

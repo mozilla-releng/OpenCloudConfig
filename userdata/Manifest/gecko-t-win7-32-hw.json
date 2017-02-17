@@ -122,7 +122,8 @@
       "Url": "http://www.uvnc.com/component/jdownloads/finish/4-setup/46-msi-installer-10962-x86/0.html",
       "Validate": {
         "PathsExist": [
-          "C:\\uvnc bvba\\UltraVnc\\winvnc.exe"
+          "C:\\uvnc bvba\\UltraVnc\\winvnc.exe",
+          "C:\\uvnc bvba\\UltraVnc\\ultravnc.ini"
         ]
       }
     },

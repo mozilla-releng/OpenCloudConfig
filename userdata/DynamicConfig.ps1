@@ -89,7 +89,7 @@ Configuration DynamicConfig {
   } else {
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {
-        $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-t-win7-32-hw.json?{0}' -f [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+        $manifest = (Invoke-WebRequest -Uri ("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/Manifest/gecko-t-win7-32-hw.json?{0}" -f [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
       }
       'Microsoft Windows 10*' {
         $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64-hw.json?{0}' -f [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)

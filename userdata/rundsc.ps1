@@ -607,12 +607,16 @@ if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
 
   if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
     Remove-Item -Path $lock -force
-    if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
-      & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+    if ($LocationType -eq "AWS") {
+      if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
+        & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+      }
     }
   } elseif ($isWorker) {
-    if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
-      Map-DriveLetters
+    if ($LocationType -eq "AWS") {
+      if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
+        Map-DriveLetters
+      }
     }
     if (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue) {
       Write-Log -message 'generic-worker installation detected.' -severity 'INFO'

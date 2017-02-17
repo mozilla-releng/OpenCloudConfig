@@ -116,6 +116,17 @@
       }
     },
     {
+      "ComponentName": "UltraVnc_10962_x86",
+      "ComponentType": "MsiInstall",
+      "Comment": "VNC Server - not essential for building firefox",
+      "Url": "http://www.uvnc.com/component/jdownloads/finish/4-setup/46-msi-installer-10962-x86/0.html",
+      "Validate": {
+        "PathsExist": [
+          "C:\\uvnc bvba\\UltraVnc\\winvnc.exe",
+        ]
+      }
+    },
+    {
       "ComponentName": "SublimeText3_PackagesFolder",
       "ComponentType": "DirectoryCreate",
       "Comment": "Maintenance Toolchain - not essential for building firefox",

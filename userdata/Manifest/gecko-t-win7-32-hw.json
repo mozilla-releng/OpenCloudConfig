@@ -121,7 +121,7 @@
       "Comment": "Git-2.11.1",
       "Url": "https://github.com/git-for-windows/git/releases/download/v2.11.1.windows.1/Git-2.11.1-32-bit.exe",
             "Arguments": [
-        "/Very Silent"
+        "/VerySilent"
       ],
       "Validate": {
         "PathsExist": [

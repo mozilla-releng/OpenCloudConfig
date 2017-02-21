@@ -131,6 +131,17 @@
       }
     },
     {
+      "ComponentName": "Mozilla_Maintenance_Service",
+      "ComponentType": "ExeInstall",
+      "Url": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice_installer.exe?raw=true",
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\test\\test.test",
+          "C:\\Program Files\\test.test"
+        ]
+      }
+    },
+    {
       "ComponentName": "SublimeText3_PackagesFolder",
       "ComponentType": "DirectoryCreate",
       "Comment": "Maintenance Toolchain - not essential for building firefox",

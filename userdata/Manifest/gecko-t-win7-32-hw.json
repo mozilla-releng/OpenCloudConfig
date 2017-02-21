@@ -119,7 +119,7 @@
       "ComponentName": "UltraVnc_10962_x86",
       "ComponentType": "MsiInstall",
       "Comment": "VNC Server - not essential for building firefox",
-      "Url": "http://www.uvnc.com/component/jdownloads/finish/4-setup/46-msi-installer-10962-x86/0.html",
+      "Url": "http://www.uvnc.com/component/jdownloads/finish/4-setup/323-ultravnc-1212-msi-x86",
       "Name": "UltraVnc",
       "ProductId": "8C5C331A-97D6-46DE-BFF4-8424BD06A888"
     },

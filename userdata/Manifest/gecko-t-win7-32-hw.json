@@ -120,8 +120,15 @@
       "ComponentType": "ExeInstall",
       "Comment": "Git-2.11.1",
       "Url": "https://github.com/git-for-windows/git/releases/download/v2.11.1.windows.1/Git-2.11.1-32-bit.exe",
-      "Name": "UltraVnc",
-      "ProductId": "8C5C331A-97D6-46DE-BFF4-8424BD06A888"
+            "Arguments": [
+        "/Very Silent"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\GIT\\git-cmd.exe",
+          "C:\\Program Files\\GIT\\bin\\git.exe"
+        ]
+      }
     },
     {
       "ComponentName": "SublimeText3_PackagesFolder",

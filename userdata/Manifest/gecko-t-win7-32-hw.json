@@ -116,10 +116,10 @@
       }
     },
     {
-      "ComponentName": "UltraVnc_10962_x86",
+      "ComponentName": "Git-2.11.1",
       "ComponentType": "ExeInstall",
-      "Comment": "VNC Server - not essential for building firefox",
-      "Url": "https://downloads.sourceforge.net/project/ultravnc/OldFiles/UltraVNC_1051_Setup.exe?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fultravnc%2F&ts=1487696641&use_mirror=svwh",
+      "Comment": "Git-2.11.1",
+      "Url": "https://github.com/git-for-windows/git/releases/download/v2.11.1.windows.1/Git-2.11.1-32-bit.exe",
       "Name": "UltraVnc",
       "ProductId": "8C5C331A-97D6-46DE-BFF4-8424BD06A888"
     },

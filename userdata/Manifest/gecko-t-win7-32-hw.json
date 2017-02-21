@@ -117,7 +117,7 @@
     },
     {
       "ComponentName": "UltraVnc_10962_x86",
-      "ComponentType": "MsiInstall",
+      "ComponentType": "ExeInstall",
       "Comment": "VNC Server - not essential for building firefox",
       "Url": "https://downloads.sourceforge.net/project/ultravnc/OldFiles/UltraVNC_1051_Setup.exe?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fultravnc%2F&ts=1487696641&use_mirror=svwh",
       "Name": "UltraVnc",

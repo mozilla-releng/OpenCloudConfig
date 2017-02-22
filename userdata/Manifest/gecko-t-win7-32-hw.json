@@ -130,6 +130,7 @@
         ]
       }
     },
+    {
     "ComponentType": "MsiInstall",
     "Comment": "VNC Server - not essential for building firefox",
     "Comment": "VNC Server - not essential for building firefox",

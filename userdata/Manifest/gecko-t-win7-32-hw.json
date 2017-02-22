@@ -133,7 +133,7 @@
     {
       "ComponentName": "Mozilla_Maintenance_Service",
       "ComponentType": "ExeInstall",
-      "Url": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice_installer.exe?raw=true",
+      "Url": "https://s3.amazonaws.com/markco-test-bug-1328640/maintenanceservice_installer.exe",
       "Validate": {
         "PathsExist": [
           "C:\\Program Files\\test\\test.test",

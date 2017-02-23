@@ -133,7 +133,6 @@
     {
     "ComponentType": "MsiInstall",
     "Comment": "VNC Server - not essential for building firefox",
-    "Comment": "VNC Server - not essential for building firefox",
     "Url": "https://s3.amazonaws.com/markco-test-bug-1328640/UltraVnc_10962_x86.msi",
     "Name": "UltraVnc",
     "ProductId": "8C5C331A-97D6-46DE-BFF4-8424BD06A888"
@@ -143,7 +142,7 @@
       "ComponentType": "ExeInstall",
       "Url": "https://s3.amazonaws.com/markco-test-bug-1328640/maintenanceservice_installer.exe",
             "Arguments": [
-        "/VerySilent"
+        "/FakeFlag"
       ],      
       "Validate": {
         "PathsExist": [

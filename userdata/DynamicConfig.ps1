@@ -122,7 +122,8 @@ Configuration DynamicConfig {
     'EnvironmentVariableUniquePrepend' = 'Script';
     'RegistryKeySet' = 'Registry';
     'RegistryValueSet' = 'Registry';
-    'FirewallRule' = 'Script'
+    'FirewallRule' = 'Script';
+    'ScriptRun' = 'Script'
   }
   Log Manifest {
     Message = ('Manifest: {0}' -f $manifest)
@@ -543,6 +544,27 @@ Configuration DynamicConfig {
         Log ('Log_FirewallRule_{0}' -f $item.ComponentName) {
           DependsOn = ('[Script]FirewallRule_{0}' -f $item.ComponentName)
           Message = ('{0}: {1}, completed' -f $item.ComponentType, $item.ComponentName)
+        }
+      }
+      'ScriptRun' {
+        Script ('ScriptRun_{0}' -f $item.ComponentName) {
+          DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
+          GetScript = "@{ ScriptRun = $item.ComponentName }"
+          SetScript = {
+            # todo: handle non-http fetches
+            try {
+              (New-Object Net.WebClient).DownloadFile($using:item.Url, ('{0}\Temp\{1}.bat' -f $env:SystemRoot, $using:item.ComponentName))
+            } catch {
+              # handle redirects (eg: sourceforge)
+              Invoke-WebRequest -Uri $using:item.Url -OutFile ('{0}\Temp\{1}.bat' -f $env:SystemRoot, $using:item.ComponentName) -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
+            }
+            Unblock-File -Path ('{0}\Temp\{1}.bat' -f $env:SystemRoot, $using:item.ComponentName)
+          }
+          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}.bat' -f $env:SystemRoot, $using:item.ComponentName) -ErrorAction SilentlyContinue) }
+        }
+        Log ('ScriptRun_{0}' -f $item.ComponentName) {
+          DependsOn = ('[Script]ScriptRun_{0}' -f $item.ComponentName)
+          Message = ('{0}: {1}, download completed' -f $item.ComponentType, $item.ComponentName)
         }
       }
     }

@@ -154,7 +154,7 @@
       "ComponentName": "MozFakeCA.cer",
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true",
-      "Target": "C:\\DSC\\ MozFakeCA.cer"
+      "Target": "C:\\DSC\\MozFakeCA.cer"
     },
     {
       "ComponentName": "MozRoot.cer",

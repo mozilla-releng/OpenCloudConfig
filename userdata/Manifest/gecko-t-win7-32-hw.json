@@ -143,7 +143,32 @@
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice.exe?raw=true",
       "Target": "C:\\DSC\\maintenanceservice.exe"
-    },  
+    },
+    {
+      "ComponentName": "maintenanceservice_installer.exe",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice_installer.exe?raw=true",
+      "Target": "C:\\DSC\\maintenanceservice_installer.exe"
+    },
+    {
+      "ComponentName": "MozFakeCA.cer",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true",
+      "Target": "C:\\DSC\\ MozFakeCA.cer"
+    },
+    {
+      "ComponentName": "MozRoot.cer",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozRoot.cer?raw=true",
+      "Target": "C:\\DSC\\MozRoot.cer"
+    },
+    {
+      "ComponentName": "mms.reg",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/mms.reg?raw=true",
+      "Target": "C:\\DSC\\mms.reg"
+    },
+    
     {
       "ComponentName": "SublimeText3_PackagesFolder",
       "ComponentType": "DirectoryCreate",

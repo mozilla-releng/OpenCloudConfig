@@ -122,8 +122,8 @@ Configuration DynamicConfig {
     'EnvironmentVariableUniquePrepend' = 'Script';
     'RegistryKeySet' = 'Registry';
     'RegistryValueSet' = 'Registry';
-    'FirewallRule' = 'Script';
-    'ScriptRun' = 'Script'
+    'FirewallRule' = 'Script'
+    #'ScriptRun' = 'Script'
   }
   Log Manifest {
     Message = ('Manifest: {0}' -f $manifest)

@@ -171,7 +171,7 @@
       "ComponentName": "MozillaMaintenanceService",
       "ComponentType": "ScriptRun",
       "Comment": "A comment",
-      "Url": "",
+      "Url": "https://raw.githubusercontent.com/markcor/OpenCloudConfig/master/userdata/Configuration/Mozilla%20Maintenance%20Service/mms.bat",
       "Name": "MozillaMaintenanceService",
     
     {

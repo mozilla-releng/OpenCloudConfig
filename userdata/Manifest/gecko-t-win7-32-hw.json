@@ -168,6 +168,11 @@
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/mms.reg?raw=true",
       "Target": "C:\\DSC\\mms.reg"
     },
+      "ComponentName": "MozillaMaintenanceService",
+      "ComponentType": "ScriptRun",
+      "Comment": "A comment",
+      "Url": "",
+      "Name": "MozillaMaintenanceService",
     
     {
       "ComponentName": "SublimeText3_PackagesFolder",

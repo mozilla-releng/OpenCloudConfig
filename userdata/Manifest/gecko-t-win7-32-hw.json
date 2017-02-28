@@ -175,6 +175,13 @@
       "Path": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages"
     },
     {
+      "ComponentName": "MozillaMaintenanceService",
+      "ComponentType": "ScriptRun",
+      "Comment": "A comment",
+      "Url": "https://raw.githubusercontent.com/markcor/OpenCloudConfig/master/userdata/Configuration/Mozilla%20Maintenance%20Service/mms.bat",
+      "Name": "MozillaMaintenanceService",
+    },
+    {
       "ComponentName": "SublimeText3_PackageControl",
       "ComponentType": "FileDownload",
       "Comment": "Maintenance Toolchain - not essential for building firefox",

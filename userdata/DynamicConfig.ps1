@@ -546,7 +546,7 @@ Configuration DynamicConfig {
           Message = ('{0}: {1}, completed' -f $item.ComponentType, $item.ComponentName)
         }
       }
-      'ScriptRun' {
+      <#'ScriptRun' {
         Script ('ScriptRun_{0}' -f $item.ComponentName) {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ ScriptRun = $item.ComponentName }"
@@ -566,7 +566,7 @@ Configuration DynamicConfig {
           DependsOn = ('[Script]ScriptRun_{0}' -f $item.ComponentName)
           Message = ('{0}: {1}, download completed' -f $item.ComponentType, $item.ComponentName)
         }
-      }
+      } #>
     }
   }
 }

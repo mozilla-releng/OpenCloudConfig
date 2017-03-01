@@ -534,6 +534,14 @@
       "Action": "Allow"
     },
     {
+      "ComponentName": "UltraVnc",
+      "ComponentType": "FirewallRule",
+      "Protocol": "TCP",
+      "LocalPort": 5900,
+      "Direction": "Inbound",
+      "Action": "Allow"
+    },
+    {
       "ComponentName": "GenericWorkerInstall",
       "ComponentType": "CommandRun",
       "Command": "C:\\generic-worker\\generic-worker.exe",

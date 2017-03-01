@@ -188,12 +188,6 @@
       "Arguments": [
       ],
       "Validate": {
-        "CommandsReturn": [
-          {
-            ],
-            "Match": 
-          }
-        ]
       }
 },
     

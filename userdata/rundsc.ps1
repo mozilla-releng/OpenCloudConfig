@@ -372,6 +372,15 @@ function New-LocalCache {
 $SourceRepo = "markcor"
 Write-host "$SourceRepo"
 
+# The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing. 
+$UpdateService = Get-Service -Name wuauserv
+if ($UpdateService.Status -ne "Running"){
+ Start-Service $UpdateService
+ Write-Log -message 'Enabling Windows update service'
+} else {
+  Write-Log -message 'Windows update service is running'
+}
+
 if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
   $LocationType = "AWS"
 } else {
@@ -651,5 +660,7 @@ if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
     }
   }
 }
+Stop-Service $UpdateService
+Write-Log -message "Disabling Windows Update service"
 Remove-Item -Path $lock -force
 Write-Log -message 'userdata run completed' -severity 'INFO'

@@ -189,8 +189,11 @@
       "Arguments": [
       ],
       "Validate": {
+       "CommandsReturn": 
+          {
+            "Command": "C:\\DSC\\mms.bat", 
       }
-},
+    },
     
     {
       "ComponentName": "SublimeText3_PackageControl",

@@ -661,6 +661,7 @@ if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
   }
 }
 Stop-Service $UpdateService
+Set-Service $UpdateService -StartupType Manual
 Write-Log -message "Disabling Windows Update service"
 Remove-Item -Path $lock -force
 Write-Log -message 'userdata run completed' -severity 'INFO'

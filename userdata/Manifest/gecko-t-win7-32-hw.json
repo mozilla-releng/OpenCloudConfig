@@ -185,7 +185,8 @@
       "ComponentName": "MMS_Install_bat",
       "ComponentType": "CommandRun",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
-      "Command": "C:\\DSC\\mms.bat"
+      "Command": "C:\\DSC\\mms.bat",
+      "DependsOn": "mms.bat"
     },
     
     {

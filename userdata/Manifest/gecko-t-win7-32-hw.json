@@ -186,6 +186,7 @@
       "ComponentType": "CommandRun",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
       "Command": "C:\\DSC\\mms.bat",
+      "Arguments": "/FakeFlag"
       "DependsOn": "mms.bat"
     },
     

@@ -655,13 +655,13 @@ if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
           $priorityClass = $gwProcess.PriorityClass
           $gwProcess.PriorityClass = [Diagnostics.ProcessPriorityClass]::AboveNormal
           Write-Log -message ('process priority for generic worker altered from {0} to {1}.' -f $priorityClass, $gwProcess.PriorityClass) -severity 'INFO'
+          Stop-Service $UpdateService
+          Set-Service $UpdateService -StartupType Manual
         }
       }
     }
   }
 }
-Stop-Service $UpdateService
-Set-Service $UpdateService -StartupType Manual
 Write-Log -message "Disabling Windows Update service"
 Remove-Item -Path $lock -force
 Write-Log -message 'userdata run completed' -severity 'INFO'

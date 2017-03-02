@@ -191,7 +191,8 @@
       "Validate": {
        "CommandsReturn": 
           {
-            "Command": "C:\\DSC\\mms.bat", 
+            "Command": "C:\\DSC\\mms.bat",
+          }
       }
     },
     

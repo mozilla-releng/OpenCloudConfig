@@ -374,6 +374,7 @@ Write-host "$SourceRepo"
 
 # The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing. 
 $UpdateService = Get-Service -Name wuauserv
+Set-Service $UpdateService -StartupType Manual
 if ($UpdateService.Status -ne "Running"){
  Start-Service $UpdateService
  Write-Log -message 'Enabling Windows update service'
@@ -656,7 +657,6 @@ if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
           $gwProcess.PriorityClass = [Diagnostics.ProcessPriorityClass]::AboveNormal
           Write-Log -message ('process priority for generic worker altered from {0} to {1}.' -f $priorityClass, $gwProcess.PriorityClass) -severity 'INFO'
           Stop-Service $UpdateService
-          Set-Service $UpdateService -StartupType Manual
         }
       }
     }

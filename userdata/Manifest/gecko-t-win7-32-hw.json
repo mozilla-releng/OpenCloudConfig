@@ -961,5 +961,13 @@
       "ValueData": "0x00000002",
       "Hex": true
     }
+    {
+      "ComponentName": "Window_Update",
+      "ComponentType": "ServiceControl",
+      "Comment": "Disable Windows update service",
+      "Name": "wuauserv",
+      "StartupType": "Manual",
+      "State": "Stopped"
+    }
   ]
 }

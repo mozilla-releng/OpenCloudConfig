@@ -139,6 +139,12 @@
       "ProductId": "8C5C331A-97D6-46DE-BFF4-8424BD06A888"
     },
     {
+      "ComponentName": "SublimeText3_PackagesFolder",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Path": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages"
+    },
+    {
       "ComponentName": "maintenanceservice.exe",
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice.exe?raw=true",
@@ -167,12 +173,6 @@
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/mms.reg?raw=true",
       "Target": "C:\\DSC\\mms.reg"
-    },
-    {
-      "ComponentName": "SublimeText3_PackagesFolder",
-      "ComponentType": "DirectoryCreate",
-      "Comment": "Maintenance Toolchain - not essential for building firefox",
-      "Path": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages"
     },
     {
       "ComponentName": "mms.bat",

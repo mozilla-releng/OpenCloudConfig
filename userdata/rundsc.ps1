@@ -348,9 +348,9 @@ function Set-Credentials {
 function New-LocalCache {
   param (
     [string[]] $paths = @(
-      'y:\hg-shared',
-      'y:\pip-cache',
-      'y:\tooltool-cache'
+      "$WorkDrive:\hg-shared",
+      "$WorkDrive:\pip-cache",
+      "$WorkDrive:\tooltool-cache"
     )
   )
   begin {
@@ -599,6 +599,11 @@ if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
     Write-Log -message 'scheduled task: RunDesiredStateConfigurationAtStartup, created.' -severity 'INFO'
   }
   if (($isWorker) -and (-not ($runDscOnWorker))) {
+  If ($LocationType -eq "AWS") { 
+    $WorkDrive ="Y:"
+    } else {
+    $WorkDrive = "C:"
+    }
     Stop-DesiredStateConfig
     Remove-DesiredStateConfigTriggers
     New-LocalCache

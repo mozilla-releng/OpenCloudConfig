@@ -74,26 +74,28 @@ Configuration DynamicConfig {
     TestScript = { return $false }
   }
 
-  $instancekey = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/meta-data/public-keys' -UseBasicParsing).Content
-  if ($instancekey.StartsWith('0=aws-provisioner-v1-managed:')) {
-    # provisioned worker
-    $workerType = $instancekey.Split(':')[1]
-  } else {
-    # ami creation instance
-    $workerType = $instancekey.Replace('0=mozilla-taskcluster-worker-', '')
-  }
-  if ($workerType) {
-    $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/{0}.json?{1}' -f $workerType, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+  If ($LocationType -eq "AWS") { 
+    $instancekey = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/meta-data/public-keys' -UseBasicParsing).Content
+    if ($instancekey.StartsWith('0=aws-provisioner-v1-managed:')) {
+      # provisioned worker
+      $workerType = $instancekey.Split(':')[1]
+    } else {
+      # ami creation instance
+      $workerType = $instancekey.Replace('0=mozilla-taskcluster-worker-', '')
+    }
+    if ($workerType) {
+      $manifest = (Invoke-WebRequest -Uri ("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/Manifest/{0}.json?{1}" -f $workerType, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+    }
   } else {
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {
-        $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-t-win7-32-hw.json?{0}' -f [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+        $manifest = (Invoke-WebRequest -Uri ("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/Manifest/gecko-t-win7-32-hw.json?{0}" -f [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
       }
       'Microsoft Windows 10*' {
-        $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64-hw.json?{0}' -f [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+        $manifest = (Invoke-WebRequest -Uri ("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64-hw.json?{0}" -f [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
       }
       'Microsoft Windows Server 2012*' {
-        $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/gecko-1-b-win2012.json?{0}' -f [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+        $manifest = (Invoke-WebRequest -Uri ("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/Manifest/gecko-1-b-win2012.json?{0}" -f [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
       }
       default {
         $manifest = ('{"Items":[{"ComponentType":"DirectoryCreate","Path":"$env:SystemDrive\\log"}]}' | ConvertFrom-Json)
@@ -120,6 +122,7 @@ Configuration DynamicConfig {
     'EnvironmentVariableUniquePrepend' = 'Script';
     'RegistryKeySet' = 'Registry';
     'RegistryValueSet' = 'Registry';
+    'Script' = 'Script';
     'FirewallRule' = 'Script'
   }
   Log Manifest {
@@ -236,31 +239,31 @@ Configuration DynamicConfig {
           }
           TestScript = { return $false }
         }
-        #Script ('ChecksumFileKillProcesses_{0}' -f $item.ComponentName) {
-        #  DependsOn = ('[Script]ChecksumFileDownload_{0}' -f $item.ComponentName)
-        #  GetScript = "@{ ChecksumFileKillProcesses = $item.ComponentName }"
-        #  SetScript = {
-        #    $processName = [IO.Path]::GetFileNameWithoutExtension($using:item.Target)
-        #    try {
-        #      Stop-Process -name $processName -Force
-        #      Write-Verbose ('Process: {0} stopped' -f $processName)
-        #    } catch {
-        #      Write-Verbose ('Failed to stop process: {0}' -f $processName)
-        #    }
-        #  }
-        #  TestScript = {
-        #    $tempTarget = ('{0}\Temp\{1}' -f $env:SystemRoot, [IO.Path]::GetFileName($using:item.Target))
-        #    $processName = [IO.Path]::GetFileNameWithoutExtension($using:item.Target)
-        #    if (([IO.Path]::GetExtension($using:item.Target) -ieq '.exe') -and (
-        #      (Test-Path -Path $using:item.Target -ErrorAction SilentlyContinue)) -and (
-        #      (Get-FileHash -Path $tempTarget -Algorithm 'SHA1') -ne (Get-FileHash -Path $using:item.Target -Algorithm 'SHA1')) -and (
-        #      (@(Get-Process | ? { $_.ProcessName -eq $processName }).length -gt 0))) {
-        #      return $false
-        #    } else {
-        #      return $true
-        #    }
-        #  }
-        #}
+        Script ('ChecksumFileKillProcesses_{0}' -f $item.ComponentName) {
+          DependsOn = ('[Script]ChecksumFileDownload_{0}' -f $item.ComponentName)
+          GetScript = "@{ ChecksumFileKillProcesses = $item.ComponentName }"
+          SetScript = {
+            $processName = [IO.Path]::GetFileNameWithoutExtension($using:item.Target)
+            try {
+              Stop-Process -name $processName -Force
+              Write-Verbose ('Process: {0} stopped' -f $processName)
+            } catch {
+              Write-Verbose ('Failed to stop process: {0}' -f $processName)
+            }
+          }
+          TestScript = {
+            $tempTarget = ('{0}\Temp\{1}' -f $env:SystemRoot, [IO.Path]::GetFileName($using:item.Target))
+            $processName = [IO.Path]::GetFileNameWithoutExtension($using:item.Target)
+            if (([IO.Path]::GetExtension($using:item.Target) -ieq '.exe') -and (
+              (Test-Path -Path $using:item.Target -ErrorAction SilentlyContinue)) -and (
+              (Get-FileHash -Path $tempTarget -Algorithm 'SHA1') -ne (Get-FileHash -Path $using:item.Target -Algorithm 'SHA1')) -and (
+              (@(Get-Process | ? { $_.ProcessName -eq $processName }).length -gt 0))) {
+              return $false
+            } else {
+              return $true
+            }
+          }
+        }
         File ('ChecksumFileCopy_{0}' -f $item.ComponentName) {
           #DependsOn = @(('[Script]ChecksumFileDownload_{0}' -f $item.ComponentName), ('[Script]ChecksumFileKillProcesses_{0}' -f $item.ComponentName))
           DependsOn = ('[Script]ChecksumFileDownload_{0}' -f $item.ComponentName)

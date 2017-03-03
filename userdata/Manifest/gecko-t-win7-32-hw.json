@@ -968,6 +968,22 @@
       "Name": "wuauserv",
       "StartupType": "Manual",
       "State": "Stopped"
+    },
+    {
+      "ComponentName": "Window_Search",
+      "ComponentType": "ServiceControl",
+      "Comment": "Disable Windows Indexing part 1 of 2",
+      "Name": "Wsearch",
+      "StartupType": "Disabled",
+      "State": "Stopped"
+    },
+    {
+      "ComponentName": "Window_Indexing_Service",
+      "ComponentType": "ServiceControl",
+      "Comment": "Disable Windows Indexing part 2 of 2",
+      "Name": "CiSvc",
+      "StartupType": "Disabled",
+      "State": "Stopped"
     }
   ]
 }

@@ -345,7 +345,7 @@ function Set-Credentials {
     Write-Log -message ('{0} :: end' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }
 }
-function New-LocalCache {
+<#function New-LocalCache {
   param (
     if ((Test-Path "y:\") -eq $true) {
       [string[]] $paths = @(
@@ -361,7 +361,15 @@ function New-LocalCache {
       )
     }
   )
-}
+} #>
+function New-LocalCache {
+  param (
+    [string[]] $paths = @(
+     '{0}\hg-shared',
+     '{0}\pip-cache',
+     '{0}\tooltool-cache'
+    )
+)
   begin {
     Write-Log -message ('{0} :: begin' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }

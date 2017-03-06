@@ -370,9 +370,9 @@ function New-LocalCache {
 	}
 	param (
 		[string[]] $paths = @(
-			"$cachedrive:\hg-shared",
-			"$cachedrive:\pip-cache",
-			"$cachedrive:\tooltool-cache"
+			"${cachedrive}:\hg-shared",
+			"${cachedrive}:\pip-cache",
+			"${cachedrive}:\tooltool-cache"
 		)
 	)
 }

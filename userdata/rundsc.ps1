@@ -364,15 +364,15 @@ function Set-Credentials {
 }#>
 function New-LocalCache {
 	if ((Test-Path "y:\") -eq $true) {
-		$cachedrive = "Y"
+		$cachedrive = "Y:"
 	} else {
-		$cachedrive = "C"
+		$cachedrive = "C:"
 	}
 	param (
 		[string[]] $paths = @(
-			"${cachedrive}:\hg-shared",
-			"${cachedrive}:\pip-cache",
-			"${cachedrive}:\tooltool-cache"
+			"$cachedrive\hg-shared",
+			"$cachedrive\pip-cache",
+			"$cachedrive\tooltool-cache"
 		)
 	)
 }

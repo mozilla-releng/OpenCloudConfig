@@ -360,7 +360,7 @@ function New-LocalCache {
         '{0}\tooltool-cache'
       )
     }
-  )
+  }
   begin {
     Write-Log -message ('{0} :: begin' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }

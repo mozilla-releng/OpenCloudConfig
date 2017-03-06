@@ -365,9 +365,9 @@ function Set-Credentials {
 function New-LocalCache {
   param (
     [string[]] $paths = @(
-     '{0}\hg-shared',
-     '{0}\pip-cache',
-     '{0}\tooltool-cache'
+     "$env:SystemDrive\hg-shared",
+     "$env:SystemDrive\pip-cache",
+     "$env:SystemDrive\tooltool-cache"
     )
 )
   begin {

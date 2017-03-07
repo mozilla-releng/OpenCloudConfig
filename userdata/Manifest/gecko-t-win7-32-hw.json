@@ -157,7 +157,7 @@
       "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice.exe",
       "DependsOn": [
         {
-          "ComponentType": "DirectoryCreate"", 
+          "ComponentType": "DirectoryCreate", 
           "ComponentName": "MozillaMaintenanceDir"
         }
       ]

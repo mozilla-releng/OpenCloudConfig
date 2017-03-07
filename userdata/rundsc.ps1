@@ -364,7 +364,7 @@ function New-LocalCache {
 		)
 	}
 }
-<#function New-LocalCache {
+function New-LocalCache {
   param (
     if ((Test-Path "y:\") -eq $true) {
       [string[]] $paths = @(
@@ -380,21 +380,6 @@ function New-LocalCache {
       )
     }
   )
-}
-function New-LocalCache {
-	param (
-		if (Test-Path "y:\" -ErrorAction SilentlyContinue)
-			$cachedrive = "Y:"
-		} else {
-			$cachedrive = "C:"
-		}
-		[string[]] $paths = @(
-			"$cachedrive\hg-shared",
-			"$cachedrive\pip-cache",
-			"$cachedrive\tooltool-cache"
-		)
-	)
-}#>
   begin {
     Write-Log -message ('{0} :: begin' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }

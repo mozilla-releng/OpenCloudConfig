@@ -157,7 +157,7 @@
       "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice.exe",
       "DependsOn": [
         {
-          "ComponentType": "ChecksumFileDownload", 
+          "ComponentType": "DirectoryCreate"", 
           "ComponentName": "MozillaMaintenanceDir"
         }
       ]
@@ -169,7 +169,7 @@
       "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice_installer.exe",
       "DependsOn": [
         {
-          "ComponentType": "ChecksumFileDownload", 
+          "ComponentType": "DirectoryCreate", 
           "ComponentName": "MozillaMaintenanceDir"
         }
       ]
@@ -181,7 +181,7 @@
       "Target": "C:\\DSC\\MozillaMaintenance\\MozFakeCA.cer",
       "DependsOn": [
         {
-          "ComponentType": "ChecksumFileDownload", 
+          "ComponentType": "DirectoryCreate", 
           "ComponentName": "MozillaMaintenanceDir"
         }
       ]
@@ -193,7 +193,7 @@
       "Target": "C:\\DSC\\MozillaMaintenance\\MozRoot.cer",
       "DependsOn": [
         {
-          "ComponentType": "ChecksumFileDownload", 
+          "ComponentType": "DirectoryCreate", 
           "ComponentName": "MozillaMaintenanceDir"
         }
       ]
@@ -205,7 +205,7 @@
       "Target": "C:\\DSC\\MozillaMaintenance\\mms.reg",
       "DependsOn": [
         {
-          "ComponentType": "ChecksumFileDownload", 
+          "ComponentType": "DirectoryCreate", 
           "ComponentName": "MozillaMaintenanceDir"
         }
       ]
@@ -218,7 +218,7 @@
       "Target": "C:\\DSC\\MozillaMaintenance\\mms.bat",
       "DependsOn": [
         {
-          "ComponentType": "ChecksumFileDownload", 
+          "ComponentType": "DirectoryCreate", 
           "ComponentName": "MozillaMaintenanceDir"
         }
       ]

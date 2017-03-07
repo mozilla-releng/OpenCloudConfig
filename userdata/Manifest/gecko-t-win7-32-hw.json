@@ -245,7 +245,7 @@
               {
                 "ComponentName": "mms.bat"
               },
-            ],
+            ]
       "Validate": {
         "CommandsReturn": [
         {

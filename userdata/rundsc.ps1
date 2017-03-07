@@ -346,25 +346,6 @@ function Set-Credentials {
   }
 }
 function New-LocalCache {
-	if ((Test-Path "y:\") -eq $true) {
-  	param (
-    	[string[]] $paths = @(
-      	'y:\hg-shared',
-      	'y:\pip-cache',
-      	'y:\tooltool-cache'
-			)
-		)
-	} else {
-		param (
-			[string[]] $paths = @(
-        'C\hg-shared',
-        'C\pip-cache',
-        'C\tooltool-cache'	
-    	)
-		)
-	}
-}
-function New-LocalCache {
   param (
     if ((Test-Path "y:\") -eq $true) {
       [string[]] $paths = @(

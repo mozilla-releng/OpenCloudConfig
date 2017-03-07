@@ -194,7 +194,7 @@
           "Command": "sc",
           "Arguments": [
             "query",
-            "ServiceName",
+            "MozillaMaintenance",
             "|",
             "findstr",
             "/i",

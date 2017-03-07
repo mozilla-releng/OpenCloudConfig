@@ -187,7 +187,23 @@
       "Comment": "Maintenance Toolchain - not essential for building firefox",
       "Command": "C:\\DSC\\mms.bat",
       "Arguments": "/FakeFlag",
-      "DependsOn": "mms.bat"
+      "DependsOn": "mms.bat",
+      "Validate": {
+        "CommandsReturn": [
+        {
+          "Command": "sc",
+          "Arguments": [
+            "query",
+            "ServiceName",
+            "|",
+            "findstr",
+            "/i",
+            "\"STATE\""
+          ],
+            "Match": "RUNNING"
+          }
+        ]
+      }
     },
     
     {

@@ -195,7 +195,7 @@
                 "ComponentName": "mms.reg",
                 "ComponentName": "mms.bat"
               }
-            ]
+            ],
       "Validate": {
         "CommandsReturn": [
         {

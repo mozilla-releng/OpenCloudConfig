@@ -345,6 +345,25 @@ function Set-Credentials {
     Write-Log -message ('{0} :: end' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }
 }
+function New-LocalCache {
+	if ((Test-Path "y:\") -eq $true) {
+  	param (
+    	[string[]] $paths = @(
+      	'y:\hg-shared',
+      	'y:\pip-cache',
+      	'y:\tooltool-cache'
+			)
+		)
+	} else {
+		param (
+			[string[]] $paths = @(
+        'C\hg-shared',
+        'C\pip-cache',
+        'C\tooltool-cache'	
+    	)
+		)
+	}
+}
 <#function New-LocalCache {
   param (
     if ((Test-Path "y:\") -eq $true) {
@@ -361,7 +380,7 @@ function Set-Credentials {
       )
     }
   )
-}#>
+}
 function New-LocalCache {
 	param (
 		if (Test-Path "y:\" -ErrorAction SilentlyContinue)
@@ -375,7 +394,7 @@ function New-LocalCache {
 			"$cachedrive\tooltool-cache"
 		)
 	)
-}
+}#>
   begin {
     Write-Log -message ('{0} :: begin' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }

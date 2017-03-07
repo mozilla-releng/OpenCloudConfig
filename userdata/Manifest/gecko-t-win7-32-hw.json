@@ -145,47 +145,89 @@
       "Path": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages"
     },
     {
+      "ComponentName": "MozillaMaintenanceDir",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "Working directory for Mozilla Maintenance Service",
+      "Path": "C:\\DSC\\MozillaMaintenance"
+    },    
+    {
       "ComponentName": "maintenanceservice.exe",
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice.exe?raw=true",
-      "Target": "C:\\DSC\\maintenanceservice.exe"
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ],
+      "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice.exe"
     },
     {
       "ComponentName": "maintenanceservice_installer.exe",
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice_installer.exe?raw=true",
-      "Target": "C:\\DSC\\maintenanceservice_installer.exe"
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ],
+      "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice_installer.exe"
     },
     {
       "ComponentName": "MozFakeCA.cer",
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true",
-      "Target": "C:\\DSC\\MozFakeCA.cer"
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ],
+      "Target": "C:\\DSC\\MozillaMaintenance\\MozFakeCA.cer"
     },
     {
       "ComponentName": "MozRoot.cer",
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozRoot.cer?raw=true",
-      "Target": "C:\\DSC\\MozRoot.cer"
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ],
+      "Target": "C:\\DSC\\MozillaMaintenance\\MozRoot.cer"
     },
     {
       "ComponentName": "mms.reg",
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/mms.reg?raw=true",
-      "Target": "C:\\DSC\\mms.reg"
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ],
+      "Target": "C:\\DSC\\MozillaMaintenance\\mms.reg"
     },
     {
       "ComponentName": "mms.bat",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "A comment",
       "Source": "https://raw.githubusercontent.com/markcor/OpenCloudConfig/master/userdata/Configuration/Mozilla%20Maintenance%20Service/mms.bat?raw=true",
-      "Target": "C:\\DSC\\mms.bat"
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ],
+      "Target": "C:\\DSC\\MozillaMaintenance\\mms.bat"
     }, 
     {
       "ComponentName": "MMS_Install_bat",
       "ComponentType": "CommandRun",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
-      "Command": "C:\\DSC\\mms.bat",
+      "Command": "C:\\DSC\\MozillaMaintenance\\mms.bat",
       "Arguments": "/FakeFlag",
       "DependsOn": [
               {

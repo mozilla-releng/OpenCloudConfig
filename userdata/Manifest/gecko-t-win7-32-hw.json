@@ -154,7 +154,7 @@
       "ComponentName": "maintenanceservice.exe",
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://github.com/markcor/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice.exe?raw=true",
-      "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice.exe"
+      "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice.exe",
       "DependsOn": [
         {
           "ComponentType": "ChecksumFileDownload", 

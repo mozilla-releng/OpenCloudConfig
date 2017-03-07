@@ -345,40 +345,10 @@ function Set-Credentials {
     Write-Log -message ('{0} :: end' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }
 }
-<#function New-LocalCache {
-  param (
-    if ((Test-Path "y:\") -eq $true) {
-      [string[]] $paths = @(
-        'y:\hg-shared',
-        'y:\pip-cache',
-        'y:\tooltool-cache'
-      )
-    } else {
-      [string[]] $paths = @(
-        'C\hg-shared',
-        'C\pip-cache',
-        'C\tooltool-cache'
-      )
-    }
-  )
-  begin {
-    Write-Log -message ('{0} :: begin' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-  }
-  process {
-    foreach ($path in $paths) {
-      New-Item -Path $path -ItemType directory -force
-      & 'icacls.exe' @($path, '/grant', 'Everyone:(OI)(CI)F')
-    }
-  }
-  end {
-    Write-Log -message ('{0} :: end' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-  }
-}#>
-
 function New-LocalCache {
   if ((Test-Path "y:\") -eq $true) {
-	  param (
-      [string[]] $paths = @(
+		param (
+    	[string[]] $paths = @(
         'y:\hg-shared',
         'y:\pip-cache',
         'y:\tooltool-cache'

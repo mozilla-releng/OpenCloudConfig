@@ -190,7 +190,7 @@
       "DependsOn": [
               {
                 "ComponentName": "maintenanceservice.exe",
-                "ComponentName": "maintenanceservice_installer.exe"
+                "ComponentName": "maintenanceservice_installer.exe",
                 "ComponentName": "MozFakeCA.cer",
                 "ComponentName": "mms.reg",
                 "ComponentName": "mms.bat"

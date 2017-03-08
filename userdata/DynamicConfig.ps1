@@ -88,6 +88,10 @@ Configuration DynamicConfig {
       $workerType = $instancekey.Replace('0=mozilla-taskcluster-worker-', '')
     }
     if ($workerType) {
+      if ($workerType.StartsWith('loan-')) {		
+	      # loan workers share a manifest with gecko parent worker type.		
+	      $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/{0}.json?{1}' -f ($workerType.Replace('loan-', 'gecko-') -replace ".{3}$"), [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)		
+	    } else {
       $manifest = (Invoke-WebRequest -Uri ("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/Manifest/{0}.json?{1}" -f $workerType, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
     }
   } else {

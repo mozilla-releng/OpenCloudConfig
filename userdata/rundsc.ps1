@@ -346,13 +346,23 @@ function Set-Credentials {
   }
 }
 function New-LocalCache {
-  param (
-    [string[]] $paths = @(
-      'y:\hg-shared',
-      'y:\pip-cache',
-      'y:\tooltool-cache'
+  if ((Test-Path "y:\") -eq $true) {
+		param (
+    	[string[]] $paths = @(
+        'y:\hg-shared',
+        'y:\pip-cache',
+        'y:\tooltool-cache'
+      )
+	  )
+	} else {
+	  param (
+      [string[]] $paths = @(
+        'C\hg-shared',
+        'C\pip-cache',
+        'C\tooltool-cache'
+      )
     )
-  )
+  }
   begin {
     Write-Log -message ('{0} :: begin' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }
@@ -367,6 +377,25 @@ function New-LocalCache {
   }
 }
 
+# SourceRepo is in place to toggle between production and testing environments
+#$evn:SourceRepo = mozilla-releng
+$SourceRepo = "markcor"
+Write-host "$SourceRepo"
+
+# The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing. 
+$UpdateService = Get-Service -Name wuauserv
+if ($UpdateService.Status -ne "Running"){
+ Start-Service $UpdateService
+ Write-Log -message 'Enabling Windows update service'
+} else {
+  Write-Log -message 'Windows update service is running'
+}
+
+if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
+  $LocationType = "AWS"
+} else {
+  $LocationType = "DataCenter"
+}
 $lock = 'C:\dsc\in-progress.lock'
 if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
   Write-Log -message 'userdata run aborted. lock file exists.' -severity 'INFO'
@@ -390,120 +419,124 @@ Write-Log -message 'system clock synchronised.' -severity 'INFO'
 $logFile = ('{0}\log\{1}.userdata-run.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
 New-Item -ItemType Directory -Force -Path ('{0}\log' -f $env:SystemDrive)
 
-try {
-  $userdata = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/user-data')
-} catch {
-  $userdata = $null
-}
-$publicKeys = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')
-
-if ($publicKeys.StartsWith('0=aws-provisioner-v1-managed:')) {
-  # provisioned worker
-  $isWorker = $true
-  $workerType = $publicKeys.Split(':')[1]
-} else {
-  # ami creation instance
-  $isWorker = $false
-  $workerType = $publicKeys.Replace('0=mozilla-taskcluster-worker-', '')
-}
-Write-Log -message ('isWorker: {0}.' -f $isWorker) -severity 'INFO'
-$az = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone')
-Write-Log -message ('workerType: {0}.' -f $workerType) -severity 'INFO'
-switch -wildcard ($az) {
-  'eu-central-1*'{
-    $dnsRegion = 'euc1'
-  }
-  'us-east-1*'{
-    $dnsRegion = 'use1'
-  }
-  'us-west-1*'{
-    $dnsRegion = 'usw1'
-  }
-  'us-west-2*'{
-    $dnsRegion = 'usw2'
-  }
-}
-Write-Log -message ('availabilityZone: {0}, dnsRegion: {1}.' -f $az, $dnsRegion) -severity 'INFO'
-
-# if importing releng amis, do a little housekeeping
-switch -wildcard ($workerType.Replace('loan-', 'gecko-')) {
-  'gecko-t-*' {
-    $runDscOnWorker = $false
-    $renameInstance = $true
-    $setFqdn = $true
-    if (-not ($isWorker)) {
-      Remove-LegacyStuff -logFile $logFile
-      Set-Credentials -username 'root' -password ('{0}' -f [regex]::matches($userdata, '<rootPassword>(.*)<\/rootPassword>')[0].Groups[1].Value)
-    }
-    Map-DriveLetters
-  }
-  default {
-    $runDscOnWorker = $true
-    $renameInstance = $true
-    $setFqdn = $true
-    if (-not ($isWorker)) {
-      Set-Credentials -username 'Administrator' -password ('{0}' -f [regex]::matches($userdata, '<rootPassword>(.*)<\/rootPassword>')[0].Groups[1].Value)
-    }
-    Map-DriveLetters
-  }
-}
-
-Get-ChildItem -Path $env:SystemRoot\Microsoft.Net -Filter ngen.exe -Recurse | % {
+If ($LocationType -eq "AWS") {
   try {
-    & $_.FullName executeQueuedItems
-    Write-Log -message ('executed: "{0} executeQueuedItems".' -f $_.FullName) -severity 'INFO'
+    $userdata = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/user-data')
+  } catch {
+    $userdata = $null
   }
-  catch {
-    Write-Log -message ('failed to execute: "{0} executeQueuedItems"' -f $_.FullName) -severity 'ERROR'
-  }
-}
+  $publicKeys = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')
 
-# rename the instance
-$instanceId = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id'))
-$dnsHostname = [System.Net.Dns]::GetHostName()
-if ($renameInstance -and ([bool]($instanceId)) -and (-not ($dnsHostname -ieq $instanceId))) {
-  [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceId", "Machine")
-  $env:COMPUTERNAME = $instanceId
-  (Get-WmiObject Win32_ComputerSystem).Rename($instanceId)
-  $rebootReasons += 'host renamed'
-  Write-Log -message ('host renamed from: {0} to {1}.' -f $dnsHostname, $instanceId) -severity 'INFO'
-}
-# set fqdn
-if ($setFqdn) {
-  if (Test-Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\NV Domain") {
-    $currentDomain = (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\" -Name "NV Domain")."NV Domain"
-  } elseif (Test-Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Domain") {
-    $currentDomain = (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\" -Name "Domain")."Domain"
+  if ($publicKeys.StartsWith('0=aws-provisioner-v1-managed:')) {
+    # provisioned worker
+    $isWorker = $true
+    $workerType = $publicKeys.Split(':')[1]
   } else {
-    $currentDomain = $env:USERDOMAIN
+    # ami creation instance
+    $isWorker = $false
+    $workerType = $publicKeys.Replace('0=mozilla-taskcluster-worker-', '')
   }
-  $domain = ('{0}.{1}.mozilla.com' -f $workerType, $dnsRegion)
-  if (-not ($currentDomain -ieq $domain)) {
-    [Environment]::SetEnvironmentVariable("USERDOMAIN", "$domain", "Machine")
-    $env:USERDOMAIN = $domain
-    Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\' -Name 'Domain' -Value "$domain"
-    Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\' -Name 'NV Domain' -Value "$domain"
-    Write-Log -message ('domain set to: {0}' -f $domain) -severity 'INFO'
+  Write-Log -message ('isWorker: {0}.' -f $isWorker) -severity 'INFO'
+  $az = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone')
+  Write-Log -message ('workerType: {0}.' -f $workerType) -severity 'INFO'
+  switch -wildcard ($az) {
+    'eu-central-1*'{
+      $dnsRegion = 'euc1'
+    }
+    'us-east-1*'{
+      $dnsRegion = 'use1'
+    }
+    'us-west-1*'{
+      $dnsRegion = 'usw1'
+    }
+    'us-west-2*'{
+      $dnsRegion = 'usw2'
+    }
   }
+  Write-Log -message ('availabilityZone: {0}, dnsRegion: {1}.' -f $az, $dnsRegion) -severity 'INFO'
+
+  # if importing releng amis, do a little housekeeping
+  switch -wildcard ($workerType) {
+    'gecko-t-*' {
+      $runDscOnWorker = $false
+      $renameInstance = $true
+      $setFqdn = $true
+      if (-not ($isWorker)) {
+        Remove-LegacyStuff -logFile $logFile
+        Set-Credentials -username 'root' -password ('{0}' -f [regex]::matches($userdata, '<rootPassword>(.*)<\/rootPassword>')[0].Groups[1].Value)
+      }
+      Map-DriveLetters
+    }
+    default {
+      $runDscOnWorker = $true
+      $renameInstance = $true
+      $setFqdn = $true
+      if (-not ($isWorker)) {
+        Set-Credentials -username 'Administrator' -password ('{0}' -f [regex]::matches($userdata, '<rootPassword>(.*)<\/rootPassword>')[0].Groups[1].Value)
+      }
+      Map-DriveLetters
+    }
+  }
+
+  Get-ChildItem -Path $env:SystemRoot\Microsoft.Net -Filter ngen.exe -Recurse | % {
+    try {
+      & $_.FullName executeQueuedItems
+      Write-Log -message ('executed: "{0} executeQueuedItems".' -f $_.FullName) -severity 'INFO'
+    }
+    catch {
+      Write-Log -message ('failed to execute: "{0} executeQueuedItems"' -f $_.FullName) -severity 'ERROR'
+    }
+  }
+
+  # rename the instance
+  $instanceId = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id'))
+  $dnsHostname = [System.Net.Dns]::GetHostName()
+  if ($renameInstance -and ([bool]($instanceId)) -and (-not ($dnsHostname -ieq $instanceId))) {
+    [Environment]::SetEnvironmentVariable("COMPUTERNAME", "$instanceId", "Machine")
+    $env:COMPUTERNAME = $instanceId
+    (Get-WmiObject Win32_ComputerSystem).Rename($instanceId)
+    $rebootReasons += 'host renamed'
+    Write-Log -message ('host renamed from: {0} to {1}.' -f $dnsHostname, $instanceId) -severity 'INFO'
+  }
+  # set fqdn
+  if ($setFqdn) {
+    if (Test-Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\NV Domain") {
+      $currentDomain = (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\" -Name "NV Domain")."NV Domain"
+    } elseif (Test-Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Domain") {
+      $currentDomain = (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\" -Name "Domain")."Domain"
+    } else {
+      $currentDomain = $env:USERDOMAIN
+    }
+    $domain = ('{0}.{1}.mozilla.com' -f $workerType, $dnsRegion)
+    if (-not ($currentDomain -ieq $domain)) {
+      [Environment]::SetEnvironmentVariable("USERDOMAIN", "$domain", "Machine")
+      $env:USERDOMAIN = $domain
+      Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\' -Name 'Domain' -Value "$domain"
+      Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\' -Name 'NV Domain' -Value "$domain"
+      Write-Log -message ('domain set to: {0}' -f $domain) -severity 'INFO'
+    }
+  }
+
+  $instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-type'))
+  Write-Log -message ('instanceType: {0}.' -f $instanceType) -severity 'INFO'
+  [Environment]::SetEnvironmentVariable("TASKCLUSTER_INSTANCE_TYPE", "$instanceType", "Machine")
 }
-
-$instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-type'))
-Write-Log -message ('instanceType: {0}.' -f $instanceType) -severity 'INFO'
-[Environment]::SetEnvironmentVariable("TASKCLUSTER_INSTANCE_TYPE", "$instanceType", "Machine")
-
 if ($rebootReasons.length) {
   Remove-Item -Path $lock -force
   & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
 } else {
-  # create a scheduled task to run HaltOnIdle continuously
-  if (Test-Path -Path 'C:\dsc\HaltOnIdle.ps1' -ErrorAction SilentlyContinue) {
-    Remove-Item -Path 'C:\dsc\HaltOnIdle.ps1' -confirm:$false -force
-    Write-Log -message 'C:\dsc\HaltOnIdle.ps1 deleted.' -severity 'INFO'
-  }
-  (New-Object Net.WebClient).DownloadFile(('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/HaltOnIdle.ps1?{0}' -f [Guid]::NewGuid()), 'C:\dsc\HaltOnIdle.ps1')
-  Write-Log -message 'C:\dsc\HaltOnIdle.ps1 downloaded.' -severity 'INFO'
-  & schtasks @('/create', '/tn', 'HaltOnIdle', '/sc', 'minute', '/mo', '2', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\HaltOnIdle.ps1', '/f')
-  Write-Log -message 'scheduled task: HaltOnIdle, created.' -severity 'INFO'
+if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
+  $LocationType = "AWS"
+    # create a scheduled task to run HaltOnIdle continuously
+    if (Test-Path -Path 'C:\dsc\HaltOnIdle.ps1' -ErrorAction SilentlyContinue) {
+      Remove-Item -Path 'C:\dsc\HaltOnIdle.ps1' -confirm:$false -force
+      Write-Log -message 'C:\dsc\HaltOnIdle.ps1 deleted.' -severity 'INFO'
+    }
+    (New-Object Net.WebClient).DownloadFile(("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/HaltOnIdle.ps1?{0}" -f [Guid]::NewGuid()), 'C:\dsc\HaltOnIdle.ps1')
+    Write-Log -message 'C:\dsc\HaltOnIdle.ps1 downloaded.' -severity 'INFO'
+    & schtasks @('/create', '/tn', 'HaltOnIdle', '/sc', 'minute', '/mo', '2', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\HaltOnIdle.ps1', '/f')
+    Write-Log -message 'scheduled task: HaltOnIdle, created.' -severity 'INFO'
+}
 
   if (($runDscOnWorker) -or (-not ($isWorker))) {
 
@@ -533,7 +566,7 @@ if ($rebootReasons.length) {
 
     # run dsc #####################################################################################################################################################
     Start-Transcript -Path $transcript -Append
-    Run-RemoteDesiredStateConfig -url 'https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/DynamicConfig.ps1'
+    Run-RemoteDesiredStateConfig -url "https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/DynamicConfig.ps1" -workerType $workerType
     Stop-Transcript
     # end run dsc #################################################################################################################################################
     
@@ -569,7 +602,7 @@ if ($rebootReasons.length) {
       Remove-Item -Path 'C:\dsc\rundsc.ps1' -confirm:$false -force
       Write-Log -message 'C:\dsc\rundsc.ps1 deleted.' -severity 'INFO'
     }
-    (New-Object Net.WebClient).DownloadFile(('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/rundsc.ps1?{0}' -f [Guid]::NewGuid()), 'C:\dsc\rundsc.ps1')
+    (New-Object Net.WebClient).DownloadFile(("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/rundsc.ps1?{0}" -f [Guid]::NewGuid()), 'C:\dsc\rundsc.ps1')
     Write-Log -message 'C:\dsc\rundsc.ps1 downloaded.' -severity 'INFO'
     & schtasks @('/create', '/tn', 'RunDesiredStateConfigurationAtStartup', '/sc', 'onstart', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\rundsc.ps1', '/f')
     Write-Log -message 'scheduled task: RunDesiredStateConfigurationAtStartup, created.' -severity 'INFO'
@@ -592,12 +625,16 @@ if ($rebootReasons.length) {
 
   if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
     Remove-Item -Path $lock -force
-    if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
-      & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+    if ($LocationType -eq "AWS") {
+      if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
+        & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+      }
     }
   } elseif ($isWorker) {
-    if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
-      Map-DriveLetters
+    if ($LocationType -eq "AWS") {
+      if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
+        Map-DriveLetters
+      }
     }
     if (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue) {
       Write-Log -message 'generic-worker installation detected.' -severity 'INFO'
@@ -627,10 +664,12 @@ if ($rebootReasons.length) {
           $priorityClass = $gwProcess.PriorityClass
           $gwProcess.PriorityClass = [Diagnostics.ProcessPriorityClass]::AboveNormal
           Write-Log -message ('process priority for generic worker altered from {0} to {1}.' -f $priorityClass, $gwProcess.PriorityClass) -severity 'INFO'
+          Stop-Service $UpdateService
         }
       }
     }
   }
 }
+Write-Log -message "Disabling Windows Update service"
 Remove-Item -Path $lock -force
 Write-Log -message 'userdata run completed' -severity 'INFO'

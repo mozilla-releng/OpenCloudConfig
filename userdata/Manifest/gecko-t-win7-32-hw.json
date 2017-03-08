@@ -737,7 +737,7 @@
       "ComponentName": "HgShared",
       "ComponentType": "DirectoryCreate",
       "Comment": "allows builds to use `hg robustcheckout ...`",
-      "Path": "y:\\hg-shared"
+      "Path": "c:\\hg-shared"
     },
     {
       "ComponentName": "HgSharedAccessRights",
@@ -745,7 +745,7 @@
       "Comment": "allows builds to use `hg robustcheckout ...`",
       "Command": "icacls.exe",
       "Arguments": [
-        "y:\\hg-shared",
+        "c:\\hg-shared",
         "/grant",
         "Everyone:(OI)(CI)F"
       ],
@@ -760,7 +760,7 @@
       "ComponentName": "PipCache",
       "ComponentType": "DirectoryCreate",
       "Comment": "share pip cache across subsequent task users",
-      "Path": "y:\\pip-cache"
+      "Path": "c:\\pip-cache"
     },
     {
       "ComponentName": "PipCacheAccessRights",
@@ -768,7 +768,7 @@
       "Comment": "share pip cache across subsequent task users",
       "Command": "icacls.exe",
       "Arguments": [
-        "y:\\pip-cache",
+        "c:\\pip-cache",
         "/grant",
         "Everyone:(OI)(CI)F"
       ],
@@ -790,14 +790,14 @@
         }
       ],
       "Name": "PIP_DOWNLOAD_CACHE",
-      "Value": "y:\\pip-cache",
+      "Value": "c:\\pip-cache",
       "Target": "Machine"
     },
     {
       "ComponentName": "TooltoolCache",
       "ComponentType": "DirectoryCreate",
       "Comment": "share tooltool cache across subsequent task users",
-      "Path": "y:\\tooltool-cache"
+      "Path": "c:\\tooltool-cache"
     },
     {
       "ComponentName": "TooltoolCacheAccessRights",
@@ -805,7 +805,7 @@
       "Comment": "share tooltool cache across subsequent task users",
       "Command": "icacls.exe",
       "Arguments": [
-        "y:\\tooltool-cache",
+        "c:\\tooltool-cache",
         "/grant",
         "Everyone:(OI)(CI)F"
       ],
@@ -827,7 +827,7 @@
         }
       ],
       "Name": "TOOLTOOL_CACHE",
-      "Value": "y:\\tooltool-cache",
+      "Value": "c:\\tooltool-cache",
       "Target": "Machine"
     },
     {

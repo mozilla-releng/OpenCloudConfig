@@ -94,6 +94,7 @@ Configuration DynamicConfig {
 	    } else {
       $manifest = (Invoke-WebRequest -Uri ("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/Manifest/{0}.json?{1}" -f $workerType, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
     }
+	}
   } else {
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {

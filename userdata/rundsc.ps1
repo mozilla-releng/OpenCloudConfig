@@ -525,8 +525,7 @@ if ($rebootReasons.length) {
   Remove-Item -Path $lock -force
   & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
 } else {
-if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
-  $LocationType = "AWS"
+If ($LocationType -eq "AWS") {
     # create a scheduled task to run HaltOnIdle continuously
     if (Test-Path -Path 'C:\dsc\HaltOnIdle.ps1' -ErrorAction SilentlyContinue) {
       Remove-Item -Path 'C:\dsc\HaltOnIdle.ps1' -confirm:$false -force

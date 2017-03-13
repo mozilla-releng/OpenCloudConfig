@@ -131,6 +131,7 @@
      "ComponentName": "UltraVNC",
       "ComponentType": "MsiInstall",
       "Comment": "VNC Server - not essential for building firefox",
+      "Url": "http://fakeurl/UltraVNC",
       "sha512": "e454719aae70d26a52a5db499049d3684f7f9024d249620f9762d9c376030d602fec2a746afdb35bb0027186768f1311c34f152f52dba101823e7c8f0ec0b98e",
       "Name": "UltraVnc",
       "ProductId": "8C5C331A-97D6-46DE-BFF4-8424BD06A888"

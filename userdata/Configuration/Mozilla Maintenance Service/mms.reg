@@ -1,0 +1,23 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d366d6436db0f55bce4]
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d366d6436db0f55bce4\0]
+"name"="Mozilla Corporation"
+"issuer"="Thawte Code Signing CA - G2"
+"programName"=""
+"publisherLink"=""
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d366d6436db0f55bce4\1]
+"issuer"="Mozilla Fake CA"
+"name"="Mozilla Fake SPC"
+"programName"=""
+"publisherLink"=""
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d366d6436db0f55bce4]
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d366d6436db0f55bce4\2]
+"name"="Mozilla Corporation"
+"issuer"="DigiCert SHA2 Assured ID Code Signing CA"
+"programName"=""
+"publisherLink"=""

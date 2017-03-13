@@ -1034,14 +1034,20 @@
       "Hex": true
     },
     {
-      "ComponentName": "reg_MercurialIoPriority",
-      "ComponentType": "RegistryValueSet",
-      "Comment": "",
-      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\hg.exe\\PerfOptions",
-      "ValueName": "IoPriority",
-      "ValueType": "Dword",
-      "ValueData": "0x00000002",
-      "Hex": true
+      "ComponentName": "Window_Update",
+      "ComponentType": "ServiceControl",
+      "Comment": "Disable Windows update service",
+      "Name": "wuauserv",
+      "StartupType": "Manual",
+      "State": "Stopped"
+    },
+    {
+      "ComponentName": "Window_Search",
+      "ComponentType": "ServiceControl",
+      "Comment": "Disable Windows Indexing part 1 of 2",
+      "Name": "Wsearch",
+      "StartupType": "Disabled",
+      "State": "Stopped"
     }
   ]
 }

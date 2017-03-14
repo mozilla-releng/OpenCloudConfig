@@ -6,14 +6,6 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 Configuration DynamicConfig {
   Import-DscResource -ModuleName PSDesiredStateConfiguration
-  # SourceRepo is in place to toggle between production and testing environments
-	$SourceRepo = mozilla-releng
-	
-	if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
-		$LocationType = "AWS"
-	} else {
-		$LocationType = "DataCenter"
-	}
   If ($LocationType -eq "AWS") { 
     Script GpgKeyImport {
       DependsOn = @('[Script]InstallSupportingModules', '[Script]ExeInstall_GpgForWin')

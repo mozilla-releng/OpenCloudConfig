@@ -8,8 +8,7 @@ Configuration DynamicConfig {
   Import-DscResource -ModuleName PSDesiredStateConfiguration
   
   # SourceRepo is in place to toggle between production and testing environments
-	#$SourceRepo = mozilla-releng
-	$SourceRepo = "markcor"
+	$SourceRepo = mozilla-releng
 	
   If ($LocationType -eq "AWS") { 
     Script GpgKeyImport {

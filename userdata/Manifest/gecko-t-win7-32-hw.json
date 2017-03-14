@@ -298,23 +298,23 @@
       "DependsOn": [
               {
                 "ComponentName": "Nvidia_DATACENTER_Driver"
-              }
-	      ],		
+	      }      
+      ],		
      "Validate": {
-	      "PathsExist": [
-	        "C:\\programfiles\\Nvidia Corporation\\license.txt",
-	        "C:\\programfiles\\Nvidia Corporation\\Update Common||NvUpdt.dll"
-	      ]
-	    }
-     },
-		{
+        "PathsExist": [
+          "C:\\programfiles\\Nvidia Corporation\\license.txt",
+          "C:\\programfiles\\Nvidia Corporation\\Update Common||NvUpdt.dll"
+        ]
+      }
+    },
+    {
       "ComponentName": "Nvidia_Update_service",
       "ComponentType": "ServiceControl",
       "Comment": "Disable Nvidia update service",
       "Name": "nvUpdateService",
       "StartupType": "DIsabled",
       "State": "Stopped"
-		},
+    },
     {
       "ComponentName": "SublimeText3_PackageControl",
       "ComponentType": "FileDownload",

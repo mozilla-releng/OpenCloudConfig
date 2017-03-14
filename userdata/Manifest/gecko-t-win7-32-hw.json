@@ -296,8 +296,8 @@
       "Command": "C:\\DSC\\Nvidia\\314.07-desktop-win8-win7-winvista-32bit-english-whql\\setup.exe -clean -passive -noreboot -loglevel:6 -log:C:\\log\\Nvidia",
       "Arguments": "/FakeFlag",
       "DependsOn": [
-              {
-                "ComponentName": "Nvidia_DATACENTER_Driver"
+      	{
+        	"ComponentName": "Nvidia_DATACENTER_Driver"
 	      }      
       ],		
      "Validate": {

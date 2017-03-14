@@ -378,8 +378,8 @@ function New-LocalCache {
 }
 
 # SourceRepo is in place to toggle between production and testing environments
-#$SourceRepo = "mozilla-releng"
-$SourceRepo = "markcor"
+$SourceRepo = "mozilla-releng"
+
 # The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing. 
 $UpdateService = Get-Service -Name wuauserv
 if ($UpdateService.Status -ne "Running"){

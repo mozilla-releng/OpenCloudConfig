@@ -317,7 +317,7 @@
       "ComponentName": "Nvidia_Update_service",
       "ComponentType": "ServiceControl",
       "Comment": "Disable Nvidia update service",
-      "Name": "nvUpdateService",
+      "Name": "nvUpdatusService",
       "StartupType": "DIsabled",
       "State": "Stopped"
     },

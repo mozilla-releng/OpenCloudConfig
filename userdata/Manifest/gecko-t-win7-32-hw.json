@@ -306,7 +306,7 @@
 	        "C:\\programfiles\\Nvidia Corporation\\Update Common||NvUpdt.dll"
 	      ]
 	    }
-    },
+     },
 		{
       "ComponentName": "Nvidia_Update_service",
       "ComponentType": "ServiceControl",

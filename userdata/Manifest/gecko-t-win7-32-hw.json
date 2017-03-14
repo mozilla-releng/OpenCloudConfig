@@ -281,7 +281,7 @@
       "ComponentType": "ZipInstall",
       "Destination": "C:\\DSC\\Nvidia",
       "Url": "http://fakeurl/Nvidia",
-      "sha512": "bd823f138f6fe4933ea96c17fb98b1662931e0589b44a71763ebb5e28d61be62200fd9059a65385bf936a45be31ec5f931b075255eb290cbd2e9743f0da6bc31",
+      "sha512": "998c998d99eedcfb34cc9369d3804b8a78ab23e653981ffa1819bf22b763f28e6dc0391905e943fb6f6c6266655902737a3f79a6ad85fbe2347bf98d83705e11",
       "DependsOn": [
         {
           "ComponentType": "DirectoryCreate",

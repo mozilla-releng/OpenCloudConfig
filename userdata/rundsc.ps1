@@ -667,6 +667,5 @@ If ($LocationType -eq "AWS") {
     }
   }
 }
-Write-Log -message "Disabling Windows Update service"
 Remove-Item -Path $lock -force
 Write-Log -message 'userdata run completed' -severity 'INFO'

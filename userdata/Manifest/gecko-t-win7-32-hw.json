@@ -293,7 +293,7 @@
       "ComponentName": "Nvidia_DATACENTER_Driver_Install",
       "ComponentType": "CommandRun",
       "Comment": "Nvidia Graphic driver install",
-      "Command": "C:\\dsc\\Nvidia\314.07-desktop-win8-win7-winvista-32bit-english-whql\\setup.exe", 
+      "Command": "C:\\dsc\\Nvidia\\314.07-desktop-win8-win7-winvista-32bit-english-whql\\setup.exe", 
       "Arguments": [
 				"-clean",
 				"-passive",

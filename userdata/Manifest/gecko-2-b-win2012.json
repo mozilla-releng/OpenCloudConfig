@@ -438,7 +438,7 @@
           "C:\\Program Files (x86)\\Windows Kits\\10\\Debuggers\\x64\\srcsrv\\pdbstr.exe"
         ]
       },
-      "sha512": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+      "sha512": "89ce9cb241ee33cc0642f93ea7d96ff148de6b54e27075398f8f2de31272e1c32865c43e5a9e89da8ce0317f586802bb21bb6247a643d5d201a79a5cd2648d09"
     },
     {
       "ComponentName": "BinScope",
@@ -447,7 +447,7 @@
       "Url": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/FirefoxBuildResources/BinScope_x64.msi",
       "Name": "Microsoft BinScope 2014",
       "ProductId": "C7F11A71-09AA-43CC-9DFC-8CB12E678F21",
-      "sha512": "ff994e31134b3f6cdbccd9176ba5d19e5f14801809dac65dbfe9d5900f6ed2bf829e9a608e6eb636c1496fcbd586b3969957ff8ffe809ca5dd44c5f63b1be0e9"
+      "sha512": "3a36ed88690112d5ae1fc67d4af16973727e987a744a982c2357d72c955e21fcd20abc1ed48a23c376340d320463d91b2dd828454303075276a403f30d1d01aa"
     },
     {
       "ComponentName": "MozillaBuildSetup",
@@ -500,7 +500,7 @@
           "ComponentName": "MozillaBuildSetup"
         }
       ],
-      "sha512": "daba46ce8850e0f4e40f62f6ef1dd0af791c7410e458759798053fd1887599158bd0b88ea6fa982a89411cb17fbe75a6ef5c5f945da4c2f9e496c374169567c1"
+      "sha512": "03edd9831b928591a2133c6445e43378c5c77985224106197dadaed7c68e484838367434f5fe949c5971dcb6667a40acdb9b1e114f41b476dfebc080da5115a6"
     },
     {
       "ComponentName": "msys_home",

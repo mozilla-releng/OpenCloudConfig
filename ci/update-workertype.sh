@@ -46,6 +46,9 @@ elif [[ $commit_message == *"deploy:"* ]]; then
 elif [[ $commit_message == *"nodeploy"* ]]; then
   echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] deployment skipped due to 'nodeploy' in commit message (${commit_message})"
   exit
+elif [[ $commit_message == *"deploy "* ]]; then
+  echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] deployment skipped due to 'deploy ' in commit message (${commit_message}) - missing colon!"
+  exit
 fi
 
 echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] git sha: ${aws_client_token} used for aws client token"

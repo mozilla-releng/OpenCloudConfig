@@ -32,7 +32,7 @@ for manifest in $(ls ./OpenCloudConfig/userdata/Manifest/gecko-*.json); do
       filename=./${ComponentName}.${ext}
       www_url=$(jq --arg ComponentName ${ComponentName} --arg componentType ${ComponentType} -r '.Components[] | select(.ComponentType == $componentType and .ComponentName == $ComponentName) | .Url' ${manifest})
 
-      if curl -o ${filename} ${www_url}; then
+      if curl -L -o ${filename} ${www_url} && [ -s ${filename} ]; then
         echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] ${ComponentName}.${ext} downloaded"
         sha512=$(sha512sum ${filename} | { read sha _; echo $sha; })
         tt_url="https://api.pub.build.mozilla.org/tooltool/sha512/${sha512}"

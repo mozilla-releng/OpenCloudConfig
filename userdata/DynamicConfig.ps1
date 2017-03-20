@@ -7,7 +7,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 Configuration DynamicConfig {
   Import-DscResource -ModuleName PSDesiredStateConfiguration
   # SourceRepo is in place to toggle between production and testing environments
-  $SourceRepo = "mozilla-releng"
+  #$SourceRepo = "mozilla-releng"
+  $SourceRepo = "markcor"
     
   if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
     $LocationType = "AWS"

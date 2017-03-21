@@ -40,6 +40,9 @@ Configuration DynamicConfig {
     DestinationPath = ('{0}\builds' -f $env:SystemDrive)
     Ensure = 'Present'
   }
+  If ($LocationType -eq "DataCenter" ) {
+  	Copy-Item "C:\programdata\occ-installers.tok" "{0}\builds"
+	}
   If ($LocationType -eq "AWS") { 
     Script FirefoxBuildSecrets {
       DependsOn = @('[Script]GpgKeyImport', '[File]BuildsFolder')

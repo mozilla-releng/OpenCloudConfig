@@ -43,7 +43,7 @@ Configuration DynamicConfig {
   If ($LocationType -eq "DataCenter" ) {
   	Move-Item "C:\programdata\occ-installers.tok" "C:\builds\" -force
 	} #>
-	Move-Item "C:\windows\occ-installers.tok" "C:\builds\occ-installers.tok" -force
+	#Move-Item "C:\windows\occ-installers.tok" "C:\builds\occ-installers.tok" -force
   If ($LocationType -eq "AWS") { 
     Script FirefoxBuildSecrets {
       DependsOn = @('[Script]GpgKeyImport', '[File]BuildsFolder')

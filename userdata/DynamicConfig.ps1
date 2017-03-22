@@ -41,7 +41,7 @@ Configuration DynamicConfig {
     Ensure = 'Present'
   }
   If ($LocationType -eq "DataCenter" ) {
-  	Copy-Item "C:\programdata\occ-installers.tok" "C:\builds"
+  	Copy-Item "C:\programdata\occ-installers.tok" "C:\builds\"
 	}
   If ($LocationType -eq "AWS") { 
     Script FirefoxBuildSecrets {

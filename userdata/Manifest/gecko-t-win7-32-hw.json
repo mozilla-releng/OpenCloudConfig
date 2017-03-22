@@ -143,15 +143,6 @@
       "Path": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages"
     },
     {
-     "ComponentName": "UltraVNC",
-      "ComponentType": "MsiInstall",
-      "Comment": "VNC Server - not essential for building firefox",
-      "Url": "http://fakeurl/UltraVNC",
-      "sha512": "e454719aae70d26a52a5db499049d3684f7f9024d249620f9762d9c376030d602fec2a746afdb35bb0027186768f1311c34f152f52dba101823e7c8f0ec0b98e",
-      "Name": "UltraVnc",
-      "ProductId": "8C5C331A-97D6-46DE-BFF4-8424BD06A888"
-    }, 
-    {
       "ComponentName": "MozillaMaintenanceDir",
       "ComponentType": "DirectoryCreate",
       "Comment": "Working directory for Mozilla Maintenance Service",
@@ -289,54 +280,6 @@
         }
       ]
     },
-    {
-      "ComponentName": "Nvidia_DATACENTER_Driver_Install",
-      "ComponentType": "CommandRun",
-      "Comment": "Nvidia Graphic driver install",
-      "Command": "C:\\dsc\\Nvidia\\314.07-desktop-win8-win7-winvista-32bit-english-whql\\setup.exe", 
-      "Arguments": [
-				"-clean",
-				"-passive",
-				"-noreboot",
-				"-loglevel:6",
-				"-log:C:\\log"
-			],
-      "DependsOn": [
-      	{
-        	"ComponentName": "Nvidia_DATACENTER_Driver"
-	      }      
-      ],		
-     "Validate": {
-        "PathsExist": [
-          "C:\\programfiles\\Nvidia Corporation\\license.txt",
-          "C:\\programfiles\\Nvidia Corporation\\Update Common||NvUpdt.dll"
-        ]
-      }
-    },
-    {
-      "ComponentName": "Nvidia_Update_service",
-      "ComponentType": "ServiceControl",
-      "Comment": "Disable Nvidia update service",
-      "Name": "nvUpdatusService",
-      "StartupType": "DIsabled",
-      "State": "Stopped"
-    },
-    {
-      "ComponentName": "Windows SDK",
-      "ComponentType": "ExeInstall",
-      "Comment": "This SDK includes Windows toolkit https://bugzilla.mozilla.org/show_bug.cgi?id=1338661",
-      "Url": "http://fakeurl/SDK",
-      "Arguments": [
-        "/q"
-      ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\Program Files\\Windows Kits\\8.1\\sdk_license.rtf",
-          "C:\\Program Files\\Windows Kits\\8.1\\bin\\x86\\config.mftx"
-        ]
-      },
-      "sha512": "cbfd6a8dc39773ff3852998349b01612251a687a5992a51e117d169aa98fc313f0ca11d75572e14f2c64e18a10d2660a0710c4f1bc57dfdaf30804274e1bbef8"
-},
     {
       "ComponentName": "SublimeText3_PackageControl",
       "ComponentType": "FileDownload",

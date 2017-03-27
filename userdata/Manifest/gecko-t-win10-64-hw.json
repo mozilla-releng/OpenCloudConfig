@@ -117,7 +117,7 @@
           "C:\\Program Files\\GIT\\bin\\git.exe"
         ]
       }
-    },
+    }, 
     {
       "ComponentName": "SublimeText3",
       "ComponentType": "ExeInstall",

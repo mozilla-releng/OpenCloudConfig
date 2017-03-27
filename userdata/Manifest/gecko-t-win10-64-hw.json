@@ -104,21 +104,6 @@
       "sha512": "4df02ab139b087c8d6e689a99afb58e1ab3d4c0722daa11f6a070cddb2506d079a7d9ff55341baa5b7fd1dc7593225eb9d7fdbfb9ac91e0d8db61f9fda85cbb3"
     },
     {
-      "ComponentName": "Git-2.11.1",
-      "ComponentType": "ExeInstall",
-      "Comment": "Git-2.11.1",
-      "Url": "https://github.com/git-for-windows/git/releases/download/v2.11.1.windows.1/Git-2.11.1-32-bit.exe",
-            "Arguments": [
-        "/VerySilent"
-      ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\Program Files\\GIT\\git-cmd.exe",
-          "C:\\Program Files\\GIT\\bin\\git.exe"
-        ]
-      }
-    }, 
-    {
       "ComponentName": "SublimeText3",
       "ComponentType": "ExeInstall",
       "Comment": "Maintenance Toolchain - not essential for building firefox",

@@ -170,6 +170,21 @@
       },
       "sha512": "cbfd6a8dc39773ff3852998349b01612251a687a5992a51e117d169aa98fc313f0ca11d75572e14f2c64e18a10d2660a0710c4f1bc57dfdaf30804274e1bbef8"
     },
+        {
+      "ComponentName": "Git-2.11.1",
+      "ComponentType": "ExeInstall",
+      "Comment": "Git-2.11.1",
+      "Url": "https://github.com/git-for-windows/git/releases/download/v2.11.1.windows.1/Git-2.11.1-32-bit.exe",
+            "Arguments": [
+        "/VerySilent"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\GIT\\git-cmd.exe",
+          "C:\\Program Files\\GIT\\bin\\git.exe"
+        ]
+      }
+    }, 
     {
       "ComponentName": "SystemPowerShellProfile",
       "ComponentType": "FileDownload",

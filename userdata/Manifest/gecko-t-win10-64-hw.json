@@ -173,8 +173,8 @@
       "ComponentName": "Git-2.11.1",
       "ComponentType": "ExeInstall",
       "Comment": "Git-2.11.1",
-      "Url": "https://github.com/git-for-windows/git/releases/download/v2.11.1.windows.1/Git-2.11.1-32-bit.exe",
-            "Arguments": [
+      "Url": "https://github.com/git-for-windows/git/releases/download/v2.11.1.windows.1/Git-2.11.1-32-bit.exe"",
+      "Arguments": [
         "/VerySilent"
       ],
       "Validate": {
@@ -182,7 +182,6 @@
           "C:\\Program Files\\GIT\\git-cmd.exe",
           "C:\\Program Files\\GIT\\bin\\git.exe"
         ]
-      }
     },
     {
       "ComponentName": "SystemPowerShellProfile",

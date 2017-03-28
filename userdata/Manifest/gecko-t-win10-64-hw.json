@@ -184,61 +184,60 @@
         ]
       }
     },
+    {
+      "ComponentName": "MozillaMaintenanceDir",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "Working directory for Mozilla Maintenance Service",
+      "Path": "C:\\DSC\\MozillaMaintenance"
+    },    
+    {
+      "ComponentName": "maintenanceservice_exe",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice.exe?raw=true",
+      "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice.exe",
+      "DependsOn": [
         {
-          "ComponentName": "MozillaMaintenanceDir",
-          "ComponentType": "DirectoryCreate",
-          "Comment": "Working directory for Mozilla Maintenance Service",
-          "Path": "C:\\DSC\\MozillaMaintenance"
-        },    
+          "ComponentType": "DirectoryCreate", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "maintenanceservice_installer_exe",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice_installer.exe?raw=true",
+      "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice_installer.exe",
+      "DependsOn": [
         {
-          "ComponentName": "maintenanceservice_exe",
-          "ComponentType": "ChecksumFileDownload",
-          "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice.exe?raw=true",
-          "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice.exe",
-          "DependsOn": [
-            {
-              "ComponentType": "DirectoryCreate", 
-              "ComponentName": "MozillaMaintenanceDir"
-            }
-          ]
-        },
+          "ComponentType": "DirectoryCreate", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "MozFakeCA_cer",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true",
+      "Target": "C:\\DSC\\MozillaMaintenance\\MozFakeCA.cer",
+      "DependsOn": [
         {
-          "ComponentName": "maintenanceservice_installer_exe",
-          "ComponentType": "ChecksumFileDownload",
-          "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice_installer.exe?raw=true",
-          "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice_installer.exe",
-          "DependsOn": [
-            {
-              "ComponentType": "DirectoryCreate", 
-              "ComponentName": "MozillaMaintenanceDir"
-            }
-          ]
-        },
+          "ComponentType": "DirectoryCreate", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "MozRoot_cer",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozRoot.cer?raw=true",
+      "Target": "C:\\DSC\\MozillaMaintenance\\MozRoot.cer",
+      "DependsOn": [
         {
-          "ComponentName": "MozFakeCA_cer",
-          "ComponentType": "ChecksumFileDownload",
-          "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true",
-          "Target": "C:\\DSC\\MozillaMaintenance\\MozFakeCA.cer",
-          "DependsOn": [
-            {
-              "ComponentType": "DirectoryCreate", 
-              "ComponentName": "MozillaMaintenanceDir"
-            }
-          ]
-        },
-        {
-          "ComponentName": "MozRoot_cer",
-          "ComponentType": "ChecksumFileDownload",
-          "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozRoot.cer?raw=true",
-          "Target": "C:\\DSC\\MozillaMaintenance\\MozRoot.cer",
-          "DependsOn": [
-            {
-              "ComponentType": "DirectoryCreate", 
-              "ComponentName": "MozillaMaintenanceDir"
-            }
-          ]
-        },
-      }
+          "ComponentType": "DirectoryCreate", 
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ]
+    },
     {
       "ComponentName": "SystemPowerShellProfile",
       "ComponentType": "FileDownload",

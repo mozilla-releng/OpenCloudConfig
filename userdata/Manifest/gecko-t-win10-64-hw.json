@@ -215,7 +215,7 @@
           ]
         },
         {
-          "ComponentName": "MozFakeCA.cer",
+          "ComponentName": "MozFakeCA_cer",
           "ComponentType": "ChecksumFileDownload",
           "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true",
           "Target": "C:\\DSC\\MozillaMaintenance\\MozFakeCA.cer",
@@ -227,7 +227,7 @@
           ]
         },
         {
-          "ComponentName": "MozRoot.cer",
+          "ComponentName": "MozRoot_cer",
           "ComponentType": "ChecksumFileDownload",
           "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozRoot.cer?raw=true",
           "Target": "C:\\DSC\\MozillaMaintenance\\MozRoot.cer",
@@ -238,31 +238,7 @@
             }
           ]
         },
-        {
-          "ComponentName": "mms.reg",
-          "ComponentType": "ChecksumFileDownload",
-          "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/mms.reg?raw=true",
-          "Target": "C:\\DSC\\MozillaMaintenance\\mms.reg",
-          "DependsOn": [
-            {
-              "ComponentType": "DirectoryCreate", 
-              "ComponentName": "MozillaMaintenanceDir"
-            }
-          ]
-        },
-        {
-          "ComponentName": "mms.bat",
-          "ComponentType": "ChecksumFileDownload",
-          "Comment": "A comment",
-          "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mozilla%20Maintenance%20Service/mms.bat?raw=true",
-          "Target": "C:\\DSC\\MozillaMaintenance\\mms.bat",
-          "DependsOn": [
-            {
-              "ComponentType": "DirectoryCreate", 
-              "ComponentName": "MozillaMaintenanceDir"
-            }
-          ]
-        }, 
+      }
     {
       "ComponentName": "SystemPowerShellProfile",
       "ComponentType": "FileDownload",

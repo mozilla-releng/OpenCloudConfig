@@ -191,7 +191,7 @@
           "Path": "C:\\DSC\\MozillaMaintenance"
         },    
         {
-          "ComponentName": "maintenanceservice.exe",
+          "ComponentName": "maintenanceservice_exe",
           "ComponentType": "ChecksumFileDownload",
           "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice.exe?raw=true",
           "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice.exe",
@@ -203,7 +203,7 @@
           ]
         },
         {
-          "ComponentName": "maintenanceservice_installer.exe",
+          "ComponentName": "maintenanceservice_installer_exe",
           "ComponentType": "ChecksumFileDownload",
           "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice_installer.exe?raw=true",
           "Target": "C:\\DSC\\MozillaMaintenance\\maintenanceservice_installer.exe",

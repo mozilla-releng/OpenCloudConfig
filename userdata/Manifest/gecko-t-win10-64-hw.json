@@ -3,7 +3,7 @@
     {
       "ComponentName": "LogDirectory",
       "ComponentType": "DirectoryCreate",
-      "Comment": "Required by OpenCloudConfig for DSC logging",
+      "Comment": "Required by OpenCloudConfig for DSC logging", 
       "Path": "C:\\log"
     },
     {

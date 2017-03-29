@@ -198,7 +198,12 @@
       "Comment": "Maintenance Toolchain - not essential for building firefox",
       "Command": "C:\\Program files\\kts119c\\daemon.exe -install&C:\\Program files\\kts119c\\daemon.exe -install",
       "Arguments": "/FakeFlag",
-      "DependsOn": "ComponentName": "KTS_server_install",
+      "DependsOn": [
+				{
+					"ComponentType": "ZipInstall",
+					"ComponentName": "KTS_server_install"
+				}
+			],
       "Validate": {
 			  "CommandsReturn": [
           {

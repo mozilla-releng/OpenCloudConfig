@@ -201,7 +201,7 @@
       "DependsOn": [
 				{
 					"ComponentType": "ZipInstall",
-					"ComponentName": "KTS_server_install"
+					"ComponentName": "KTS_server"
 				}
 			],
       "Validate": {

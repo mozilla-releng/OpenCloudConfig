@@ -274,13 +274,13 @@
       "ComponentName": "Mercurial",
       "ComponentType": "ExeInstall",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1298976",
-      "Url": "https://www.mercurial-scm.org/release/windows/Mercurial-3.9.1-x64.exe",
+      "Url": "https://www.mercurial-scm.org/release/windows/Mercurial-4.1.1-x64.exe",
       "Arguments": [
         "/SP-",
         "/VERYSILENT",
         "/NORESTART",
         "/DIR=expand:{pf}\\Mercurial",
-        "/LOG=\"C:\\log\\Mercurial-3.9.1-x64.exe.install.log\""
+        "/LOG=\"C:\\log\\Mercurial-4.1.1-x64.exe.install.log\""
       ],
       "Validate": {
         "PathsExist": [
@@ -288,7 +288,7 @@
           "C:\\Program Files\\Mercurial\\python27.dll"
         ]
       },
-      "sha512": "b71fd8f1d1e578bbd26b7bc6635d4a9d11320bce36f24ba44152cba3c02477006ab8d6fd9b06b263d11b4327713a048156d64bcbbb073d95eede0a53675a9a80"
+      "sha512": "9f66f616c96173884fbe9648f996f77733abb949bb609d4409f6bb1a3f2533f4c6e6c068f3e984ea12731979732fb3aaad757f3993e0a4f00256eacfc525e914"
     },
     {
       "ComponentName": "MercurialConfig",

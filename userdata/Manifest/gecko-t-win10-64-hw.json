@@ -184,6 +184,14 @@
         ]
       }
     },
+		{
+      "ComponentName": "KTS_server",
+      "ComponentType": "ZipInstall",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Url": "https://fakeURL/ProcessExplorer.zip",
+      "Destination": "C:\\programfiles\\kts",
+      "sha512": "1c830f8c87818c3bae74e3b38f31895cd9fb4ee2def41d16108d3724f793ea6ba572b444eef8c567d6c393df05fdef586f684ce9df148cc92ac9cfd412ee8017"
+		},
     {
       "ComponentName": "MozillaMaintenanceDir",
       "ComponentType": "DirectoryCreate",
@@ -268,105 +276,105 @@
         }
       ]
     }
-	},
-	{
-		"ComponentName": "MMS_MozFakeCA_cer",
-    "ComponentType": "CommandRun",
-    "Comment": "Maintenance Toolchain - not essential for building firefox",
-    "Command": "certutil.exe",
-    "Arguments": "-addstore Root C:\\DSC\\MozillaMaintenance\\MozFakeCA.cer"
-	},
-	{
-		"ComponentName": "MMS_MozRoot_cer",
-    "ComponentType": "CommandRun",
-    "Comment": "Maintenance Toolchain - not essential for building firefox",
-    "Command": "certutil.exe",
-    "Arguments": "-addstore Root C:\\DSC\\MozillaMaintenance\\MozRoot.cer"
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_0_name",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\name",
-    "ValueName": "Mozilla Corporation"
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_0_issuer",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\issuer",
-    "ValueName": "Thawte Code Signing CA - G2"
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_0_programName",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\programName",
-    "ValueName": ""
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_0_publisherLink",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\publisherLink",
-    "ValueName": ""
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_1_name",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\name",
-    "ValueName": "Mozilla Fake SPC"
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_1_issuer",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\issuer",
-    "ValueName": "Mozilla Fake CA"
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_1_programName",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\programName",
-    "ValueName": ""
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_1_publisherLink",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\publisherLink",
-    "ValueName": ""
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_2_name",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\name",
-    "ValueName": "Mozilla Corporation"
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_2_issuer",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\issuer",
-    "ValueName": "DigiCert SHA2 Assured ID Code Signing CA"
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_2_programName",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\programName",
-    "ValueName": ""
-	},
-	{
-		"ComponentName": "reg_MaintenanceService_2_publisherLink",
-    "ComponentType": "RegistryKeySet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\publisherLink",
-    "ValueName": ""
-	},
+		},
+		{
+			"ComponentName": "MMS_MozFakeCA_cer",
+			"ComponentType": "CommandRun",
+			"Comment": "Maintenance Toolchain - not essential for building firefox",
+			"Command": "certutil.exe",
+			"Arguments": "-addstore Root C:\\DSC\\MozillaMaintenance\\MozFakeCA.cer"
+		},
+		{
+			"ComponentName": "MMS_MozRoot_cer",
+			"ComponentType": "CommandRun",
+			"Comment": "Maintenance Toolchain - not essential for building firefox",
+			"Command": "certutil.exe",
+			"Arguments": "-addstore Root C:\\DSC\\MozillaMaintenance\\MozRoot.cer"
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_0_name",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\name",
+			"ValueName": "Mozilla Corporation"
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_0_issuer",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\issuer",
+			"ValueName": "Thawte Code Signing CA - G2"
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_0_programName",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\programName",
+			"ValueName": ""
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_0_publisherLink",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\publisherLink",
+			"ValueName": ""
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_1_name",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\name",
+			"ValueName": "Mozilla Fake SPC"
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_1_issuer",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\issuer",
+			"ValueName": "Mozilla Fake CA"
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_1_programName",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\programName",
+			"ValueName": ""
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_1_publisherLink",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\publisherLink",
+			"ValueName": ""
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_2_name",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\name",
+			"ValueName": "Mozilla Corporation"
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_2_issuer",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\issuer",
+			"ValueName": "DigiCert SHA2 Assured ID Code Signing CA"
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_2_programName",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\programName",
+			"ValueName": ""
+		},
+		{
+			"ComponentName": "reg_MaintenanceService_2_publisherLink",
+			"ComponentType": "RegistryKeySet",
+			"Comment": "",
+			"Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\publisherLink",
+			"ValueName": ""
+		},
     {
       "ComponentName": "SystemPowerShellProfile",
       "ComponentType": "FileDownload",

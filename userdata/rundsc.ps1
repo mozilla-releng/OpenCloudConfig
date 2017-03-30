@@ -389,6 +389,12 @@ if ($UpdateService.Status -ne "Running"){
 } else {
   Write-Log -message 'Windows update service is running'
 }
+# Prevent other updates from sneaking in
+$taskName = "OneDrive Standalone Update task v2"
+$taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $taskName }
+if($taskExists) {
+	Unregister-ScheduledTask -TaskName "OneDrive Standalone Update task v2" -Confirm:$false		
+}
 
 if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
   $LocationType = "AWS"

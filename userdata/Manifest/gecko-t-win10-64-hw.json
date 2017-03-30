@@ -184,43 +184,6 @@
         ]
       }
     },
-		{
-      "ComponentName": "KTS_server",
-      "ComponentType": "ZipInstall",
-      "Comment": "Maintenance Toolchain - not essential for building firefox",
-      "Url": "https://fakeURL/ProcessExplorer.zip",
-      "Destination": "C:\\Program Files",
-      "sha512": "1c830f8c87818c3bae74e3b38f31895cd9fb4ee2def41d16108d3724f793ea6ba572b444eef8c567d6c393df05fdef586f684ce9df148cc92ac9cfd412ee8017"
-		},
-		{
-		  "ComponentName": "KTS_server_install",
-      "ComponentType": "CommandRun",
-      "Comment": "Maintenance Toolchain - not essential for building firefox",
-      "Command": "C:\\Program files\\kts119c\\daemon.exe -install&C:\\Program files\\kts119c\\daemon.exe -install",
-      "Arguments": "/FakeFlag",
-      "DependsOn": [
-				{
-					"ComponentType": "ZipInstall",
-					"ComponentName": "KTS_server"
-				}
-			],
-      "Validate": {
-			  "CommandsReturn": [
-          {
-            "Command": "sc",
-            "Arguments": [
-            "query",
-            "MozillaMaintenance",
-            "|",
-            "findstr",
-            "/i",
-            "\"STATE\""
-          ],
-          "Match": "RUNNING"
-        }
-      ]
-    }
-		},
     {
       "ComponentName": "MozillaMaintenanceDir",
       "ComponentType": "DirectoryCreate",

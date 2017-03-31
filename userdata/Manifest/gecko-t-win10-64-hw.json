@@ -680,22 +680,6 @@
       "Direction": "Inbound",
       "Action": "Allow"
     },
-		{
-      "ComponentName": "KTS_ssh_in",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 22,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-		{
-      "ComponentName": "KTS_ssh_out",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 22,
-      "Direction": "Outbound",
-      "Action": "Allow"
-    },
     {
       "ComponentName": "GenericWorkerInstall",
       "ComponentType": "CommandRun",

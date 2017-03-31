@@ -1106,10 +1106,18 @@
     {
       "ComponentName": "Window_Search",
       "ComponentType": "ServiceControl",
-      "Comment": "Disable Windows Indexing part 1 of 2",
+      "Comment": "Disable Windows Indexing",
       "Name": "Wsearch",
       "StartupType": "Disabled",
       "State": "Stopped"
+    },
+	  {
+      "ComponentName": "KTS_ssh",
+      "ComponentType": "ServiceControl",
+      "Comment": "Enabled ssh",
+      "Name": "KpyM Telnet SSH Server v1.19",
+      "StartupType": "enabled",
+      "State": "running"
     }
   ]
 }

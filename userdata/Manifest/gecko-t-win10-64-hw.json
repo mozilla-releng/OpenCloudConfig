@@ -1116,7 +1116,7 @@
       "ComponentType": "ServiceControl",
       "Comment": "Enabled ssh",
       "Name": "KpyM Telnet SSH Server v1.19",
-      "StartupType": "enabled",
+      "StartupType": " automatic ",
       "State": "running"
     }
   ]

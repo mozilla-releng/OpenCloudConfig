@@ -238,7 +238,7 @@
         }
       ]
     },
-	  {
+	  		{
 			"ComponentName": "MMS_Install_exe",
 			"ComponentType": "CommandRun",
 			"Comment": "Maintenance Toolchain - not essential for building firefox",

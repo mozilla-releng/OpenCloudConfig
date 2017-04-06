@@ -420,6 +420,24 @@
       "Target": "C:\\mozilla-build\\tooltool.py"
     },
     {
+      "ComponentName": "reg_UsersTMPEnvVarOnZDrive",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "Updates default user profile so that user temp directories go on Z: drive rather than C: drive",
+      "Key": "HKEY_USERS\\.DEFAULT\\Environment",
+      "ValueName": "TMP",
+      "ValueType": "ExpandString",
+      "ValueData": "Z:\\Users\\%USERNAME%\\AppData\\Roaming\\Temp"
+    },
+    {
+      "ComponentName": "reg_UsersTEMPEnvVarOnZDrive",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "Updates default user profile so that user temp directories go on Z: drive rather than C: drive",
+      "Key": "HKEY_USERS\\.DEFAULT\\Environment",
+      "ValueName": "TEMP",
+      "ValueType": "ExpandString",
+      "ValueData": "Z:\\Users\\%USERNAME%\\AppData\\Roaming\\Temp"
+    },
+    {
       "ComponentName": "reg_WindowsErrorReportingLocalDumps",
       "ComponentType": "RegistryKeySet",
       "Comment": "",

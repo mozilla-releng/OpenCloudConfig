@@ -8,8 +8,7 @@ Configuration DynamicConfig {
   Import-DscResource -ModuleName PSDesiredStateConfiguration
   # sourceRepo is in place to toggle between production and testing environments
   $sourceRepo = 'mozilla-releng'
-    
-  if (Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) {
+  if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) {
     $locationType = 'AWS'
   } else {
     $locationType = 'DataCenter'
@@ -113,6 +112,9 @@ Configuration DynamicConfig {
       }
       'Microsoft Windows Server 2012*' {
         $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/OpenCloudConfig/master/userdata/Manifest/gecko-1-b-win2012.json?{1}' -f $sourceRepo, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+      }
+      'Microsoft Windows Server 2016*' {
+        $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/OpenCloudConfig/master/userdata/Manifest/gecko-1-b-win2016.json?{1}' -f $sourceRepo, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
       }
       default {
         $manifest = ('{"Items":[{"ComponentType":"DirectoryCreate","Path":"$env:SystemDrive\\log"}]}' | ConvertFrom-Json)

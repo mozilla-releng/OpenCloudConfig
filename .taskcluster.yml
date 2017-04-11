@@ -138,6 +138,60 @@ tasks:
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
+          - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-1-b-win2012-gdt
+          - secrets:set:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-1-b-win2012-gdt
+          - aws-provisioner:manage-worker-type:gecko-1-b-win2012-gdt
+      routes:
+          - 'index.project.releng.opencloudconfig.v1.revision.{{event.head.sha}}.gecko-1-b-win2012-gdt'
+      workerType: '{{taskcluster.docker.workerType}}'
+      extra:
+          github:
+              env: true
+              events:
+                  - push
+              branches:
+                - master
+          data:
+              head:
+                  sha: '{{event.head.sha}}'
+                  user:
+                      email: '{{event.head.user.email}}'
+      payload:
+          maxRunTime: 18000
+          image: 'grenade/opencloudconfig'
+          features:
+              taskclusterProxy: true
+          command:
+              - '/bin/bash'
+              - '--login'
+              - '-c'
+              - 'git clone --quiet {{event.head.repo.url}} && ./OpenCloudConfig/ci/update-workertype.sh gecko-1-b-win2012-gdt'
+          artifacts:
+              'project/releng/opencloudconfig/update-request.json':
+                  type: file
+                  path: './gecko-1-b-win2012-gdt.json'
+                  expires: "{{ '4 hours' | $fromNow }}"
+              'project/releng/opencloudconfig/update-response.json':
+                  type: file
+                  path: './update-response.json'
+                  expires: "{{ '4 hours' | $fromNow }}"
+              'project/releng/opencloudconfig/secret-update-response.json':
+                  type: file
+                  path: './secret-update-response.json'
+                  expires: "{{ '4 hours' | $fromNow }}"
+              'project/releng/opencloudconfig/gecko-1-b-win2012-gdt.diff':
+                  type: file
+                  path: './gecko-1-b-win2012-gdt.diff'
+                  expires: "{{ '1 year' | $fromNow }}"
+      metadata:
+          name: 'Update gecko-1-b-win2012-gdt AMIs'
+          description: 'recreate Google Depot Tools with Visual Studio 2015 build AMIs using OpenCloudConfig for configuration and dependency installation'
+          owner: '{{event.head.user.email}}'
+          source: '{{event.head.repo.url}}'
+
+    - provisionerId: '{{taskcluster.docker.provisionerId}}'
+      scopes:
+          - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-1-b-win2012
           - secrets:set:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-1-b-win2012
           - aws-provisioner:manage-worker-type:gecko-1-b-win2012
@@ -294,6 +348,60 @@ tasks:
       metadata:
           name: 'Update gecko-3-b-win2012 AMIs'
           description: 'recreate Firefox Windows prod build AMIs using OpenCloudConfig for configuration and dependency installation'
+          owner: '{{event.head.user.email}}'
+          source: '{{event.head.repo.url}}'
+
+    - provisionerId: '{{taskcluster.docker.provisionerId}}'
+      scopes:
+          - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
+          - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-1-b-win2016
+          - secrets:set:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-1-b-win2016
+          - aws-provisioner:manage-worker-type:gecko-1-b-win2016
+      routes:
+          - 'index.project.releng.opencloudconfig.v1.revision.{{event.head.sha}}.gecko-1-b-win2016'
+      workerType: '{{taskcluster.docker.workerType}}'
+      extra:
+          github:
+              env: true
+              events:
+                  - push
+              branches:
+                - master
+          data:
+              head:
+                  sha: '{{event.head.sha}}'
+                  user:
+                      email: '{{event.head.user.email}}'
+      payload:
+          maxRunTime: 18000
+          image: 'grenade/opencloudconfig'
+          features:
+              taskclusterProxy: true
+          command:
+              - '/bin/bash'
+              - '--login'
+              - '-c'
+              - 'git clone --quiet {{event.head.repo.url}} && ./OpenCloudConfig/ci/update-workertype.sh gecko-1-b-win2016'
+          artifacts:
+              'project/releng/opencloudconfig/update-request.json':
+                  type: file
+                  path: './gecko-1-b-win2016.json'
+                  expires: "{{ '4 hours' | $fromNow }}"
+              'project/releng/opencloudconfig/update-response.json':
+                  type: file
+                  path: './update-response.json'
+                  expires: "{{ '4 hours' | $fromNow }}"
+              'project/releng/opencloudconfig/secret-update-response.json':
+                  type: file
+                  path: './secret-update-response.json'
+                  expires: "{{ '4 hours' | $fromNow }}"
+              'project/releng/opencloudconfig/gecko-1-b-win2016.diff':
+                  type: file
+                  path: './gecko-1-b-win2016.diff'
+                  expires: "{{ '1 year' | $fromNow }}"
+      metadata:
+          name: 'Update gecko-1-b-win2016 AMIs'
+          description: 'recreate Google Depot Tools with Visual Studio 2015 build AMIs using OpenCloudConfig for configuration and dependency installation'
           owner: '{{event.head.user.email}}'
           source: '{{event.head.repo.url}}'
 

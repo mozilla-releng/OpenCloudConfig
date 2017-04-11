@@ -396,10 +396,10 @@ If($OSVersion -eq "Microsoft Windows 10*") {
 		Unregister-ScheduledTask -TaskName "OneDrive Standalone Update task v2" -Confirm:$false		
 	}
 }
-if (Get-Service "Ec2Config" -ErrorAction SilentlyContinue) {
-  $LocationType = "AWS"
+if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) {
+  $locationType = 'AWS'
 } else {
-  $LocationType = "DataCenter"
+  $locationType = 'DataCenter'
 }
 $lock = 'C:\dsc\in-progress.lock'
 if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
@@ -424,7 +424,7 @@ Write-Log -message 'system clock synchronised.' -severity 'INFO'
 $logFile = ('{0}\log\{1}.userdata-run.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
 New-Item -ItemType Directory -Force -Path ('{0}\log' -f $env:SystemDrive)
 
-If ($LocationType -eq "AWS") {
+If ($locationType -eq "AWS") {
   try {
     $userdata = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/user-data')
   } catch {
@@ -530,6 +530,10 @@ If ($LocationType -eq "AWS") {
       Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\' -Name 'NV Domain' -Value "$domain"
       Write-Log -message ('domain set to: {0}' -f $domain) -severity 'INFO'
     }
+    # Turn off DNS address registration (EC2 DNS is configured to not allow it)
+    foreach($nic in (Get-WmiObject "Win32_NetworkAdapterConfiguration where IPEnabled='TRUE'")) {
+      $nic.SetDynamicDNSRegistration($false)
+    }
   }
 
   $instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-type'))
@@ -537,10 +541,10 @@ If ($LocationType -eq "AWS") {
   [Environment]::SetEnvironmentVariable("TASKCLUSTER_INSTANCE_TYPE", "$instanceType", "Machine")
 }
 if ($rebootReasons.length) {
-  Remove-Item -Path $lock -force
+  Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
   & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
 } else {
-If ($LocationType -eq "AWS") {
+If ($locationType -eq "AWS") {
     # create a scheduled task to run HaltOnIdle continuously
     if (Test-Path -Path 'C:\dsc\HaltOnIdle.ps1' -ErrorAction SilentlyContinue) {
       Remove-Item -Path 'C:\dsc\HaltOnIdle.ps1' -confirm:$false -force
@@ -586,7 +590,7 @@ If ($LocationType -eq "AWS") {
     
     # post dsc teardown ###########################################################################################################################################
     if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required')) }) -contains $true) {
-      Remove-Item -Path $lock -force
+      Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
       & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
     }
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
@@ -638,14 +642,14 @@ If ($LocationType -eq "AWS") {
   Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and $_.FullName -ne $logFile } | % { Remove-Item -Path $_.FullName -Force }
 
   if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
-    Remove-Item -Path $lock -force
-    if ($LocationType -eq "AWS") {
+    Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
+    if ($locationType -eq "AWS") {
       if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
         & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
       }
     }
   } elseif ($isWorker) {
-    if ($LocationType -eq "AWS") {
+    if ($locationType -eq "AWS") {
       if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
         Map-DriveLetters
       }
@@ -668,7 +672,7 @@ If ($LocationType -eq "AWS") {
         & format @('Z:', '/fs:ntfs', '/v:""', '/q', '/y')
         Write-Log -message 'Z: drive formatted.' -severity 'INFO'
         #& net @('user', 'GenericWorker', (Get-ItemProperty -path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -name 'DefaultPassword').DefaultPassword)
-        Remove-Item -Path $lock -force
+        Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
         & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
       } else {
         $timer.Stop()
@@ -684,5 +688,5 @@ If ($LocationType -eq "AWS") {
     }
   }
 }
-Remove-Item -Path $lock -force
+Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
 Write-Log -message 'userdata run completed' -severity 'INFO'

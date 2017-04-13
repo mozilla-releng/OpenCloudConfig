@@ -10,4 +10,4 @@ goto CheckForStateFlag
 :RunWorker
 del /Q /F C:\dsc\task-claim-state.valid
 pushd %~dp0
-.\generic-worker.exe run run --config C:\generic-worker\work.config
+C:\generic-worker\generic-worker.exe run run --config C:\generic-worker\work.config

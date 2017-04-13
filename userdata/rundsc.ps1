@@ -433,7 +433,7 @@ If ($locationType -eq "AWS") {
   }
   $publicKeys = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')
 
-  if { ($locationType -eq "DataCenter") {
+  if ($locationType -eq "DataCenter") {
     $isWorker = $true
   }
   if ($publicKeys.StartsWith('0=aws-provisioner-v1-managed:')) {

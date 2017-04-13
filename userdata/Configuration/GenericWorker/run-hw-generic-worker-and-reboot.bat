@@ -10,6 +10,6 @@ goto CheckForStateFlag
 :RunWorker
 del /Q /F C:\dsc\task-claim-state.valid
 pushd %~dp0
-.\generic-worker.exe run run --config C:\generic-worker\work.config
+C:\generic-worker\generic-worker.exe run run --config C:\generic-worker\work.config > C:\generic-worker\generic-worker.log 2>&1
 
 shutdown /r /t 0 /f /c "Rebooting as generic worker ran successfully"

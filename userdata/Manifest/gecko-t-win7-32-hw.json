@@ -830,7 +830,7 @@
           "ComponentName": "DisableDesktopInterrupt"
         }
       ],
-      "Source": "https://raw.githubusercontent.com/markcor/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-hw-generic-worker-format-and-reboot.bat",
+      "Source": "https://raw.githubusercontent.com/markcor/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-hw-generic-worker-and-reboot.bat",
       "Target": "C:\\generic-worker\\run-generic-worker.bat"
     },
     {

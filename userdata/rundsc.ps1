@@ -378,7 +378,8 @@ function New-LocalCache {
 }
 
 # SourceRepo is in place to toggle between production and testing environments
-$SourceRepo = "mozilla-releng"
+#$SourceRepo = "mozilla-releng"
+$SourceRepo = "markcor"
 
 # The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing. 
 $UpdateService = Get-Service -Name wuauserv
@@ -436,6 +437,8 @@ If ($locationType -eq "AWS") {
     # provisioned worker
     $isWorker = $true
     $workerType = $publicKeys.Split(':')[1]
+  } elseif { ($locationType -eq "DataCenter") {
+    $isWorker = $true
   } else {
     # ami creation instance
     $isWorker = $false

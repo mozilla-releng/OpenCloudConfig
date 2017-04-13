@@ -11,3 +11,5 @@ goto CheckForStateFlag
 del /Q /F C:\dsc\task-claim-state.valid
 pushd %~dp0
 C:\generic-worker\generic-worker.exe run run --config C:\generic-worker\work.config
+
+shutdown /r /t 0 /f /c "Rebooting as generic worker ran successfully"

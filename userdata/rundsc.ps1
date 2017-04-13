@@ -652,6 +652,7 @@ If ($locationType -eq "AWS") {
         & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
       }
     }
+  Write-host "before file"
   } elseif ($isWorker) {
     if ($locationType -eq "AWS") {
       if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
@@ -669,6 +670,7 @@ If ($locationType -eq "AWS") {
         if (!$waitlogged) {
           Write-Log -message 'waiting for generic-worker process to start.' -severity 'INFO'
           $waitlogged = $true
+	  Write-host "after file"
         }
       }
       if ((@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -eq 0)) {
@@ -690,6 +692,7 @@ If ($locationType -eq "AWS") {
         }
       }
     }
+    write-host "missed file"
   }
 }
 Remove-Item -Path $lock -force -ErrorAction SilentlyContinue

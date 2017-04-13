@@ -437,7 +437,7 @@ If ($locationType -eq "AWS") {
     # provisioned worker
     $isWorker = $true
     $workerType = $publicKeys.Split(':')[1]
-  } elseif { ($locationType -eq "DataCenter") {
+  } elseif { ($locationType -eq "DataCenter")) {
     $isWorker = $true
   } else {
     # ami creation instance

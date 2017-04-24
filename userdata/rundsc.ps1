@@ -557,6 +557,7 @@ If ($locationType -eq "AWS") {
 }
 If ($locationType -eq "datacenter") {
   $isWorker = $true
+  $runDscOnWorker = $true
 }
 
   if (($runDscOnWorker) -or (-not ($isWorker))) {

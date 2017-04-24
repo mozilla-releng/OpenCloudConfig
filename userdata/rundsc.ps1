@@ -568,14 +568,12 @@ If ($locationType -eq "AWS") {
         ([Activator]::CreateInstance([Type]::GetTypeFromCLSID([Guid]"{DCB00C01-570F-4A9B-8D69-199FDBA5723B}"))).GetNetworkConnections() | % { $_.GetNetwork().SetCategory(1) }
         # this setting persists only for the current session
         Enable-PSRemoting -Force
-        $isWorker = $true
       }
       'Microsoft Windows 10*' {
         # set network interface to private (reverted after dsc run) http://www.hurryupandwait.io/blog/fixing-winrm-firewall-exception-rule-not-working-when-internet-connection-type-is-set-to-public
         ([Activator]::CreateInstance([Type]::GetTypeFromCLSID([Guid]"{DCB00C01-570F-4A9B-8D69-199FDBA5723B}"))).GetNetworkConnections() | % { $_.GetNetwork().SetCategory(1) }
         # this setting persists only for the current session
         Enable-PSRemoting -SkipNetworkProfileCheck -Force
-	$isWorker = $true
       }
       default {
         # this setting persists only for the current session

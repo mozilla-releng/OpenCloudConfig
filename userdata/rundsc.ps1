@@ -502,7 +502,7 @@ If ($locationType -eq "AWS") {
       Write-Log -message ('failed to execute: "{0} executeQueuedItems"' -f $_.FullName) -severity 'ERROR'
     }
   }
-  If ($locationType -eq "AWS") {
+  If ($locationType -eq "datacenter") {
     $isWorker = $true
   }
   

@@ -502,9 +502,6 @@ If ($locationType -eq "AWS") {
       Write-Log -message ('failed to execute: "{0} executeQueuedItems"' -f $_.FullName) -severity 'ERROR'
     }
   }
-  If ($locationType -eq "datacenter") {
-    $isWorker = $true
-  }
   
   # rename the instance
   $instanceId = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id'))
@@ -558,6 +555,9 @@ If ($locationType -eq "AWS") {
     & schtasks @('/create', '/tn', 'HaltOnIdle', '/sc', 'minute', '/mo', '2', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\HaltOnIdle.ps1', '/f')
     Write-Log -message 'scheduled task: HaltOnIdle, created.' -severity 'INFO'
 }
+If ($locationType -eq "datacenter") {
+  $isWorker = $true
+ }
 
   if (($runDscOnWorker) -or (-not ($isWorker))) {
 

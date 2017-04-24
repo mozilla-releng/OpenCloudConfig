@@ -502,7 +502,10 @@ If ($locationType -eq "AWS") {
       Write-Log -message ('failed to execute: "{0} executeQueuedItems"' -f $_.FullName) -severity 'ERROR'
     }
   }
-
+  If ($locationType -eq "AWS") {
+    $isWorker = $true
+  }
+  
   # rename the instance
   $instanceId = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id'))
   $dnsHostname = [System.Net.Dns]::GetHostName()

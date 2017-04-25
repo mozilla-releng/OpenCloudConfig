@@ -15,14 +15,21 @@ export AWS_SECRET_ACCESS_KEY=${TASKCLUSTER_AWS_SECRET_KEY}
 
 : ${aws_tc_account_id:?"aws_tc_account_id is not set"}
 
-aws_region=${aws_region:='us-west-2'}
-aws_copy_regions=('us-east-1' 'us-west-1' 'eu-central-1')
-
 if [ "${#}" -lt 1 ]; then
   echo "workertype argument missing; usage: ./update-workertype.sh workertype" >&2
   exit 64
 fi
 tc_worker_type="${1}"
+
+aws_region=${aws_region:='us-west-2'}
+case "${tc_worker_type}" in
+  gecko-3-b-win*)
+    aws_copy_regions=('us-east-1' 'us-east-2' 'us-west-1')
+    ;;
+  *)
+    aws_copy_regions=('us-east-1' 'us-east-2' 'us-west-1' 'eu-west-1' 'eu-central-1')
+    ;;
+esac
 
 aws_key_name="mozilla-taskcluster-worker-${tc_worker_type}"
 echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] aws_key_name: ${aws_key_name}"

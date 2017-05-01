@@ -420,7 +420,7 @@
       "ComponentName": "SystemPowerShellProfile",
       "ComponentType": "FileDownload",
       "Comment": "Maintenance Toolchain - not essential for building firefox",	
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Microsoft.PowerShell_profile.ps1",
+      "Source": "https://raw.githubusercontent.com/markcor/OpenCloudConfig/master/userdata/Configuration/Microsoft.PowerShell_profile.ps1",
       "Target": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Microsoft.PowerShell_profile.ps1"
     },
     {

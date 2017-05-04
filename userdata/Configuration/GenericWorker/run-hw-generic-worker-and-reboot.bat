@@ -1,5 +1,3 @@
-
-
 if exist C:\generic-worker\disable-desktop-interrupt.reg reg import C:\generic-worker\disable-desktop-interrupt.reg
 
 :CheckForStateFlag

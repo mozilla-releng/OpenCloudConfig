@@ -12,3 +12,4 @@ rem C:\generic-worker\generic-worker.exe run --config C:\generic-worker\gen_work
 C:\generic-worker\generic-worker.exe run --config C:\generic-worker\gen_worker.config
 
 rem shutdown /r /t 0 /f /c "Rebooting as generic worker ran successfully"
+pause

@@ -733,7 +733,7 @@
           "ComponentName": "GenericWorkerInstall"
         }
       ],
-      "Source": "https://raw.githubusercontent.com/markcor/OpenCloudConfig/master/userdata/Configuration/GenericWorker/disable-desktop-interrupt.reg",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/disable-desktop-interrupt.reg",
       "Target": "C:\\generic-worker\\disable-desktop-interrupt.reg"
     },
     {

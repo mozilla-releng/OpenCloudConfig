@@ -56,6 +56,11 @@
       ]
     },
     {
+      "ComponentName": "DisableIndexing",
+      "ComponentType": "DisableIndexing",
+      "Comment": "Disable indexing on all disk volumes (for performance)"
+    },
+    {
       "ComponentName": "ProcessExplorer",
       "ComponentType": "ZipInstall",
       "Comment": "Maintenance Toolchain - not essential for building firefox",

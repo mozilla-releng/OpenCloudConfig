@@ -559,6 +559,10 @@ If ($locationType -eq "AWS") {
     & schtasks @('/create', '/tn', 'HaltOnIdle', '/sc', 'minute', '/mo', '2', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\HaltOnIdle.ps1', '/f')
     Write-Log -message 'scheduled task: HaltOnIdle, created.' -severity 'INFO'
 }
+If ($locationType -eq "datacenter") {
+  $isWorker = $true
+  $runDscOnWorker = $true
+}
 
   if (($runDscOnWorker) -or (-not ($isWorker))) {
 

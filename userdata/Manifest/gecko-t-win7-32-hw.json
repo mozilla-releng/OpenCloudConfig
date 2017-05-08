@@ -417,13 +417,6 @@
       ]
     },
     {
-      "ComponentName": "SystemPowerShellProfile",
-      "ComponentType": "FileDownload",
-      "Comment": "Maintenance Toolchain - not essential for building firefox",	
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Microsoft.PowerShell_profile.ps1",
-      "Target": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Microsoft.PowerShell_profile.ps1"
-    },
-    {
       "ComponentName": "FsutilDisable8Dot3",
       "ComponentType": "CommandRun",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
@@ -830,7 +823,7 @@
           "ComponentName": "DisableDesktopInterrupt"
         }
       ],
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-format-and-reboot.bat",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-hw-generic-worker-and-reboot.bat",
       "Target": "C:\\generic-worker\\run-generic-worker.bat"
     },
     {

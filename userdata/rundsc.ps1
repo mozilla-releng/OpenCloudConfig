@@ -377,15 +377,58 @@ function New-LocalCache {
     Write-Log -message ('{0} :: end' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
   }
 }
+function Create-ScheduledPowershellTask {
+  param (
+    [string] $taskName,
+    [string] $scriptUrl,
+    [string] $scriptPath,
+    [string] $sc = 'minute',
+    [string] $mo = '1'
+  )
+  begin {
+    Write-Log -message ('{0} :: begin' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+  }
+  process {
+    # delete scheduled task if it pre-exists
+    if ([bool](Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue)) {
+      try {
+        Start-Process 'schtasks.exe' -ArgumentList @('/delete', '/tn', $taskName, '/f') -Wait -NoNewWindow -PassThru -RedirectStandardOutput ('{0}\log\{1}.schtask-{2}-delete.stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $taskName) -RedirectStandardError ('{0}\log\{1}.schtask-{2}-delete.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $taskName)
+        Write-Log -message ('{0} :: scheduled task: {1} deleted.' -f $($MyInvocation.MyCommand.Name), $taskName) -severity 'INFO'
+      }
+      catch {
+        Write-Log -message ('{0} :: failed to delete scheduled task: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $taskName, $_.Exception.Message) -severity 'ERROR'
+      }
+    }
+    # delete script if it pre-exists
+    if (Test-Path -Path $scriptPath -ErrorAction SilentlyContinue) {
+      Remove-Item -Path $scriptPath -confirm:$false -force
+      Write-Log -message ('{0} :: {1} deleted.' -f $($MyInvocation.MyCommand.Name), $scriptPath) -severity 'INFO'
+    }
+    # download script
+    (New-Object Net.WebClient).DownloadFile($scriptUrl, $scriptPath)
+    Write-Log -message ('{0} :: {1} downloaded from {2}.' -f $($MyInvocation.MyCommand.Name), $scriptPath, $scriptUrl) -severity 'INFO'
+    # create scheduled task
+    try {
+      Start-Process 'schtasks.exe' -ArgumentList @('/create', '/tn', $taskName, '/sc', $sc, '/mo', $mo, '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', ('"{0}\powershell.exe -File \"{1}\" -ExecutionPolicy RemoteSigned -NoProfile -ConsoleOutputFile \"{2}\" "' -f $pshome, $scriptPath, $scriptPath.Replace('.ps1', '-run.log')), '/f') -Wait -NoNewWindow -PassThru -RedirectStandardOutput ('{0}\log\{1}.schtask-{2}-create.stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $taskName) -RedirectStandardError ('{0}\log\{1}.schtask-{2}-delete.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $taskName)
+      Write-Log -message ('{0} :: scheduled task: {1} created.' -f $($MyInvocation.MyCommand.Name), $taskName) -severity 'INFO'
+    }
+    catch {
+      Write-Log -message ('{0} :: failed to create scheduled task: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $taskName, $_.Exception.Message) -severity 'ERROR'
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+  }
+}
 
 # SourceRepo is in place to toggle between production and testing environments
-$SourceRepo = "mozilla-releng"
+$SourceRepo = 'mozilla-releng'
 
 # The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing. 
 $UpdateService = Get-Service -Name wuauserv
 if ($UpdateService.Status -ne "Running"){
- Start-Service $UpdateService
- Write-Log -message 'Enabling Windows update service'
+  Start-Service $UpdateService
+  Write-Log -message 'Enabling Windows update service'
 } else {
   Write-Log -message 'Windows update service is running'
 }
@@ -548,20 +591,14 @@ if ($rebootReasons.length) {
   Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
   & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
 } else {
-If ($locationType -eq "AWS") {
-    # create a scheduled task to run HaltOnIdle continuously
-    if (Test-Path -Path 'C:\dsc\HaltOnIdle.ps1' -ErrorAction SilentlyContinue) {
-      Remove-Item -Path 'C:\dsc\HaltOnIdle.ps1' -confirm:$false -force
-      Write-Log -message 'C:\dsc\HaltOnIdle.ps1 deleted.' -severity 'INFO'
-    }
-    (New-Object Net.WebClient).DownloadFile(("https://raw.githubusercontent.com/$SourceRepo/OpenCloudConfig/master/userdata/HaltOnIdle.ps1?{0}" -f [Guid]::NewGuid()), 'C:\dsc\HaltOnIdle.ps1')
-    Write-Log -message 'C:\dsc\HaltOnIdle.ps1 downloaded.' -severity 'INFO'
-    & schtasks @('/create', '/tn', 'HaltOnIdle', '/sc', 'minute', '/mo', '2', '/ru', 'SYSTEM', '/rl', 'HIGHEST', '/tr', 'powershell.exe -File C:\dsc\HaltOnIdle.ps1', '/f')
-    Write-Log -message 'scheduled task: HaltOnIdle, created.' -severity 'INFO'
+If ($locationType -ne 'DataCenter') {
+  # create a scheduled task to run HaltOnIdle every 2 minutes
+  Create-ScheduledPowershellTask -taskName 'HaltOnIdle' -scriptUrl ('https://raw.githubusercontent.com/{0}/OpenCloudConfig/master/userdata/HaltOnIdle.ps1?{1}' -f $SourceRepo, [Guid]::NewGuid()) -scriptPath 'C:\dsc\HaltOnIdle.ps1' -sc 'minute' -mo '2'
 }
+# create a scheduled task to run PrepLoaner every minute (only preps loaner if appropriate flags exist. flags are created by user tasks)
+Create-ScheduledPowershellTask -taskName 'PrepLoaner' -scriptUrl ('https://raw.githubusercontent.com/{0}/OpenCloudConfig/master/userdata/PrepLoaner.ps1?{1}' -f $SourceRepo, [Guid]::NewGuid()) -scriptPath 'C:\dsc\PrepLoaner.ps1' -sc 'minute' -mo '1'
 
-  if (($runDscOnWorker) -or (-not ($isWorker))) {
-
+if (($runDscOnWorker) -or (-not ($isWorker))) {
     # pre dsc setup ###############################################################################################################################################
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {

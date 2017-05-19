@@ -2,8 +2,8 @@ function Write-Log {
   param (
     [string] $message,
     [string] $severity = 'INFO',
-    [string] $source = 'HaltOnIdle',
-    [string] $logName = 'PrepLoaner'
+    [string] $source = 'PrepLoaner',
+    [string] $logName = 'Application'
   )
   if (!([Diagnostics.EventLog]::Exists($logName)) -or !([Diagnostics.EventLog]::SourceExists($source))) {
     New-EventLog -LogName $logName -Source $source
@@ -96,11 +96,11 @@ function Get-GeneratedPassword {
     [int] $length = 16
   )
   $chars=$null;
-  for ($char = 48; $char –le 122; $char ++) {
+  for ($char = 48; $char -le 122; $char ++) {
     $chars += ,[char][byte]$char
   }
   $password = ''
-  for ($i=1; $i –le $length; $i++) {
+  for ($i=1; $i -le $length; $i++) {
     $password += ($sourcedata | Get-Random)
   }
   return $password
@@ -111,6 +111,7 @@ $loanRegPath = 'HKLM:\SOFTWARE\OpenCloudConfig\Loan'
 
 # exit if no loan request
 if (-not (Test-Path -Path $loanReqPath -ErrorAction SilentlyContinue)) {
+  Write-Log -message 'loaner semaphore not detected' -severity 'DEBUG'
   exit
 }
 # if reg keys exist, log activity and exit since an earlier run will have performed loan prep

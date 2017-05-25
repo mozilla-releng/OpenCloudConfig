@@ -347,7 +347,7 @@
       "ComponentType": "CommandRun",
       "Comment": "Nvidia Graphic driver install",
       "Command": "C:\\dsc\\Intel-Iris-540-V21.20.16.4664.zip\\Installer-Release-32-bit\\setup.exe", 
-      "Arguments": "-s"
+      "Arguments": "-s",
       "DependsOn": [
         {
           "ComponentName": "Intel-Iris-540-V21.20.16.4664-zip"

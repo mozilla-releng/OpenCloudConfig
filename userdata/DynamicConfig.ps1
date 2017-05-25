@@ -596,6 +596,12 @@ Configuration DynamicConfig {
         Log ('Log_FirewallRule_{0}' -f $item.ComponentName) {
           DependsOn = ('[Script]FirewallRule_{0}' -f $item.ComponentName)
           Message = ('{0}: {1}, completed' -f $item.ComponentType, $item.ComponentName)
+	  if ($locationType -eq 'DataCenter') {
+            $CurrentUserName = (Get-WMIObject -class Win32_ComputerSystem).username
+            if ([string]::IsNullOrEmpty($CurrentUserName)) {
+              shutdown @('-s', '-t', '0', '-c', 'Generic Worker failed to log in', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+            }
+          } 
         }
       }
     }

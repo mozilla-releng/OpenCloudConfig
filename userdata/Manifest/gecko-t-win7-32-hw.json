@@ -354,8 +354,7 @@
         }      
       ],		
       "Validate": {
-      "PathsExist": [
-				{	
+        "PathsExist": [	
          "C:\\programfiles\\intel\\media SDK\\c_w7_32.cpa",
          "C:\\programfiles\\intel\\media resource\\media_cp.man"
         ]

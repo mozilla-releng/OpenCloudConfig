@@ -917,7 +917,7 @@ if ($rebootReasons.length) {
           & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
         }
         if ($locationType -eq 'DataCenter') {
-          if (!(Test-Path 'C:\DSC\OCC_1st_run.lock') {
+          if (!(Test-Path 'C:\DSC\OCC_1st_run.lock')) {
             Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
             & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
           }

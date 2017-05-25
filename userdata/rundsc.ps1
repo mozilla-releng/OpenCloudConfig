@@ -922,6 +922,11 @@ if ($rebootReasons.length) {
             Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
             & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
           }
+          # For the rare case of a datacenter machine making it this far without an user logged in
+          $CurrentUserName = (Get-WMIObject -class Win32_ComputerSystem).username
+          if ([string]::IsNullOrEmpty($CurrentUserName)) {
+            shutdown @('-s', '-t', '0', '-c', 'Generic Worker failed to log in', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+          }
         }
       } else {
         $timer.Stop()

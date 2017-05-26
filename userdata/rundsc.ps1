@@ -928,7 +928,7 @@ if ($rebootReasons.length) {
           # For the rare case of a datacenter machine making it this far without an user logged in
           $CurrentUser = gwmi -Class win32_computersystem -ComputerName localhost | select -ExpandProperty username -ErrorAction Stop 
           if ($CurrentUser -notcontains "Generic") {
-            shutdown @('-s', '-t', '0', '-c', 'Generic Worker failed to log in', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+            shutdown @('-r', '-t', '0', '-c', 'Generic Worker failed to log in', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
           }
         }
       } else {

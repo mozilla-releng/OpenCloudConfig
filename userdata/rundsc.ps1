@@ -926,8 +926,8 @@ if ($rebootReasons.length) {
             & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
           }
           # For the rare case of a datacenter machine making it this far without an user logged in
-          $CurrentUserName = (Get-WMIObject -class Win32_ComputerSystem).username
-          if ([string]::IsNullOrEmpty($CurrentUserName)) {
+          $CurrentUser = gwmi -Class win32_computersystem -ComputerName localhost | select -ExpandProperty username -ErrorAction Stop 
+          if ($CurrentUser -notcontains "Generic") {
             shutdown @('-s', '-t', '0', '-c', 'Generic Worker failed to log in', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
           }
         }

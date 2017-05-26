@@ -840,10 +840,13 @@ if ($rebootReasons.length) {
     # end run dsc #################################################################################################################################################
     
     # post dsc teardown ###########################################################################################################################################
-    if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required')) }) -contains $true) {
-      Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-      & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
-    }
+    # Skip this reboot during the first run of OCC in the datacenter. It could have an ill affect on the first gerneric worker auto log in.
+    if (!(Test-Path 'C:\DSC\OCC_1st_run.lock')) {
+      if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required')) }) -contains $true) {
+        Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
+        & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+      }
+    
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {
         # set network interface to public

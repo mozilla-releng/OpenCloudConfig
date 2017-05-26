@@ -846,7 +846,7 @@ if ($rebootReasons.length) {
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
         & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
       }
-    
+    }
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {
         # set network interface to public

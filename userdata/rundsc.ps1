@@ -630,6 +630,7 @@ if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'Am
   $locationType = 'AWS'
 } else {
   $locationType = 'DataCenter'
+  $DC1stRunLock = 'C:\DSC\OCC_1st_run.lock'
   # Prevent other updates from sneaking in on Windows 10
   If($OSVersion -eq "Microsoft Windows 10*") {
     $taskName = "OneDrive Standalone Update task v2"
@@ -840,7 +841,7 @@ if ($rebootReasons.length) {
     
     # post dsc teardown ###########################################################################################################################################
     # Skip this reboot during the first run of OCC in the datacenter. It could have an ill affect on the first gerneric worker auto log in.
-    if (!(Test-Path 'C:\DSC\OCC_1st_run.lock')) {
+    if (!(Test-Path "$DC1stRunLock")) {
       if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required')) }) -contains $true) {
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
         & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
@@ -920,11 +921,11 @@ if ($rebootReasons.length) {
           & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
         }
         if ($locationType -eq 'DataCenter') {
-          if (!(Test-Path 'C:\DSC\OCC_1st_run.lock')) {
+          if (!(Test-Path "$DC1stRunLock")) {
             Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
             & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
           }
-          # For the rare case of a datacenter machine making it this far without an user logged in
+          # For the rare case of a datacenter machine making it this far without Generic User logged in
           $CurrentUser = gwmi -Class win32_computersystem -ComputerName localhost | select -ExpandProperty username -ErrorAction Stop 
           if ($CurrentUser -notcontains "Generic") {
             shutdown @('-r', '-t', '0', '-c', 'Generic Worker failed to log in', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append

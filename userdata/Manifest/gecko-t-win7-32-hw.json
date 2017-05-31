@@ -345,7 +345,7 @@
     {
       "ComponentName": "Intel-Iris-540-V21.20.16.4664-install",
       "ComponentType": "CommandRun",
-      "Comment": "Nvidia Graphic driver install",
+      "Comment": "Intel Graphic driver install",
       "Command": "C:\\dsc\\Installer-Release-32-bit\\setup.exe", 
       "Arguments": [
         "-s"
@@ -356,7 +356,7 @@
         }      
       ],		
       "Validate": {
-        "PathsExist": [	
+        "PathsExist": [
          "C:\\programfiles\\intel\\media SDK\\c_w7_32.cpa",
          "C:\\programfiles\\intel\\media resource\\media_cp.man"
         ]

@@ -1,4 +1,5 @@
-@echo off
+rem Leaving echo on until testing is complete
+rem @echo off
 
 if exist C:\generic-worker\disable-desktop-interrupt.reg reg import C:\generic-worker\disable-desktop-interrupt.reg
 

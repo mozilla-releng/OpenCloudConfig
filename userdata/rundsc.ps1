@@ -631,6 +631,7 @@ if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'Am
   $locationType = 'AWS'
 } else {
   $locationType = 'DataCenter'
+  $DC1stRunLock = 'C:\DSC\OCC_1st_run.lock'
   # Prevent other updates from sneaking in on Windows 10
   If($OSVersion -eq "Microsoft Windows 10*") {
     $taskName = "OneDrive Standalone Update task v2"
@@ -792,9 +793,9 @@ if ($rebootReasons.length) {
   if ($locationType -ne 'DataCenter') {
     # create a scheduled task to run HaltOnIdle every 2 minutes
     Create-ScheduledPowershellTask -taskName 'HaltOnIdle' -scriptUrl ('https://raw.githubusercontent.com/{0}/OpenCloudConfig/master/userdata/HaltOnIdle.ps1?{1}' -f $SourceRepo, [Guid]::NewGuid()) -scriptPath 'C:\dsc\HaltOnIdle.ps1' -sc 'minute' -mo '2'
+    # create a scheduled task to run PrepLoaner every minute (only preps loaner if appropriate flags exist. flags are created by user tasks)
+    Create-ScheduledPowershellTask -taskName 'PrepLoaner' -scriptUrl ('https://raw.githubusercontent.com/{0}/OpenCloudConfig/master/userdata/PrepLoaner.ps1?{1}' -f $SourceRepo, [Guid]::NewGuid()) -scriptPath 'C:\dsc\PrepLoaner.ps1' -sc 'minute' -mo '1'
   }
-  # create a scheduled task to run PrepLoaner every minute (only preps loaner if appropriate flags exist. flags are created by user tasks)
-  Create-ScheduledPowershellTask -taskName 'PrepLoaner' -scriptUrl ('https://raw.githubusercontent.com/{0}/OpenCloudConfig/master/userdata/PrepLoaner.ps1?{1}' -f $SourceRepo, [Guid]::NewGuid()) -scriptPath 'C:\dsc\PrepLoaner.ps1' -sc 'minute' -mo '1'
   if ($locationType -eq 'DataCenter') {
     $isWorker = $true
     $runDscOnWorker = $true
@@ -843,9 +844,12 @@ if ($rebootReasons.length) {
     # end run dsc #################################################################################################################################################
     
     # post dsc teardown ###########################################################################################################################################
-    if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required')) }) -contains $true) {
-      Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-      & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+    # Skip this reboot during the first run of OCC in the datacenter. It could have an ill affect on the first gerneric worker auto log in.
+    if (!(Test-Path "$DC1stRunLock")) {
+      if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required')) }) -contains $true) {
+        Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
+        & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+      }
     }
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {
@@ -908,12 +912,25 @@ if ($rebootReasons.length) {
         }
       }
       if ((@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -eq 0)) {
-        Write-Log -message 'no generic-worker process detected.' -severity 'INFO'
-        & format @('Z:', '/fs:ntfs', '/v:""', '/q', '/y')
-        Write-Log -message 'Z: drive formatted.' -severity 'INFO'
-        #& net @('user', 'GenericWorker', (Get-ItemProperty -path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -name 'DefaultPassword').DefaultPassword)
-        Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-        & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+        if ($locationType -eq 'AWS') { 
+          Write-Log -message 'no generic-worker process detected.' -severity 'INFO'
+          & format @('Z:', '/fs:ntfs', '/v:""', '/q', '/y')
+          Write-Log -message 'Z: drive formatted.' -severity 'INFO'
+          #& net @('user', 'GenericWorker', (Get-ItemProperty -path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -name 'DefaultPassword').DefaultPassword)
+          Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
+          & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+        }
+        if ($locationType -eq 'DataCenter') {
+          if (!(Test-Path "$DC1stRunLock")) {
+            Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
+            & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+          }
+          # For the rare case of a datacenter machine making it this far without Generic User logged in
+          $CurrentUser = gwmi -Class win32_computersystem -ComputerName localhost | select -ExpandProperty username -ErrorAction Stop 
+          if ($CurrentUser -notcontains "Generic") {
+            shutdown @('-r', '-t', '0', '-c', 'Generic Worker failed to log in', '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
+          }
+        }
       } else {
         $timer.Stop()
         Write-Log -message ('generic-worker running process detected {0} ms after task-claim-state.valid flag set.' -f $timer.ElapsedMilliseconds) -severity 'INFO'

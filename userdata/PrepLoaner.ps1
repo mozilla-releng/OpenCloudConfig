@@ -302,6 +302,7 @@ if ((Test-Path -Path $loanReqPath -ErrorAction SilentlyContinue) -and (-not (Tes
   New-ItemProperty -Path $loanRegPath -PropertyType String -Name 'Email' -Value $loanRequest.requester.email -Force | Out-Null
   New-ItemProperty -Path $loanRegPath -PropertyType String -Name 'PublicKeyUrl' -Value $loanRequest.requester.publickeyurl -Force | Out-Null
   New-ItemProperty -Path $loanRegPath -PropertyType String -Name 'TaskFolder' -Value $loanRequest.requester.taskFolder -Force | Out-Null
+  New-ItemProperty -Path $loanRegPath -PropertyType String -Name 'TaskId' -Value $loanRequest.requester.taskid -Force | Out-Null
 }
 
 if (-not (Test-Path -Path $loanRegPath -ErrorAction SilentlyContinue)) {
@@ -313,6 +314,7 @@ $loanRequestDetectedTime = (Get-Date -Date (Get-ItemProperty -Path $loanRegPath 
 $loanRequestEmail = (Get-ItemProperty -Path $loanRegPath -Name 'Email').Email
 $loanRequestPublicKeyUrl = (Get-ItemProperty -Path $loanRegPath -Name 'PublicKeyUrl').PublicKeyUrl
 $loanRequestTaskFolder = (Get-ItemProperty -Path $loanRegPath -Name 'TaskFolder').TaskFolder
+$loanRequestTaskId = (Get-ItemProperty -Path $loanRegPath -Name 'TaskId').TaskId
 Write-Log -message ('loan request from {0}/{1} ({2}) at {3} detected at {4}' -f $loanRequestEmail, $loanRequestPublicKeyUrl, $loanRequestTaskFolder, $loanRequestTime, $loanRequestDetectedTime) -severity 'INFO'
 Remove-Secrets
 Remove-UserAppData
@@ -359,7 +361,7 @@ Move-Item -Path ('{0}\{1}.txt.gpg' -f $env:Temp, $token) -Destination ('{0}\cred
 & 'icacls' @($artifactsPath, '/grant', 'Everyone:(OI)(CI)F')
 Write-Log -message 'credentials encrypted in task artefacts' -severity 'DEBUG'
 Write-Log -message 'waiting for loan request task to complete' -severity 'DEBUG'
-while ((Test-Path -Path ('{0}\public\logs\live_backing.log' -f $loanRequestTaskFolder) -ErrorAction SilentlyContinue)) {
+while (-not ((Invoke-WebRequest -Uri ('https://queue.taskcluster.net/v1/task/{0}/status' -f $loanRequestTaskId) -UseBasicParsing | ConvertFrom-Json).status.state -eq 'completed')) {
   Start-Sleep 1
 }
 New-ItemProperty -Path $loanRegPath -PropertyType String -Name 'Fulfilled' -Value ((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:sszzz')) -Force | Out-Null

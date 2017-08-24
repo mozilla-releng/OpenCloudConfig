@@ -9,10 +9,6 @@
 :: clones, specify the branch name to fetch as *_HEAD_REF and the desired sha1
 :: as *_HEAD_REV.
 
-:: if the worker type contains a hg repo cache, and BASE_REPOSITORY is not set, use the cache.
-if not defined GECKO_BASE_REPOSITORY if exist %SystemDrive%\builds\hg-shared\mozilla-central\.hg\ set GECKO_BASE_REPOSITORY=C:\builds\hg-shared\mozilla-central
-if not defined TOOLS_BASE_REPOSITORY if exist %SystemDrive%\builds\hg-shared\build\tools\.hg\     set TOOLS_BASE_REPOSITORY=C:\builds\hg-shared\build\tools
-
 if not defined GECKO_REPOSITORY      set GECKO_REPOSITORY=https://hg.mozilla.org/mozilla-central
 if not defined GECKO_BASE_REPOSITORY set GECKO_BASE_REPOSITORY=%GECKO_REPOSITORY%
 if not defined GECKO_HEAD_REPOSITORY set GECKO_HEAD_REPOSITORY=%GECKO_REPOSITORY%

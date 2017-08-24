@@ -1211,43 +1211,6 @@
       ]
     },
     {
-      "ComponentName": "MozillaCentralCacheCreate",
-      "ComponentType": "CommandRun",
-      "Comment": "required by firefox builds",
-      "Command": "C:\\Program Files\\Mercurial\\hg.exe",
-      "Arguments": [
-        "robustcheckout",
-        "--sharebase",
-        "Y:\\hg-shared",
-        "--purge",
-        "--upstream",
-        "https://hg.mozilla.org/mozilla-unified",
-        "--branch",
-        "default",
-        "https://hg.mozilla.org/mozilla-central",
-        "C:\\builds\\hg-shared\\mozilla-central"
-      ],
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "Mercurial"
-        },
-        {
-          "ComponentType": "DirectoryCreate",
-          "ComponentName": "LegacyHgShared"
-        },
-        {
-          "ComponentType": "DirectoryCreate",
-          "ComponentName": "HgShared"
-        }
-      ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\builds\\hg-shared\\mozilla-central\\.hg"
-        ]
-      }
-    },
-    {
       "ComponentName": "CarbonClone",
       "ComponentType": "CommandRun",
       "Comment": "Bug 1316329 - support creation of symlinks by task users",

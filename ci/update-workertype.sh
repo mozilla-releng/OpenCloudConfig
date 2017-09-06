@@ -14,11 +14,14 @@ if [[ $tc_worker_type == *"-b-win"* ]]; then
   cot_private_key="$(curl -s -N ${secrets_url}:cot-${tc_worker_type} | jq -r '.secret.cot_private_key')"
   if [ -z "${cot_private_key}" ]; then
     echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] cot private key retrieval failed."
+    signing_key_location=""
   else
     echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] cot private key retrieval suceeeded."
+    signing_key_location='C:\generic-worker\cot.key'
   fi
 else
   echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] cot private key retrieval skipped."
+  signing_key_location=""
 fi
 read TASKCLUSTER_AWS_ACCESS_KEY TASKCLUSTER_AWS_SECRET_KEY aws_tc_account_id userdata<<EOF
 $(curl -s -N ${secrets_url}:updateworkertype | jq ". | .secret.cotGpgKey=\"${cot_private_key}\"" | python -c 'import json, sys; a = json.load(sys.stdin)["secret"]; print a["TASKCLUSTER_AWS_ACCESS_KEY"], a["TASKCLUSTER_AWS_SECRET_KEY"], a["aws_tc_account_id"], ("<powershell>\nInvoke-Expression (New-Object Net.WebClient).DownloadString(('\''https://raw.githubusercontent.com/MozRelOps/OpenCloudConfig/master/userdata/rundsc.ps1?{0}'\'' -f [Guid]::NewGuid()))\n</powershell>\n<persist>true</persist>\n<secrets>\n  <rootPassword>ROOTPASSWORDTOKEN</rootPassword>\n  <rootGpgKey>\n%s\n</rootGpgKey>\n  <workerPassword>WORKERPASSWORDTOKEN</workerPassword>\n  <cotGpgKey>\n%s\n</cotGpgKey>\n</secrets>" % (a["rootGpgKey"], a["cotGpgKey"])).replace("\n", "\\\\n");' 2> /dev/null)
@@ -137,7 +140,7 @@ userdata=${userdata/ROOTPASSWORDTOKEN/$root_password}
 userdata=${userdata/WORKERPASSWORDTOKEN/$worker_password}
 
 curl --silent http://taskcluster/aws-provisioner/v1/worker-type/${tc_worker_type} | jq '.' > ./${tc_worker_type}-pre.json
-cat ./${tc_worker_type}-pre.json | jq --arg gwtasksdir $gw_tasks_dir --arg occmanifest $occ_manifest --arg deploydate "$(date --utc +"%F %T.%3NZ")" --arg awsinstancetype $aws_instance_type --arg deploymentId $aws_client_token --argjson blockDeviceMappings $block_device_mappings -c 'del(.workerType, .lastModified) | .secrets."generic-worker".config.tasksDir = $gwtasksdir | .secrets."generic-worker".config.workerTypeMetadata."machine-setup".manifest = $occmanifest | .secrets."generic-worker".config.workerTypeMetadata."machine-setup"."ami-created" = $deploydate | .instanceTypes[].instanceType = $awsinstancetype | .instanceTypes[].launchSpec.BlockDeviceMappings = $blockDeviceMappings | .secrets."generic-worker".config.deploymentId = $deploymentId' > ./${tc_worker_type}.json
+cat ./${tc_worker_type}-pre.json | jq --arg gwtasksdir $gw_tasks_dir --arg occmanifest $occ_manifest --arg deploydate "$(date --utc +"%F %T.%3NZ")" --arg awsinstancetype $aws_instance_type --arg deploymentId $aws_client_token --arg signingKeyLocation $signing_key_location --argjson blockDeviceMappings $block_device_mappings -c 'del(.workerType, .lastModified) | .secrets."generic-worker".config.tasksDir = $gwtasksdir | .secrets."generic-worker".config.workerTypeMetadata."machine-setup".manifest = $occmanifest | .secrets."generic-worker".config.workerTypeMetadata."machine-setup"."ami-created" = $deploydate | .instanceTypes[].instanceType = $awsinstancetype | .instanceTypes[].launchSpec.BlockDeviceMappings = $blockDeviceMappings | .secrets."generic-worker".config.deploymentId = $deploymentId | .secrets."generic-worker".config.signingKeyLocation = $signingKeyLocation' > ./${tc_worker_type}.json
 echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] active amis (pre-update): $(cat ./${tc_worker_type}.json | jq -c '[.regions[] | {region: .region, ami: .launchSpec.ImageId}]')"
 
 echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] latest base ami for: ${aws_base_ami_search_term}, in region: ${aws_region}, is: ${aws_base_ami_id}"

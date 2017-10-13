@@ -6,6 +6,7 @@ Set workingdir="C:\DSC\MozillaMaintenance"
 "%workingdir%\maintenanceservice_installer.exe"
 
 certutil.exe -addstore Root %workingdir%\MozFakeCA.cer
+certutil.exe -addstore Root %workingdir%\MozFakeCA_2017-10-13.cer
 certutil.exe -addstore Root %workingdir%\MozRoot.cer
 
 reg.exe import %workingdir%\mms.reg

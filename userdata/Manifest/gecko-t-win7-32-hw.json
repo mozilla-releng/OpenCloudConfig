@@ -475,7 +475,7 @@
         "/S",
         "/D=C:\\mozilla-build"
       ],
-      "Url": "http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-2.2.0.exe",
+      "Url": "http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.0.exe",
       "Validate": {
         "PathsExist": [
           "C:\\mozilla-build\\info-zip\\unzip.exe",

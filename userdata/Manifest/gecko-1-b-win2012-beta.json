@@ -462,7 +462,7 @@
         "/S",
         "/D=C:\\mozilla-build"
       ],
-      "Url": "http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.0.exe",
+      "Url": "http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.1.exe",
       "Validate": {
         "PathsExist": [
           "C:\\mozilla-build\\info-zip\\unzip.exe",
@@ -477,11 +477,11 @@
         "FilesContain": [
           {
             "Path": "C:\\mozilla-build\\VERSION",
-            "Match": "3.0"
+            "Match": "3.1"
           }
         ]
       },
-      "sha512": "43c1b4f20801029bad87bb9b0d1f5a2b820f6e30ce60fde9219ef80d66c2393d8b81e4cf1c4f60d22992e16288e3c93a24df22d9844d97d208ad5baaefce7bc8"
+      "sha512": "24312d28297b44e802069702628806d2c7f2c3e6ba536be1ab66caf08d8a818cfbcf861ef32cff88eb4275d25d66f376ae96af423e2a979bf729071b157b4dd2"
     },
     {
       "ComponentName": "NsisInstall",

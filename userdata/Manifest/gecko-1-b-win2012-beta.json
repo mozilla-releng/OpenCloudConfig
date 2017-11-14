@@ -484,56 +484,6 @@
       "sha512": "24312d28297b44e802069702628806d2c7f2c3e6ba536be1ab66caf08d8a818cfbcf861ef32cff88eb4275d25d66f376ae96af423e2a979bf729071b157b4dd2"
     },
     {
-      "ComponentName": "NsisInstall",
-      "ComponentType": "ExeInstall",
-      "Comment": "Bug 1236624 - NSIS 3.01",
-      "Arguments": [
-        "/S",
-        "/D=C:\\mozilla-build\\nsis-3.01"
-      ],
-      "Url": "http://downloads.sourceforge.net/project/nsis/NSIS%203/3.01/nsis-3.01-setup.exe?r=http%3A%2F%2Fnsis.sourceforge.net%2FDownload&ts=1484218481&use_mirror=kent",
-      "Validate": {
-        "PathsExist": [
-          "C:\\mozilla-build\\nsis-3.01\\NSIS.exe",
-          "C:\\mozilla-build\\nsis-3.01\\makensis.exe",
-          "C:\\mozilla-build\\nsis-3.01\\makensisw.exe"
-        ]
-      },
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "MozillaBuildSetup"
-        }
-      ],
-      "sha512": "03edd9831b928591a2133c6445e43378c5c77985224106197dadaed7c68e484838367434f5fe949c5971dcb6667a40acdb9b1e114f41b476dfebc080da5115a6"
-    },
-    {
-      "ComponentName": "makensis_301",
-      "ComponentType": "SymbolicLink",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1236624#c53",
-      "Target": "C:\\mozilla-build\\nsis-3.01\\makensis.exe",
-      "Link": "C:\\mozilla-build\\nsis-3.01\\makensis-3.01.exe",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "NsisInstall"
-        }
-      ]
-    },
-    {
-      "ComponentName": "bin_makensis_301",
-      "ComponentType": "SymbolicLink",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1236624#c53",
-      "Target": "C:\\mozilla-build\\nsis-3.01\\Bin\\makensis.exe",
-      "Link": "C:\\mozilla-build\\nsis-3.01\\Bin\\makensis-3.01.exe",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "NsisInstall"
-        }
-      ]
-    },
-    {
       "ComponentName": "msys_home",
       "ComponentType": "SymbolicLink",
       "Comment": "Maintenance Toolchain - not essential for building firefox",

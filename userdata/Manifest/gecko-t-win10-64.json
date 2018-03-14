@@ -67,9 +67,9 @@
       "ComponentName": "ProcessMonitor",
       "ComponentType": "ZipInstall",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
-      "Url": "https://download.sysinternals.com/files/ProcessMonitor.zip",
+      "Url": "https://s3.amazonaws.com/windows-opencloudconfig-packages/ProcessMonitor/ProcessMonitor.zip",
       "Destination": "C:\\ProcessMonitor",
-      "sha512": "0269c0354eb21345abe28da97043c88da2de2f27f84030c6746b7019368b482027a6a9ef48d715e11e389c7e12a89b8d638408f8826cebf72b886ec24ea776a1"
+      "sha512": "3db4ad44652c2dbf7bdd03c88339cbd19d672f6363e3a3b6a5a45adbd62c6b4131e491d2fa8f31fb2a60c7555e202c25bc8088d9bdf0896dcb7e3366782e204f"
     },
     {
       "ComponentName": "GpgForWin",
@@ -409,7 +409,8 @@
         }
       ],
       "Source": "https://github.com/taskcluster/generic-worker/releases/download/v8.3.0/generic-worker-windows-amd64.exe",
-      "Target": "C:\\generic-worker\\generic-worker.exe"
+      "Target": "C:\\generic-worker\\generic-worker.exe",
+      "sha512": "fd30426e247896922a0ba8ff79b8f7882ec817ea6b88c00ed11eeb6d97c4cfd33bf52e2947a77bc50f6e6594f5f0bb02a08c9ffee22ca3e3271a8607c9bd34ff"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -421,7 +422,8 @@
         }
       ],
       "Source": "https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe",
-      "Target": "C:\\generic-worker\\livelog.exe"
+      "Target": "C:\\generic-worker\\livelog.exe",
+      "sha512": "80cc08012a766c1f4c9da82b3d82af1612d6994714e775182d6ffa1e2b61d5fac4eefc2b5031f5d5ff28caa35dd9a5c6ada9147dc80289226b6f8722f0234a95"
     },
     {
       "ComponentName": "LiveLog_Get",
@@ -882,7 +884,8 @@
           "ComponentType": "DirectoryCreate",
           "ComponentName": "MozillaMaintenanceDir"
         }
-      ]
+      ],
+      "sha512": "4c200d59db17afcaa4deec9f083a75362b8baf0974483cb573b37587d605315513590c076f263f0a5e9165695751a076a839579e169a24507daf4cbc2b30d85e"
     },
     {
       "ComponentName": "maintenanceservice",
@@ -894,7 +897,8 @@
           "ComponentType": "DirectoryCreate",
           "ComponentName": "MozillaMaintenanceDir"
         }
-      ]
+      ],
+      "sha512": "8ef24f6abeb4a0929c0a112788fd55881d6abdc3474bd825e905981e4993ec345d1afd6636f07aa55275a24463c5fbf85d00d35446703dd4d73c92e28415ca5f"
     },
     {
       "ComponentName": "maintenanceservice_install",
@@ -923,7 +927,7 @@
     {
       "ComponentName": "MozFakeCA_cer",
       "ComponentType": "ChecksumFileDownload",
-      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer",
       "Target": "C:\\dsc\\MozillaMaintenance\\MozFakeCA.cer",
       "DependsOn": [
         {
@@ -951,7 +955,7 @@
     {
       "ComponentName": "MozFakeCA_2017_10_13_cer",
       "ComponentType": "ChecksumFileDownload",
-      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA_2017-10-13.cer?raw=true",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA_2017-10-13.cer",
       "Target": "C:\\dsc\\MozillaMaintenance\\MozFakeCA_2017-10-13.cer",
       "DependsOn": [
         {
@@ -979,7 +983,7 @@
     {
       "ComponentName": "MozRoot_cer",
       "ComponentType": "ChecksumFileDownload",
-      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozRoot.cer?raw=true",
+      "Source": "https://s3.amazonaws.com/windows-opencloudconfig-packages/certs/MozRoot.cer",
       "Target": "C:\\dsc\\MozillaMaintenance\\MozRoot.cer",
       "DependsOn": [
         {

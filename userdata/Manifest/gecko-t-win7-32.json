@@ -347,11 +347,11 @@
     {
       "ComponentName": "Mercurial",
       "ComponentType": "MsiInstall",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1390271",
-      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-4.3.3-x86.msi",
-      "Name": "Mercurial 4.3.3 (x86)",
-      "ProductId": "49831801-1706-46C0-895F-3921F178655B",
-      "sha512": "ac082797459e9795ac1b18369d804485aa2cb1eb1f1135f49c89cccb2b2f2634c96bde30cbb2bd0cd4f725e058cc43146142c2dde27eb8eda790fd469e45e4e0"
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1456395",
+      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-4.5.3-x86.msi",
+      "Name": "Mercurial 4.5.3 (x86)",
+      "ProductId": "8BC19702-0921-45F5-9B76-7BE3C2AE2E36",
+      "sha512": "1c2ca9c5238fa7e9848acee86b2b195278f51b7f531f69a9ade9b8422947ba4fc7caf02d21fb3c8e659eb7170f4101db5353f9421357f712711a24c755126fb7"
     },
     {
       "ComponentName": "MercurialConfig",

@@ -145,11 +145,11 @@ if (-not (Is-Loaner)) {
       catch {
         Write-Log -message ('failed to determine occ or gw state: {0}' -f $_.Exception.Message) -severity 'ERROR'
       }
-      if (Is-InstanceOld) {
-        Write-Log -message ('instance failed age check and will be halted. uptime: {0}' -f $uptime) -severity 'ERROR'
-        & shutdown @('-s', '-t', '30', '-c', 'HaltOnIdle :: instance failed age check', '-d', 'p:4:1')
-        exit
-      }
+      #if (Is-InstanceOld) {
+      #  Write-Log -message ('instance failed age check and will be halted. uptime: {0}' -f $uptime) -severity 'ERROR'
+      #  & shutdown @('-s', '-t', '30', '-c', 'HaltOnIdle :: instance failed age check', '-d', 'p:4:1')
+      #  exit
+      #}
       Write-Log -message 'instance appears to be initialising.' -severity 'INFO'
     }
   } else {

@@ -1330,6 +1330,19 @@
       ]
     },
     {
+      "ComponentName": "sshd_config",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1464343",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/sshd_config",
+      "Target": "C:\\ProgramData\\ssh\\sshd_config",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "InstallOpenSSH"
+        }
+      ]
+    },
+    {
       "ComponentName": "Start_sshd",
       "ComponentType": "ServiceControl",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
@@ -1338,8 +1351,8 @@
       "State": "Running",
       "DependsOn": [
         {
-          "ComponentType": "CommandRun",
-          "ComponentName": "InstallOpenSSH"
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "sshd_config"
         }
       ]
     },

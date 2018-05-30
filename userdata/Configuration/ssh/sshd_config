@@ -1,0 +1,8 @@
+# Use default settings with the exception of the following options derived from:
+# https://infosec.mozilla.org/guidelines/openssh.html#intermediate-openssh-53
+
+LogLevel VERBOSE
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+PasswordAuthentication no
+Subsystem sftp sftp-server.exe -f AUTHPRIV -l INFO

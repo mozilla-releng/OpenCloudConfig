@@ -42,6 +42,19 @@
       ]
     },
     {
+      "ComponentName": "SetLogAggregator",
+      "ComponentType": "ReplaceInFile",
+      "Path": "C:\\Program Files (x86)\\nxlog\\conf\\nxlog.conf",
+      "Match": "mdc1.mozilla.com",
+      "Replace": "((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain').Replace('wintest.releng.', '')",
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "NxLogPaperTrailConfiguration"
+        }
+      ]
+    },
+    {
       "ComponentName": "Start_nxlog",
       "ComponentType": "ServiceControl",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
@@ -50,8 +63,8 @@
       "State": "Running",
       "DependsOn": [
         {
-          "ComponentType": "ChecksumFileDownload",
-          "ComponentName": "NxLogPaperTrailConfiguration"
+          "ComponentType": "ReplaceInFile",
+          "ComponentName": "SetLogAggregator"
         }
       ]
     },
@@ -1113,10 +1126,10 @@
     {
       "ComponentName": "KTS_ssh",
       "ComponentType": "ServiceControl",
-      "Comment": "Enabled ssh",
+      "Comment": "Disable KTS SSHD",
       "Name": "KpyM Telnet SSH Server v1.19",
-      "StartupType": "automatic",
-      "State": "running"
+      "StartupType": "Disabled",
+      "State": "Stopped"
     },
     {
       "ComponentName": "W32Time",
@@ -1265,12 +1278,42 @@
       "ValueData": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
     },
     {
+      "ComponentName": "Reg_WinDefend_DisableConfig",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
+      "ValueName": "DisableConfig",
+      "ValueType": "Dword",
+      "ValueData": "0x00000001",
+      "Hex": true
+    },
+    {
+      "ComponentName": "Reg_WinDefend_DisableAntiSpyware",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
+      "ValueName": "DisableAntiSpyware",
+      "ValueType": "Dword",
+      "ValueData": "0x00000001",
+      "Hex": true
+    },
+    {
       "ComponentName": "DisableWinDefend",
       "ComponentType": "ServiceControl",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
       "Name": "WinDefend",
-      "StartupType": "Disabled",
-      "State": "Stopped"
+      "StartupType": "Manual",
+      "State": "Stopped",
+      "DependsOn": [
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "Reg_WinDefend_DisableConfig"
+        },
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "Reg_WinDefend_DisableAntiSpyware"
+        }
+      ]
     },
     {
       "ComponentName": "reg_SystemRestore",
@@ -1438,16 +1481,6 @@
       ]
     },
     {
-      "ComponentName": "reg_DisableAntiSpyware",
-      "ComponentType": "RegistryValueSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
-      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
-      "ValueName": "DisableConfig",
-      "ValueType": "Dword",
-      "ValueData": "0x00000001",
-      "Hex": true
-    },
-    {
       "ComponentName": "vcredist_vs2015_x86",
       "ComponentType": "ExeInstall",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1460042",
@@ -1491,6 +1524,43 @@
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/EndOfManifest.semaphore",
       "Target": "C:\\DSC\\EndOfManifest.semaphore"
+    },
+    {
+      "ComponentName": "WindowsPerformanceToolkit",
+      "ComponentType": "MsiInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485757",
+      "Url": "https://s3.amazonaws.com/windows-opencloudconfig-packages/WindowsPerformanceToolkit/WPTx64-x86_en-us.msi",
+      "Name": "WPTx64",
+      "ProductId": "39D259B7-9ECF-65EB-66ED-5344F3E1E7B2",
+      "sha512": "53912e8d6826631ec3def889c7c76a2039d684582986345f1747bac5f09bb17cdf96d68bb15514fb5ce064b41427b3c031a26730f75cbef1079ffae737cd71b0"
+    },
+    {
+      "ComponentName": "mozprofilerprobe",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485757",
+      "Source": "http://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof",
+      "Target": "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\mozprofilerprobe.mof",
+      "DependsOn": [
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "WindowsPerformanceToolkit"
+        }
+      ]
+    },
+    {
+      "ComponentName": "mofcomp_mozprofilerprobe",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485757",
+      "Command": "mofcomp",
+      "Arguments": [
+        "\"C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\mozprofilerprobe.mof\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "mozprofilerprobe"
+        }
+      ]
     }
   ]
 }

@@ -838,7 +838,7 @@
         "C:\\mozilla-build\\tooltool.py",
         "fetch",
         "--url",
-        "https://api.pub.build.mozilla.org/tooltool",
+        "https://tooltool.mozilla-releng.net",
         "-c",
         "C:\\builds\\tooltool_cache",
         "--authentication-file",
@@ -866,7 +866,7 @@
         "C:\\mozilla-build\\tooltool.py",
         "fetch",
         "--url",
-        "https://api.pub.build.mozilla.org/tooltool",
+        "https://tooltool.mozilla-releng.net",
         "-c",
         "C:\\builds\\tooltool_cache",
         "--authentication-file",
@@ -1000,9 +1000,9 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v10.8.5/generic-worker-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v10.11.2/generic-worker-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "f26832cfe4647877e4665c1f7e2f9283d28f31f6a321378205d1de01df404b35c903a0024721eef35bdd8375f0b994dd99e537d4ae72077a749fe6b3ed2515f3"
+      "sha512": "c2c3b75ab638675998e108f4b9ba205f25c50d197faca32ed8a85bd060de06bd3735d9bc31092dcb7506b6e8132de58bf2b983c683442d9a3eb4221eb286e376"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -1050,6 +1050,7 @@
       "ComponentName": "NSSMDownload",
       "ComponentType": "FileDownload",
       "Source": "https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip",
+      "sha512": "05835a8b28fc3d8573c8fc6b627c885990468e29144d5523ce2c065835ff3f9341ced5e15fa246ab7af36cadfa0e96be854b9fafa24ab47cd11319d8a873681b",
       "Target": "C:\\Windows\\Temp\\NSSMInstall.zip"
     },
     {
@@ -1123,7 +1124,7 @@
             "Arguments": [
               "--version"
             ],
-            "Match": "generic-worker 10.8.5"
+            "Like": "generic-worker 10.11.2 *"
           }
         ]
       }
@@ -1452,5 +1453,65 @@
         }
       ]
     }
-  ]
+  ],
+  "ProvisionerConfiguration": {
+    "instanceTypes": [
+      {
+        "instanceType": "c4.4xlarge",
+        "capacity": 1,
+        "utility": 0.9,
+        "launchSpec": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/sda1",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 40,
+                "VolumeType": "gp2"
+              }
+            },
+            {
+              "DeviceName": "/dev/sdb",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 120,
+                "VolumeType": "gp2"
+              }
+            }
+          ]
+        },
+        "scopes": [],
+        "secrets": {},
+        "userData": {}
+      },
+      {
+        "instanceType": "c5.4xlarge",
+        "capacity": 1,
+        "utility": 1,
+        "launchSpec": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/sda1",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 40,
+                "VolumeType": "gp2"
+              }
+            },
+            {
+              "DeviceName": "/dev/sdb",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 120,
+                "VolumeType": "gp2"
+              }
+            }
+          ]
+        },
+        "scopes": [],
+        "secrets": {},
+        "userData": {}
+      }
+    ]
+  }
 }

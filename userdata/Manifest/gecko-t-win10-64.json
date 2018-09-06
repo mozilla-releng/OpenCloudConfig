@@ -408,9 +408,9 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v10.8.5/generic-worker-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v10.11.2/generic-worker-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "f26832cfe4647877e4665c1f7e2f9283d28f31f6a321378205d1de01df404b35c903a0024721eef35bdd8375f0b994dd99e537d4ae72077a749fe6b3ed2515f3"
+      "sha512": "c2c3b75ab638675998e108f4b9ba205f25c50d197faca32ed8a85bd060de06bd3735d9bc31092dcb7506b6e8132de58bf2b983c683442d9a3eb4221eb286e376"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -458,6 +458,7 @@
       "ComponentName": "NSSMDownload",
       "ComponentType": "FileDownload",
       "Source": "https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip",
+      "sha512": "05835a8b28fc3d8573c8fc6b627c885990468e29144d5523ce2c065835ff3f9341ced5e15fa246ab7af36cadfa0e96be854b9fafa24ab47cd11319d8a873681b",
       "Target": "C:\\Windows\\Temp\\NSSMInstall.zip"
     },
     {
@@ -531,7 +532,7 @@
             "Arguments": [
               "--version"
             ],
-            "Match": "generic-worker 10.8.5"
+            "Like": "generic-worker 10.11.2 *"
           }
         ]
       }
@@ -1367,6 +1368,75 @@
         ]
       },
       "sha512": "729b1e37aefdf708df6a787b2eecd0e4e186c4e8a6d6f3028b0134f81c4216f889e67645d9279cb0ae60079a8f6f68ac88ec5d1fe27ee54f8de563b5209698f3"
+    },
+    {
+      "ComponentName": "WindowsPerformanceToolkit",
+      "ComponentType": "MsiInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485757",
+      "Url": "https://s3.amazonaws.com/windows-opencloudconfig-packages/WindowsPerformanceToolkit/WPTx64-x86_en-us.msi",
+      "Name": "WPTx64",
+      "ProductId": "39D259B7-9ECF-65EB-66ED-5344F3E1E7B2",
+      "sha512": "53912e8d6826631ec3def889c7c76a2039d684582986345f1747bac5f09bb17cdf96d68bb15514fb5ce064b41427b3c031a26730f75cbef1079ffae737cd71b0"
+    },
+    {
+      "ComponentName": "mozprofilerprobe",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485757",
+      "Source": "http://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof",
+      "Target": "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\mozprofilerprobe.mof",
+      "DependsOn": [
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "WindowsPerformanceToolkit"
+        }
+      ]
+    },
+    {
+      "ComponentName": "mofcomp_mozprofilerprobe",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485757",
+      "Command": "mofcomp",
+      "Arguments": [
+        "\"C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\mozprofilerprobe.mof\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "mozprofilerprobe"
+        }
+      ]
     }
-  ]
+  ],
+  "ProvisionerConfiguration": {
+    "instanceTypes": [
+      {
+        "instanceType": "c4.2xlarge",
+        "capacity": 1,
+        "utility": 1,
+        "secrets": {},
+        "scopes": [],
+        "userData": {},
+        "launchSpec": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/sda1",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 120,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdb",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 120,
+                "DeleteOnTermination": true
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
 }

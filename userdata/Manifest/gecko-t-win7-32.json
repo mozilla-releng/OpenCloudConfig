@@ -323,6 +323,38 @@
       ]
     },
     {
+      "ComponentName": "Python3",
+      "ComponentType": "ExeInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1451107, https://docs.python.org/3/using/windows.html",
+      "Url": "https://www.python.org/ftp/python/3.6.3/python-3.6.3.exe",
+      "Arguments": [
+        "/quiet",
+        "InstallAllUsers=1",
+        "TargetDir=C:\\mozilla-build\\python3"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\mozilla-build\\python3\\python.exe"
+        ],
+        "CommandsReturn": [
+          {
+            "Command": "C:\\mozilla-build\\python3\\python.exe",
+            "Arguments": [
+              "--version"
+            ],
+            "Match": "Python 3.6.3"
+          }
+        ]
+      },
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "MozillaBuildSetup"
+        }
+      ],
+      "sha512": "0aecc2a136909051f4099015b9cc0ac52155160203e1cea2c82f397178818388c43d152b8678b98cd8a8d871626204909b21ba91b0d7aae566642f2f81570ebd"
+    },
+    {
       "ComponentName": "DeleteMozillaBuildMercurial",
       "ComponentType": "CommandRun",
       "DependsOn": [
@@ -434,7 +466,8 @@
         "C:\\mozilla-build\\python\\Scripts",
         "C:\\mozilla-build\\upx391w",
         "C:\\mozilla-build\\wget",
-        "C:\\mozilla-build\\yasm"
+        "C:\\mozilla-build\\yasm",
+        "C:\\Program Files\\Microsoft Windows Performance Toolkit"
       ],
       "Target": "Machine"
     },
@@ -481,9 +514,9 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v10.8.5/generic-worker-windows-386.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v10.11.2/generic-worker-windows-386.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "1b36ae8486c2e03e3674a6e1d3abefefaf43b81c9e26602177daf3b6d24a434f122a31b6a48a31fe53cfcb12ef8d279da0bd0ec943356ea6b13ca7422db7b8d1"
+      "sha512": "0672ca55ad6b1144253613267315ae060639c5e06ded501b313eca6d3a6a96888c8fa2c26d76862108a0eea65faa31ecefe0cd708095a51e361d3e351fa18548"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -531,6 +564,7 @@
       "ComponentName": "NSSMDownload",
       "ComponentType": "FileDownload",
       "Source": "https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip",
+      "sha512": "05835a8b28fc3d8573c8fc6b627c885990468e29144d5523ce2c065835ff3f9341ced5e15fa246ab7af36cadfa0e96be854b9fafa24ab47cd11319d8a873681b",
       "Target": "C:\\Windows\\Temp\\NSSMInstall.zip"
     },
     {
@@ -604,7 +638,7 @@
             "Arguments": [
               "--version"
             ],
-            "Match": "generic-worker 10.8.5"
+            "Like": "generic-worker 10.11.2 *"
           }
         ]
       }
@@ -1379,5 +1413,45 @@
       },
       "sha512": "729b1e37aefdf708df6a787b2eecd0e4e186c4e8a6d6f3028b0134f81c4216f889e67645d9279cb0ae60079a8f6f68ac88ec5d1fe27ee54f8de563b5209698f3"
     }
-  ]
+  ],
+  "ProvisionerConfiguration": {
+    "instanceTypes": [
+      {
+        "instanceType": "c4.2xlarge",
+        "capacity": 1,
+        "utility": 1,
+        "secrets": {},
+        "scopes": [],
+        "userData": {},
+        "launchSpec": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/sda1",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 30,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdb",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 120,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 120,
+                "DeleteOnTermination": true
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
 }

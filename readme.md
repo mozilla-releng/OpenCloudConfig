@@ -345,6 +345,19 @@ Instance configuration is defined in json format and currently includes implemen
     "Action": "Allow"
   }
   ```
+- **[ReplaceInFile](https://github.com/search?q=ReplaceInFile+language%3Apowershell+repo%3Amozilla-releng%2FOpenCloudConfig&type=Code)**:
+  Replace text in a file (optionally using a powershell expression or variable)
+
+  *example*:
+  ```
+  {
+    "ComponentName": "SetNxlogAggregator",
+    "ComponentType": "ReplaceInFile",
+    "Path": "C:\\Program Files (x86)\\nxlog\\conf\\nxlog.conf",
+    "Match": "DatacenterToken",
+    "Replace": "$env:datacenter"
+  }
+  ```
 
 # OpenCloudConfig CI
 

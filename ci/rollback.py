@@ -76,6 +76,7 @@ def get_commit(sha, org='mozilla-releng', repo='OpenCloudConfig'):
         return cache[sha[:7]]
     gh_token = os.environ.get('GH_TOKEN')
     if gh_token is not None:
+        url = 'https://api.github.com/repos/{}/{}/commits/{}'.format(org, repo, sha)
         response = requests.get(url, headers={'Authorization': 'token {}'.format(gh_token)}).json()
         if 'commit' in response:
             cache[sha[:7]] = response['commit']

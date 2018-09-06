@@ -150,7 +150,8 @@ Configuration xDynamicConfig {
     'RegistryKeySet' = 'Registry';
     'RegistryValueSet' = 'Registry';
     'DisableIndexing' = 'Script';
-    'FirewallRule' = 'Script'
+    'FirewallRule' = 'Script';
+    'ReplaceInFile' = 'Script'
   }
   Log Manifest {
     Message = ('Manifest: {0}' -f $manifest)
@@ -228,7 +229,7 @@ Configuration xDynamicConfig {
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
               $webClient = New-Object System.Net.WebClient
               $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-              $webClient.DownloadFile(('https://api.pub.build.mozilla.org/tooltool/sha512/{0}' -f $using:item.sha512), $using:item.Target)
+              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), $using:item.Target)
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Source, $using:item.Target)
@@ -242,7 +243,7 @@ Configuration xDynamicConfig {
             Unblock-File -Path $using:item.Target
           }
           TestScript = {
-            return Log-Validation (Validate-PathsExistOrNotRequested -items @($using:item.Target) -verbose) -verbose
+            return ((Log-Validation (Validate-PathsExistOrNotRequested -items @($using:item.Target) -verbose) -verbose) -and ((-not ($using:item.sha512)) -or ((Get-FileHash -Path $using:item.Target -Algorithm 'SHA512').Hash -eq $using:item.sha512)))
           }
         }
         Log ('Log_FileDownload_{0}' -f $item.ComponentName) {
@@ -263,7 +264,7 @@ Configuration xDynamicConfig {
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
               $webClient = New-Object System.Net.WebClient
               $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-              $webClient.DownloadFile(('https://api.pub.build.mozilla.org/tooltool/sha512/{0}' -f $using:item.sha512), $tempTarget)
+              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), $tempTarget)
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Source, $tempTarget)
@@ -320,7 +321,7 @@ Configuration xDynamicConfig {
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
               $webClient = New-Object System.Net.WebClient
               $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-              $webClient.DownloadFile(('https://api.pub.build.mozilla.org/tooltool/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName))
+              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName))
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Url, ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName))
@@ -364,7 +365,7 @@ Configuration xDynamicConfig {
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
               $webClient = New-Object System.Net.WebClient
               $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-              $webClient.DownloadFile(('https://api.pub.build.mozilla.org/tooltool/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.msi' -f $env:SystemRoot, $using:item.ComponentName))
+              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.msi' -f $env:SystemRoot, $using:item.ComponentName))
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Url, ('{0}\Temp\{1}.msi' -f $env:SystemRoot, $using:item.ComponentName))
@@ -402,7 +403,7 @@ Configuration xDynamicConfig {
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
               $webClient = New-Object System.Net.WebClient
               $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-              $webClient.DownloadFile(('https://api.pub.build.mozilla.org/tooltool/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $using:item.ComponentName))
+              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $using:item.ComponentName))
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Url, ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $using:item.ComponentName))
@@ -449,7 +450,7 @@ Configuration xDynamicConfig {
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
               $webClient = New-Object System.Net.WebClient
               $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-              $webClient.DownloadFile(('https://api.pub.build.mozilla.org/tooltool/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.ComponentName))
+              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.ComponentName))
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Url, ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.ComponentName))
@@ -653,6 +654,21 @@ Configuration xDynamicConfig {
         }
         Log ('Log_FirewallRule_{0}' -f $item.ComponentName) {
           DependsOn = ('[Script]FirewallRule_{0}' -f $item.ComponentName)
+          Message = ('{0}: {1}, completed' -f $item.ComponentType, $item.ComponentName)
+        }
+      }
+      'ReplaceInFile' {
+        Script ('ReplaceInFile_{0}' -f $item.ComponentName) {
+          DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
+          GetScript = "@{ ReplaceInFile = $item.ComponentName }"
+          SetScript = {
+            $content = ((Get-Content -Path $using:item.Path) | Foreach-Object { $_ -replace $using:item.Match, (Invoke-Expression -Command $using:item.Replace) })
+            [System.IO.File]::WriteAllLines($using:item.Path, $content, (New-Object System.Text.UTF8Encoding $false))
+          }
+          TestScript = { return $false }
+        }
+        Log ('Log_ReplaceInFile_{0}' -f $item.ComponentName) {
+          DependsOn = ('[Script]ReplaceInFile_{0}' -f $item.ComponentName)
           Message = ('{0}: {1}, completed' -f $item.ComponentType, $item.ComponentName)
         }
       }

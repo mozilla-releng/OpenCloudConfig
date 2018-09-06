@@ -50,7 +50,7 @@ for manifest in $(ls ./OpenCloudConfig/userdata/Manifest/gecko-*.json); do
       if curl -L -o ${filename} ${www_url} && [ -s ${filename} ]; then
         echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] ${filename} downloaded from ${www_url}"
         sha512=$(sha512sum ${filename} | { read sha _; echo $sha; })
-        tt_url="https://api.pub.build.mozilla.org/tooltool/sha512/${sha512}"
+        tt_url="https://tooltool.mozilla-releng.net/sha512/${sha512}"
         if curl --header "Authorization: Bearer $(cat ./.tooltool.token)" --output /dev/null --silent --head --fail ${tt_url}; then
           echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] ${ComponentName} found in tooltool: ${tt_url}"
         elif grep -q ${sha512} ./manifest.tt; then
@@ -70,7 +70,7 @@ for manifest in $(ls ./OpenCloudConfig/userdata/Manifest/gecko-*.json); do
   done
   if [ -f ./${tt} ]; then
     if python ./tooltool.py validate -m ${tt}; then
-      python ./tooltool.py upload --url https://api.pub.build.mozilla.org/tooltool --authentication-file=./.tooltool.token --message "Bug 1342892 - OCC installers for ${tt::-3}" -m ${tt}
+      python ./tooltool.py upload --url https://tooltool.mozilla-releng.net --authentication-file=./.tooltool.token --message "Bug 1342892 - OCC installers for ${tt::-3}" -m ${tt}
       echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] installers uploaded to tooltool"
     else
       echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] installers upload skipped due to manifest validation failure for ${tt}"

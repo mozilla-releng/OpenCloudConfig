@@ -1245,6 +1245,19 @@ if ($rebootReasons.length) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
       & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart', '-f', '-d', 'p:4:2') | Out-File -filePath $logFile -append
     }
+    if (($locationType -ne 'DataCenter') -and (((Get-Content $transcript) | % { ($_ -match 'failed to execute Set-TargetResource') }) -contains $true)) {
+      Write-Log -message 'dsc run failed.' -severity 'ERROR'
+      if (-not ($isWorker)) {
+        # if this is the ami creation instance, we don't have a way to communicate with the taskcluster-github job to tell it that the dsc run has failed.
+        # the best we can do is sleep until the taskcluster-github job fails, because of a task timeout.
+        $timer = [Diagnostics.Stopwatch]::StartNew()
+        while ($timer.Elapsed.TotalHours -lt 5) {
+          Write-Log -message ('waiting for occ ci task to fail due to timeout. shutdown in {0} minutes.' -f [Math]::Round(((5 * 60) - $timer.Elapsed.TotalMinutes))) -severity 'WARN'
+          Start-Sleep -Seconds 600
+        }
+        & shutdown @('-s', '-t', '0', '-c', 'dsc run failed', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+      }
+    }
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {
         # set network interface to public

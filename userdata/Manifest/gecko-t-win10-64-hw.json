@@ -1126,10 +1126,10 @@
     {
       "ComponentName": "KTS_ssh",
       "ComponentType": "ServiceControl",
-      "Comment": "Enabled ssh",
+      "Comment": "Disable KTS SSHD",
       "Name": "KpyM Telnet SSH Server v1.19",
-      "StartupType": "automatic",
-      "State": "running"
+      "StartupType": "Disabled",
+      "State": "Stopped"
     },
     {
       "ComponentName": "W32Time",

@@ -1,6 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
-for manifest in $(ls ./OpenCloudConfig/userdata/Manifest/gecko-*.json); do
-  echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] validating manifest ${manifest}"
-  jsonlint ${manifest}
-done
+./OpenCloudConfig/ci/validate_json_syntax.sh
+./OpenCloudConfig/ci/validate_rsa_keys.sh

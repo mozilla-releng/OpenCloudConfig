@@ -243,7 +243,7 @@ Configuration xDynamicConfig {
             Unblock-File -Path $using:item.Target
           }
           TestScript = {
-            return Log-Validation (Validate-PathsExistOrNotRequested -items @($using:item.Target) -verbose) -verbose
+            return ((Log-Validation (Validate-PathsExistOrNotRequested -items @($using:item.Target) -verbose) -verbose) -and ((-not ($using:item.sha512)) -or ((Get-FileHash -Path $using:item.Target -Algorithm 'SHA512').Hash -eq $using:item.sha512)))
           }
         }
         Log ('Log_FileDownload_{0}' -f $item.ComponentName) {

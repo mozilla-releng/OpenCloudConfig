@@ -318,33 +318,21 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ ExeDownload = $item.ComponentName }"
           SetScript = {
-            if ($using:item.sha512) {
-              $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.sha512)
-            } else {
-              $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName)
-            }
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
               $webClient = New-Object System.Net.WebClient
               $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), $tempFile)
+              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName))
             } else {
               try {
-                (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
+                (New-Object Net.WebClient).DownloadFile($using:item.Url, ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName))
               } catch {
                 # handle redirects (eg: sourceforge)
-                Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
+                Invoke-WebRequest -Uri $using:item.Url -OutFile ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName) -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
               }
             }
-            Unblock-File -Path $tempFile
+            Unblock-File -Path ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName)
           }
-          TestScript = {
-            if ($using:item.sha512) {
-              $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.sha512)
-            } else {
-              $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName)
-            }
-            return (Test-Path -Path $tempFile -ErrorAction SilentlyContinue)
-          }
+          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName) -ErrorAction SilentlyContinue) }
         }
         Log ('Log_ExeDownload_{0}' -f $item.ComponentName) {
           DependsOn = ('[Script]ExeDownload_{0}' -f $item.ComponentName)
@@ -381,18 +369,18 @@ Configuration xDynamicConfig {
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
               $webClient = New-Object System.Net.WebClient
               $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId))
+              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), ('{0}\Temp\{1}.msi' -f $env:SystemRoot, $using:item.ComponentName))
             } else {
               try {
-                (New-Object Net.WebClient).DownloadFile($using:item.Url, ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId))
+                (New-Object Net.WebClient).DownloadFile($using:item.Url, ('{0}\Temp\{1}.msi' -f $env:SystemRoot, $using:item.ComponentName))
               } catch {
                 # handle redirects (eg: sourceforge)
-                Invoke-WebRequest -Uri $using:item.Url -OutFile ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId) -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
+                Invoke-WebRequest -Uri $using:item.Url -OutFile ('{0}\Temp\{1}.msi' -f $env:SystemRoot, $using:item.ComponentName) -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
               }
             }
-            Unblock-File -Path ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId)
+            Unblock-File -Path ('{0}\Temp\{1}.msi' -f $env:SystemRoot, $using:item.ComponentName)
           }
-          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId) -ErrorAction SilentlyContinue) }
+          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}.msi' -f $env:SystemRoot, $using:item.ComponentName) -ErrorAction SilentlyContinue) }
         }
         Log ('Log_MsiDownload_{0}' -f $item.ComponentName) {
           DependsOn = ('[Script]MsiDownload_{0}' -f $item.ComponentName)
@@ -401,7 +389,7 @@ Configuration xDynamicConfig {
         Package ('MsiInstall_{0}' -f $item.ComponentName) {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           Name = $item.Name
-          Path = ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $item.ComponentName, $item.ProductId)
+          Path = ('{0}\Temp\{1}.msi' -f $env:SystemRoot, $item.ComponentName)
           ProductId = $item.ProductId
           Ensure = 'Present'
           LogPath = ('{0}\log\{1}-{2}.msi.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $item.ComponentName)
@@ -463,33 +451,21 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ ZipDownload = $item.ComponentName }"
           SetScript = {
-            if ($using:item.sha512) {
-              $tempFile = ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.sha512)
-            } else {
-              $tempFile = ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.ComponentName)
-            }
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
               $webClient = New-Object System.Net.WebClient
               $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
               $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), $tempFile)
             } else {
               try {
-                (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
+                (New-Object Net.WebClient).DownloadFile($using:item.Url, ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.ComponentName))
               } catch {
                 # handle redirects (eg: sourceforge)
-                Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
+                Invoke-WebRequest -Uri $using:item.Url -OutFile ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.ComponentName) -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
               }
             }
-            Unblock-File -Path $tempFile
+            Unblock-File -Path ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.ComponentName)
           }
-          TestScript = {
-            if ($using:item.sha512) {
-              $tempFile = ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.sha512)
-            } else {
-              $tempFile = ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.ComponentName)
-            }
-            return (Test-Path -Path $tempFile -ErrorAction SilentlyContinue)
-          }
+          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $using:item.ComponentName) -ErrorAction SilentlyContinue) }
         }
         Log ('Log_ZipDownload_{0}' -f $item.ComponentName) {
           DependsOn = ('[Script]ZipDownload_{0}' -f $item.ComponentName)

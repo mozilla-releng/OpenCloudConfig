@@ -1,0 +1,1590 @@
+{
+  "Components": [
+    {
+      "ComponentName": "LogDirectory",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "Required by OpenCloudConfig for DSC logging",
+      "Path": "C:\\log"
+    },
+    {
+      "ComponentName": "NxLog",
+      "ComponentType": "MsiInstall",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Url": "https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi",
+      "Name": "NxLog-CE",
+      "ProductId": "FC526514-AFD9-4A5C-8677-56241539609D",
+      "sha512": "70f5516bca0ff7814833ef397c01dbcd1c7011c0ef4b0f2aeda2e1aa7c02fe680eddfd1c0656f8d438559e34e5a841360dc6dafa7843c610528df2e1defb02be"
+    },
+    {
+      "ComponentName": "PaperTrailEncryptionCertificate",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/papertrail-bundle.pem",
+      "Target": "C:\\Program Files (x86)\\nxlog\\cert\\papertrail-bundle.pem",
+      "DependsOn": [
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "NxLog"
+        }
+      ]
+    },
+    {
+      "ComponentName": "NxLogPaperTrailConfiguration",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/hw-win10.conf",
+      "Target": "C:\\Program Files (x86)\\nxlog\\conf\\nxlog.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "PaperTrailEncryptionCertificate"
+        }
+      ]
+    },
+    {
+      "ComponentName": "Start_nxlog",
+      "ComponentType": "ServiceControl",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Name": "nxlog",
+      "StartupType": "Automatic",
+      "State": "Running",
+      "DependsOn": [
+        {
+             "ComponentType": "ChecksumFileDownload",
+             "ComponentName": "NxLogPaperTrailConfiguration"
+        }
+      ]
+    },
+    {
+      "ComponentName": "ProcessExplorer",
+      "ComponentType": "ZipInstall",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Url": "https://s3.amazonaws.com/windows-opencloudconfig-packages/ProcessExplorer/ProcessExplorer.zip",
+      "Destination": "C:\\ProcessExplorer",
+      "sha512": "85ffa57d9736ba94bc528ed6e3fccff564b45dfcc5234f8de318f41905ac982fcb39eee3bdb09c3e37f1eb9de72f78312024caa75cc08610421dfeab2a0fb26f"
+    },
+    {
+      "ComponentName": "ProcessMonitor",
+      "ComponentType": "ZipInstall",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Url": "https://s3.amazonaws.com/windows-opencloudconfig-packages/ProcessMonitor/ProcessMonitor.zip",
+      "Destination": "C:\\ProcessMonitor",
+      "sha512": "3db4ad44652c2dbf7bdd03c88339cbd19d672f6363e3a3b6a5a45adbd62c6b4131e491d2fa8f31fb2a60c7555e202c25bc8088d9bdf0896dcb7e3366782e204f"
+    },
+    {
+      "ComponentName": "GpgForWin",
+      "ComponentType": "ExeInstall",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Url": "http://files.gpg4win.org/gpg4win-2.3.0.exe",
+      "Arguments": [
+        "/S"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files (x86)\\GNU\\GnuPG\\pub\\gpg.exe",
+          "C:\\Program Files (x86)\\GNU\\GnuPG\\pub\\gpg2.exe"
+        ]
+      },
+      "sha512": "b1c48d84d041055db3d3e3cbd22ef2f3300728b06c76660b9b78ececf56b7ccbc80addb39a64c0a4eb68bf3463ceb6d254dedda047049ce680e9d543dd8a9af9"
+    },
+    {
+      "ComponentName": "SevenZip",
+      "ComponentType": "ExeInstall",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Url": "http://7-zip.org/a/7z1514-x64.exe",
+      "Arguments": [
+        "/S"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\7-Zip\\7z.exe",
+          "C:\\Program Files\\7-Zip\\7z.dll"
+        ]
+      },
+      "sha512": "4df02ab139b087c8d6e689a99afb58e1ab3d4c0722daa11f6a070cddb2506d079a7d9ff55341baa5b7fd1dc7593225eb9d7fdbfb9ac91e0d8db61f9fda85cbb3"
+    },
+    {
+      "ComponentName": "SublimeText3",
+      "ComponentType": "ExeInstall",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Url": "https://download.sublimetext.com/Sublime%20Text%20Build%203114%20x64%20Setup.exe",
+      "Arguments": [
+        "/VERYSILENT",
+        "/NORESTART",
+        "/TASKS=\"contextentry\""
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\Sublime Text 3\\subl.exe",
+          "C:\\Program Files\\Sublime Text 3\\sublime_text.exe"
+        ]
+      },
+      "sha512": "d3e71b28567ddd1b486aa3dcc9814818d91c322bc20ec203018d74bc465835f9ddd34d78f674172d00e66b39443070eb45e9799e3801b0ac410c958b2cf21098"
+    },
+    {
+      "ComponentName": "SublimeText3_PackagesFolder",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Path": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages"
+    },
+    {
+      "ComponentName": "SublimeText3_PackageControl",
+      "ComponentType": "FileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "http://sublime.wbond.net/Package%20Control.sublime-package",
+      "Target": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages\\Package Control.sublime-package",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "SublimeText3"
+        },
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "SublimeText3_PackagesFolder"
+        }
+      ]
+    },
+    {
+      "ComponentName": "MozillaMaintenanceDir",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "Working directory for Mozilla Maintenance Service installation",
+      "Path": "C:\\dsc\\MozillaMaintenance"
+    },
+    {
+      "ComponentName": "maintenanceservice_installer",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice_installer.exe?raw=true",
+      "Target": "C:\\dsc\\MozillaMaintenance\\maintenanceservice_installer.exe",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ],
+      "sha512": "4c200d59db17afcaa4deec9f083a75362b8baf0974483cb573b37587d605315513590c076f263f0a5e9165695751a076a839579e169a24507daf4cbc2b30d85e"
+    },
+    {
+      "ComponentName": "maintenanceservice",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/maintenanceservice.exe?raw=true",
+      "Target": "C:\\dsc\\MozillaMaintenance\\maintenanceservice.exe",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "maintenanceservice_install",
+      "ComponentType": "CommandRun",
+      "Command": "C:\\dsc\\MozillaMaintenance\\maintenanceservice_installer.exe",
+      "Arguments": [
+        "/s"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "maintenanceservice_installer"
+        },
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "maintenanceservice"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files (x86)\\Mozilla Maintenance Service\\maintenanceservice.exe",
+          "C:\\Program Files (x86)\\Mozilla Maintenance Service\\Uninstall.exe"
+        ]
+      }
+    },
+    {
+      "ComponentName": "MozFakeCA_cer",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true",
+      "Target": "C:\\dsc\\MozillaMaintenance\\MozFakeCA.cer",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "MozFakeCA_cer",
+      "ComponentType": "CommandRun",
+      "Command": "certutil.exe",
+      "Arguments": [
+        "-addstore",
+        "Root",
+        "C:\\dsc\\MozillaMaintenance\\MozFakeCA.cer"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "MozFakeCA_cer"
+        }
+      ]
+    },
+    {
+      "ComponentName": "MozFakeCA_2017_10_13_cer",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA_2017-10-13.cer?raw=true",
+      "Target": "C:\\dsc\\MozillaMaintenance\\MozFakeCA_2017-10-13.cer",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "MozFakeCA_2017_10_13_cer",
+      "ComponentType": "CommandRun",
+      "Command": "certutil.exe",
+      "Arguments": [
+        "-addstore",
+        "Root",
+        "C:\\dsc\\MozillaMaintenance\\MozFakeCA_2017-10-13.cer"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "MozFakeCA_2017_10_13_cer"
+        }
+      ]
+    },
+    {
+      "ComponentName": "MozRoot_cer",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozRoot.cer?raw=true",
+      "Target": "C:\\dsc\\MozillaMaintenance\\MozRoot.cer",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "MozillaMaintenanceDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "MozRoot_cer",
+      "ComponentType": "CommandRun",
+      "Command": "certutil.exe",
+      "Arguments": [
+        "-addstore",
+        "Root",
+        "C:\\dsc\\MozillaMaintenance\\MozRoot.cer"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "MozRoot_cer"
+        }
+      ]
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_0_name",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\name",
+      "ValueName": "Mozilla Corporation"
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_0_issuer",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\issuer",
+      "ValueName": "Thawte Code Signing CA - G2"
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_0_programName",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\programName",
+      "ValueName": ""
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_0_publisherLink",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\0\\publisherLink",
+      "ValueName": ""
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_1_name",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\name",
+      "ValueName": "Mozilla Fake SPC"
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_1_issuer",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\issuer",
+      "ValueName": "Mozilla Fake CA"
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_1_programName",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\programName",
+      "ValueName": ""
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_1_publisherLink",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\1\\publisherLink",
+      "ValueName": ""
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_2_name",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\name",
+      "ValueName": "Mozilla Corporation"
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_2_issuer",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\issuer",
+      "ValueName": "DigiCert SHA2 Assured ID Code Signing CA"
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_2_programName",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\programName",
+      "ValueName": ""
+    },
+    {
+      "ComponentName": "reg_MaintenanceService_2_publisherLink",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Mozilla\\MaintenanceService\\3932ecacee736d366d6436db0f55bce4\\2\\publisherLink",
+      "ValueName": ""
+    },
+    {
+      "ComponentName": "SystemPowerShellProfile",
+      "ComponentType": "FileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Microsoft.PowerShell_profile.ps1",
+      "Target": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Microsoft.PowerShell_profile.ps1"
+    },
+    {
+      "ComponentName": "FsutilDisable8Dot3",
+      "ComponentType": "CommandRun",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Command": "fsutil.exe",
+      "Arguments": [
+        "behavior",
+        "set",
+        "disable8dot3",
+        "1"
+      ],
+      "Validate": {
+        "CommandsReturn": [
+          {
+            "Command": "fsutil.exe",
+            "Arguments": [
+              "behavior",
+              "query",
+              "disable8dot3"
+            ],
+            "Match": "The registry state is: 1 (Disable 8dot3 name creation on all volumes)."
+          }
+        ]
+      }
+    },
+    {
+      "ComponentName": "FsutilDisableLastAccess",
+      "ComponentType": "CommandRun",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Command": "fsutil.exe",
+      "Arguments": [
+        "behavior",
+        "set",
+        "disablelastaccess",
+        "1"
+      ],
+      "Validate": {
+        "CommandsReturn": [
+          {
+            "Command": "fsutil.exe",
+            "Arguments": [
+              "behavior",
+              "query",
+              "disablelastaccess"
+            ],
+            "Match": "DisableLastAccess = 1"
+          }
+        ]
+      }
+    },
+    {
+      "ComponentName": "home",
+      "ComponentType": "SymbolicLink",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Target": "C:\\Users",
+      "Link": "C:\\home"
+    },
+    {
+      "ComponentName": "MozillaBuildSetup",
+      "ComponentType": "ExeInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1461340",
+      "Arguments": [
+        "/S",
+        "/D=C:\\mozilla-build"
+      ],
+      "Url": "http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.2.exe",
+      "Validate": {
+        "PathsExist": [
+          "C:\\mozilla-build\\bin\\unzip.exe",
+          "C:\\mozilla-build\\bin\\upx.exe",
+          "C:\\mozilla-build\\bin\\yasm.exe",
+          "C:\\mozilla-build\\bin\\zip.exe",
+          "C:\\mozilla-build\\msys\\bin\\sh.exe",
+          "C:\\mozilla-build\\msys\\local\\bin\\autoconf-2.13",
+          "C:\\mozilla-build\\msys\\local\\bin\\make.exe",
+          "C:\\mozilla-build\\python\\python.exe"
+        ],
+        "FilesContain": [
+          {
+            "Path": "C:\\mozilla-build\\VERSION",
+            "Match": "3.2"
+          }
+        ]
+      },
+      "sha512": "db77e882de30f5050489852353d6c171c09b3e70bfd3285d7cda4ea3fc8e7b8df9537ba6430f605c68a1a8c3f33e4763a03d353f915fd755df2a7e26409974c2"
+    },
+    {
+      "ComponentName": "msys_home",
+      "ComponentType": "SymbolicLink",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Target": "C:\\Users",
+      "Link": "C:\\mozilla-build\\msys\\home",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "MozillaBuildSetup"
+        }
+      ]
+    },
+    {
+      "ComponentName": "DeleteMozillaBuildMercurial",
+      "ComponentType": "CommandRun",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "MozillaBuildSetup"
+        }
+      ],
+      "Command": "cmd.exe",
+      "Arguments": [
+        "/c",
+        "del",
+        "C:\\mozilla-build\\python\\Scripts\\hg*"
+      ],
+      "Validate": {
+        "PathsNotExist": [
+          "C:\\mozilla-build\\python\\hg",
+          "C:\\mozilla-build\\python\\hg.exe"
+        ]
+      }
+    },
+    {
+      "ComponentName": "Mercurial",
+      "ComponentType": "MsiInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1490703",
+      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-4.7.1-x64.msi",
+      "Name": "Mercurial 4.7.1 (x64)",
+      "ProductId": "68FA175A-0F28-49AF-9E65-30CE6B60AE1C",
+      "sha512": "b3c957860855840c54d7407e13eb129c408c6ee9d5bf6547b5fb598321bc016c53d991cccbc5a63a78963057738aef43efd1da358b2ec41f66389d6be2fdc1cf"
+    },
+    {
+      "ComponentName": "MercurialConfig",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Required by clonebundle and share hg extensions",
+      "DependsOn": [
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "Mercurial"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/mercurial.ini",
+      "Target": "C:\\Program Files\\Mercurial\\Mercurial.ini"
+    },
+    {
+      "ComponentName": "robustcheckout",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Required by robustcheckout hg extension",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "MozillaBuildSetup"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/FirefoxBuildResources/robustcheckout.py",
+      "Target": "C:\\mozilla-build\\robustcheckout.py"
+    },
+    {
+      "ComponentName": "MercurialCerts",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "Mercurial"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/cacert.pem",
+      "Target": "C:\\mozilla-build\\msys\\etc\\cacert.pem"
+    },
+    {
+      "ComponentName": "env_MOZILLABUILD",
+      "ComponentType": "EnvironmentVariableSet",
+      "Comment": "Absolutely required for mozharness builds. Python will fall in a heap, throwing misleading exceptions without this. :)",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "MozillaBuildSetup"
+        }
+      ],
+      "Name": "MOZILLABUILD",
+      "Value": "C:\\mozilla-build",
+      "Target": "Machine"
+    },
+    {
+      "ComponentName": "env_PATH",
+      "ComponentType": "EnvironmentVariableUniquePrepend",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "MozillaBuildSetup"
+        },
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "Mercurial"
+        }
+      ],
+      "Name": "PATH",
+      "Values": [
+        "C:\\Program Files\\Mercurial",
+        "C:\\mozilla-build\\bin",
+        "C:\\mozilla-build\\kdiff3",
+        "C:\\mozilla-build\\moztools-x64\\bin",
+        "C:\\mozilla-build\\mozmake",
+        "C:\\mozilla-build\\msys\\bin",
+        "C:\\mozilla-build\\msys\\local\\bin",
+        "C:\\mozilla-build\\nsis-3.01",
+        "C:\\mozilla-build\\python",
+        "C:\\mozilla-build\\python\\Scripts"
+      ],
+      "Target": "Machine"
+    },
+    {
+      "ComponentName": "ToolToolInstall",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "MozillaBuildSetup"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py",
+      "Target": "C:\\mozilla-build\\tooltool.py"
+    },
+    {
+      "ComponentName": "reg_WindowsErrorReportingLocalDumps",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1261812",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting",
+      "ValueName": "LocalDumps"
+    },
+    {
+      "ComponentName": "reg_WindowsErrorReportingDontShowUI",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1261812",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting",
+      "ValueName": "DontShowUI",
+      "ValueType": "Dword",
+      "ValueData": "0x00000001",
+      "Hex": true
+    },
+    {
+      "ComponentName": "GenericWorkerDirectory",
+      "ComponentType": "DirectoryCreate",
+      "Path": "C:\\generic-worker"
+    },
+    {
+      "ComponentName": "GenericWorkerDownload",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v10.11.2/generic-worker-windows-amd64.exe",
+      "Target": "C:\\generic-worker\\generic-worker.exe",
+      "sha512": "c2c3b75ab638675998e108f4b9ba205f25c50d197faca32ed8a85bd060de06bd3735d9bc31092dcb7506b6e8132de58bf2b983c683442d9a3eb4221eb286e376"
+    },
+    {
+      "ComponentName": "LiveLogDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe",
+      "Target": "C:\\generic-worker\\livelog.exe",
+      "sha512": "80cc08012a766c1f4c9da82b3d82af1612d6994714e775182d6ffa1e2b61d5fac4eefc2b5031f5d5ff28caa35dd9a5c6ada9147dc80289226b6f8722f0234a95"
+    },
+    {
+      "ComponentName": "TaskClusterProxyDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/taskcluster-proxy/releases/download/v4.1.0/taskcluster-proxy-windows-amd64.exe",
+      "Target": "C:\\generic-worker\\taskcluster-proxy.exe",
+      "sha512": "83dd123441f6bc0336103b65716ad016715864840055e07ec1959f74cd68b7e9cf5fc6e7e1034d7d4802486f1cbddc342475a61e49da06a878c3f74b8652d193"
+    },
+    {
+      "ComponentName": "LiveLog_Get",
+      "ComponentType": "FirewallRule",
+      "Protocol": "TCP",
+      "LocalPort": 60022,
+      "Direction": "Inbound",
+      "Action": "Allow"
+    },
+    {
+      "ComponentName": "LiveLog_Put",
+      "ComponentType": "FirewallRule",
+      "Protocol": "TCP",
+      "LocalPort": 60023,
+      "Direction": "Inbound",
+      "Action": "Allow"
+    },
+    {
+      "ComponentName": "NSSMDownload",
+      "ComponentType": "FileDownload",
+      "Source": "https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip",
+      "sha512": "517945e1452f0784e46843ab713f1103a2b2d76100b793031e7ab9c9f662dbdd57c5ae8c02931d3cc821d41558464eed926e84d21b0d0a9c43d7f4b768dc9b17",
+      "Target": "C:\\Windows\\Temp\\NSSMInstall.zip"
+    },
+    {
+      "ComponentName": "NSSMInstall",
+      "ComponentType": "CommandRun",
+      "Comment": "NSSM is required to install Generic Worker as a service. Currently ZipInstall fails, so using 7z instead.",
+      "Command": "C:\\Program Files\\7-Zip\\7z.exe",
+      "Arguments": [
+        "x",
+        "-oC:\\",
+        "C:\\Windows\\Temp\\NSSMInstall.zip"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "SevenZip"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "NSSMDownload"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe"
+        ]
+      }
+    },
+    {
+      "ComponentName": "GenericWorkerInstall",
+      "ComponentType": "CommandRun",
+      "Command": "C:\\generic-worker\\generic-worker.exe",
+      "Arguments": [
+        "install",
+        "service",
+        "--nssm",
+        "C:\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe",
+        "--config",
+        "C:\\generic-worker\\generic-worker.config"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "GenericWorkerDownload"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "LiveLogDownload"
+        },
+        {
+          "ComponentType": "FirewallRule",
+          "ComponentName": "LiveLog_Get"
+        },
+        {
+          "ComponentType": "FirewallRule",
+          "ComponentName": "LiveLog_Put"
+        },
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "NSSMInstall"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\generic-worker\\run-generic-worker.bat",
+          "C:\\generic-worker\\generic-worker.exe"
+        ],
+        "CommandsReturn": [
+          {
+            "Command": "C:\\generic-worker\\generic-worker.exe",
+            "Arguments": [
+              "--version"
+            ],
+            "Like": "generic-worker 10.11.2 *"
+          }
+        ]
+      }
+    },
+    {
+      "ComponentName": "DisableDesktopInterrupt",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "GenericWorkerInstall"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/disable-desktop-interrupt.reg",
+      "Target": "C:\\generic-worker\\disable-desktop-interrupt.reg"
+    },
+    {
+      "ComponentName": "SetDefaultPrinter",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "GenericWorkerInstall"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/SetDefaultPrinter.ps1",
+      "Target": "C:\\generic-worker\\SetDefaultPrinter.ps1"
+    },
+    {
+      "ComponentName": "GenericWorkerStateWait",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "GenericWorkerInstall"
+        },
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "DisableDesktopInterrupt"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-hw-generic-worker-10-and-reboot.bat",
+      "Target": "C:\\generic-worker\\run-generic-worker.bat"
+    },
+    {
+      "ComponentName": "TaskUserInitScript",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Bug 1261188 - initialisation script for new task users",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/task-user-init-win10.cmd",
+      "Target": "C:\\generic-worker\\task-user-init.cmd",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ]
+    },
+    {
+      "ComponentName": "PipConfDirectory",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "https://pip.pypa.io/en/stable/user_guide/#config-file",
+      "Path": "C:\\ProgramData\\pip"
+    },
+    {
+      "ComponentName": "PipConf",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "PipConfDirectory"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/pip.conf",
+      "Target": "C:\\ProgramData\\pip\\pip.ini"
+    },
+    {
+      "ComponentName": "virtualenv_support",
+      "ComponentType": "DirectoryCreate",
+      "Path": "C:\\mozilla-build\\python\\Lib\\site-packages\\virtualenv_support",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "MozillaBuildSetup"
+        }
+      ]
+    },
+    {
+      "ComponentName": "virtualenv_support_pywin32",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "virtualenv_support"
+        }
+      ],
+      "Source": "https://pypi.python.org/packages/cp27/p/pypiwin32/pypiwin32-219-cp27-none-win32.whl#md5=a8b0c1b608c1afeb18cd38d759ee5e29",
+      "Target": "C:\\mozilla-build\\python\\Lib\\site-packages\\virtualenv_support\\pypiwin32-219-cp27-none-win32.whl"
+    },
+    {
+      "ComponentName": "virtualenv_support_pywin32_amd64",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "virtualenv_support"
+        }
+      ],
+      "Source": "https://pypi.python.org/packages/cp27/p/pypiwin32/pypiwin32-219-cp27-none-win_amd64.whl#md5=d7bafcf3cce72c3ce9fdd633a262c335",
+      "Target": "C:\\mozilla-build\\python\\Lib\\site-packages\\virtualenv_support\\pypiwin32-219-cp27-none-win_amd64.whl"
+    },
+    {
+      "ComponentName": "HgShared",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "allows builds to use `hg robustcheckout ...`",
+      "Path": "c:\\hg-shared"
+    },
+    {
+      "ComponentName": "HgSharedAccessRights",
+      "ComponentType": "CommandRun",
+      "Comment": "allows builds to use `hg robustcheckout ...`",
+      "Command": "icacls.exe",
+      "Arguments": [
+        "c:\\hg-shared",
+        "/grant",
+        "Everyone:(OI)(CI)F"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "HgShared"
+        }
+      ]
+    },
+    {
+      "ComponentName": "PipCache",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "share pip cache across subsequent task users",
+      "Path": "c:\\pip-cache"
+    },
+    {
+      "ComponentName": "PipCacheAccessRights",
+      "ComponentType": "CommandRun",
+      "Comment": "share pip cache across subsequent task users",
+      "Command": "icacls.exe",
+      "Arguments": [
+        "c:\\pip-cache",
+        "/grant",
+        "Everyone:(OI)(CI)F"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "PipCache"
+        }
+      ]
+    },
+    {
+      "ComponentName": "env_PIP_DOWNLOAD_CACHE",
+      "ComponentType": "EnvironmentVariableSet",
+      "Comment": "share pip download cache between tasks",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "PipCacheAccessRights"
+        }
+      ],
+      "Name": "PIP_DOWNLOAD_CACHE",
+      "Value": "c:\\pip-cache",
+      "Target": "Machine"
+    },
+    {
+      "ComponentName": "TooltoolCache",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "share tooltool cache across subsequent task users",
+      "Path": "c:\\tooltool-cache"
+    },
+    {
+      "ComponentName": "TooltoolCacheAccessRights",
+      "ComponentType": "CommandRun",
+      "Comment": "share tooltool cache across subsequent task users",
+      "Command": "icacls.exe",
+      "Arguments": [
+        "c:\\tooltool-cache",
+        "/grant",
+        "Everyone:(OI)(CI)F"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "TooltoolCache"
+        }
+      ]
+    },
+    {
+      "ComponentName": "env_TOOLTOOL_CACHE",
+      "ComponentType": "EnvironmentVariableSet",
+      "Comment": "share tooltool cache between tasks",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TooltoolCacheAccessRights"
+        }
+      ],
+      "Name": "TOOLTOOL_CACHE",
+      "Value": "c:\\tooltool-cache",
+      "Target": "Machine"
+    },
+    {
+      "ComponentName": "CarbonClone",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1316329 - support creation of symlinks by task users",
+      "Command": "C:\\Program Files\\Mercurial\\hg.exe",
+      "Arguments": [
+        "clone",
+        "--insecure",
+        "https://bitbucket.org/splatteredbits/carbon",
+        "C:\\Windows\\Temp\\carbon"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "Mercurial"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Windows\\Temp\\carbon\\.hg"
+        ]
+      }
+    },
+    {
+      "ComponentName": "CarbonUpdate",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1316329 - support creation of symlinks by task users",
+      "Command": "C:\\Program Files\\Mercurial\\hg.exe",
+      "Arguments": [
+        "update",
+        "2.4.0",
+        "-R",
+        "C:\\Windows\\Temp\\carbon"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonClone"
+        }
+      ]
+    },
+    {
+      "ComponentName": "CarbonInstall",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1316329 - support creation of symlinks by task users",
+      "Command": "xcopy",
+      "Arguments": [
+        "C:\\Windows\\Temp\\carbon\\Carbon",
+        "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules\\Carbon",
+        "/e",
+        "/i",
+        "/y"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonUpdate"
+        }
+      ]
+    },
+    {
+      "ComponentName": "GrantEveryoneSeCreateSymbolicLinkPrivilege",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1316329 - support creation of symlinks by task users",
+      "Command": "powershell",
+      "Arguments": [
+        "-command",
+        "\"& {&'Import-Module' Carbon}\";",
+        "\"& {&'Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonInstall"
+        }
+      ]
+    },
+    {
+      "ComponentName": "GrantGenericWorkerSeAssignPrimaryTokenPrivilege",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1303455 - grant SeAssignPrimaryTokenPrivilege to g-w user",
+      "Command": "powershell",
+      "Arguments": [
+        "-command",
+        "\"& {&'Import-Module' Carbon}\";",
+        "\"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeAssignPrimaryTokenPrivilege}\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonInstall"
+        },
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "GenericWorkerInstall"
+        }
+      ]
+    },
+    {
+      "ComponentName": "GrantGenericWorkerSeIncreaseQuotaPrivilege",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1303455 - grant SeIncreaseQuotaPrivilege to g-w user",
+      "Command": "powershell",
+      "Arguments": [
+        "-command",
+        "\"& {&'Import-Module' Carbon}\";",
+        "\"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeIncreaseQuotaPrivilege}\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonInstall"
+        },
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "GenericWorkerInstall"
+        }
+      ]
+    },
+    {
+      "ComponentName": "GrantGenericWorkerSeIncreaseBasePriorityPrivilege",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1312383 - grant SeIncreaseBasePriorityPrivilege to g-w user",
+      "Command": "powershell",
+      "Arguments": [
+        "-command",
+        "\"& {&'Import-Module' Carbon}\";",
+        "\"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeIncreaseBasePriorityPrivilege}\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonInstall"
+        },
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "GenericWorkerInstall"
+        }
+      ]
+    },
+    {
+      "ComponentName": "reg_PythonCpuPriority",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\python.exe\\PerfOptions",
+      "ValueName": "CpuPriorityClass",
+      "ValueType": "Dword",
+      "ValueData": "0x00000006",
+      "Hex": true
+    },
+    {
+      "ComponentName": "reg_PythonIoPriority",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\python.exe\\PerfOptions",
+      "ValueName": "IoPriority",
+      "ValueType": "Dword",
+      "ValueData": "0x00000002",
+      "Hex": true
+    },
+    {
+      "ComponentName": "reg_MercurialCpuPriority",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\hg.exe\\PerfOptions",
+      "ValueName": "CpuPriorityClass",
+      "ValueType": "Dword",
+      "ValueData": "0x00000006",
+      "Hex": true
+    },
+    {
+      "ComponentName": "reg_MercurialIoPriority",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\hg.exe\\PerfOptions",
+      "ValueName": "IoPriority",
+      "ValueType": "Dword",
+      "ValueData": "0x00000002",
+      "Hex": true
+    },
+    {
+      "ComponentName": "Window_Update",
+      "ComponentType": "ServiceControl",
+      "Comment": "Disable Windows update service",
+      "Name": "wuauserv",
+      "StartupType": "Manual",
+      "State": "Stopped"
+    },
+    {
+      "ComponentName": "Window_Search",
+      "ComponentType": "ServiceControl",
+      "Comment": "Disable Windows Indexing",
+      "Name": "Wsearch",
+      "StartupType": "Disabled",
+      "State": "Stopped"
+    },
+    {
+      "ComponentName": "W32Time",
+      "ComponentType": "ServiceControl",
+      "Comment": "Enable time service",
+      "Name": "W32time",
+      "StartupType": "automatic",
+      "State": "running"
+    },
+    {
+      "ComponentName": "GrantGenericWorkerMozillaRegistryWriteAccess",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1353889 - Grant GenericWorker account write access to Mozilla registry key",
+      "Command": "powershell",
+      "Arguments": [
+        "-command",
+        "\"& {& (Get-Acl -Path 'HKLM:\\SOFTWARE\\Mozilla').SetAccessRule(New-Object System.Security.AccessControl.RegistryAccessRule ('.\\GenericWorker', 'FullControl', 'Allow'))}\";",
+        "\"& {& ((Get-Acl -Path 'HKLM:\\SOFTWARE\\Mozilla') | Set-Acl -Path 'HKLM:\\SOFTWARE\\Mozilla')}\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonInstall"
+        }
+      ]
+    },
+    {
+      "ComponentName": "KmsIn",
+      "ComponentType": "FirewallRule",
+      "Protocol": "TCP",
+      "LocalPort": 1688,
+      "Direction": "Inbound",
+      "Action": "Allow"
+    },
+    {
+      "ComponentName": "KmsOut",
+      "ComponentType": "FirewallRule",
+      "Protocol": "TCP",
+      "LocalPort": 1688,
+      "Direction": "Outbound",
+      "Action": "Allow"
+    },
+    {
+      "ComponentName": "jqInstall",
+      "ComponentType": "FileDownload",
+      "Source": "https://s3-us-west-2.amazonaws.com/occ-package/jq-win64.exe",
+      "sha512": "0fc326228b61fdc64b88b9cd3b976bc4f3de542a1ae1818cb6acbc7b146b0a20ebbd935e07f1b2179e2a2ded614b309259ea944b5e217d3a137458cb5d165ccc",
+      "Target": "C:\\Windows\\System32\\jq.exe"
+    },
+    {
+      "ComponentName": "cppbuildtools",
+      "ComponentType": "ExeInstall",
+      "Comment": " c++ toolchain",
+      "Url": "http://go.microsoft.com/fwlink/?LinkId=691126&fixForIE=.exe&__hstc=268264337.a5d21ad3115e000b70cefcf71ef00ced.1513876127127.1513887656302.1518629799131.3&__hssc=268264337.1.1518629799131&__hsfp=2623587065",
+      "Arguments": [
+        "/Q"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files (x86)\\Microsoft SDKs\\Windows Kits\\10\\ExtensionSDKs\\Microsoft.UniversalCRT.Debug\\10.0.10240.0\\SDKManifest.xml",
+          "C:\\Program Files (x86)\\Microsoft SDKs\\Windows Kits\\10\\ExtensionSDKs\\Microsoft.UniversalCRT.Debug\\10.0.10240.0\\Redist\\Debug\\arm\\ucrtbased.dll"
+        ]
+      }
+     },
+    {  
+	  "ComponentName": "framework35",
+      "ComponentType": "CommandRun",
+      "Command": "DISM",
+      "Arguments": [
+        "/Online",
+		"/Enable-Feature",
+		"/FeatureName:NetFx3",
+		"/All"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files (x86)\\Reference Assemblies\\Microsoft\\Framework\\v3.5\\Microsoft.Build.Conversion.v3.5.dll",
+          "C:\\Program Files (x86)\\Reference Assemblies\\Microsoft\\Framework\\v3.5\\Microsoft.Build.Engine.dll"
+        ]
+      }
+    },
+    {
+      "ComponentName": "Configmymonitor",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "framework35"
+        }
+      ],
+      "Source": "https://fakeurl.com",
+      "Target": "C:\\dsc\\configmymonitor.exe",
+      "sha512": "2c89bc76937868750c028282855c56e86e0438ba48cc0eeffaeaf04a36469072a53b6ebd4e7d611f11baf1cc837296dabf6c623ffc9e7b711319bf323ab15de5"
+    },
+    {
+      "ComponentName": "disabeldriverupdate",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\DriverSearching",
+      "ValueName": "SearchOrderConfig",
+      "ValueType": "Dword",
+      "ValueData": "0x00000000",
+      "Hex": true
+    },
+    {
+      "ComponentName": "pauseupdate",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\Windows\\AU",
+      "ValueName": "NoAutoUpdate",
+      "ValueType": "Dword",
+      "ValueData": "0x00000001",
+      "Hex": true
+    },
+    {
+      "ComponentName": "Donnotupdate",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\Windows\\AU",
+      "ValueName": "AUOptions",
+      "ValueType": "Dword",
+      "ValueData": "0x00000002",
+      "Hex": true
+    },
+    {
+      "ComponentName": "reg_Power_PreferredPlan_HighPerformance",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1362613",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\explorer\\ControlPanel\\NameSpace\\{025A5937-A6BE-4686-A844-36FE4BEC8B6D}",
+      "ValueName": "PreferredPlan",
+      "ValueType": "String",
+      "ValueData": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
+    },
+    {
+      "ComponentName": "DisableWinDefend",
+      "ComponentType": "ServiceControl",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
+      "Name": "WinDefend",
+      "StartupType": "Manual",
+      "State": "Stopped"
+    },
+    {
+      "ComponentName": "reg_SystemRestore",
+      "ComponentType": "RegistryKeySet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows NT",
+      "ValueName": "SystemRestore"
+    },
+    {
+      "ComponentName": "reg_SystemRestoreDisableConfig",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\SystemRestore",
+      "ValueName": "DisableConfig",
+      "ValueType": "Dword",
+      "ValueData": "0x00000001",
+      "Hex": true
+    },
+    {
+      "ComponentName": "DisableShadowCopy",
+      "ComponentType": "ServiceControl",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
+      "Name": "VSS",
+      "StartupType": "Disabled",
+      "State": "Stopped"
+    },
+    {
+      "ComponentName": "OpenSshDownload",
+      "ComponentType": "FileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Source": "https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win64.zip",
+      "Target": "C:\\Windows\\Temp\\OpenSSH-Win64.zip",
+      "sha512": "340f2be8bbddf2552a1d2d55b17f06f09bc1bc6ff2bbba6c8653f8fc3b91f5d9e2bd47e57d537f81df69fca776bf6ecbd533a7ac8bcbb6012f03676530e6d9df"
+    },
+    {
+      "ComponentName": "OpenSshUnzip",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Command": "C:\\Program Files\\7-Zip\\7z.exe",
+      "Arguments": [
+        "x",
+        "-o\"C:\\Program Files\"",
+        "C:\\Windows\\Temp\\OpenSSH-Win64.zip"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "SevenZip"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "OpenSshDownload"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\OpenSSH-Win64\\sshd.exe",
+          "C:\\Program Files\\OpenSSH-Win64\\ssh-agent.exe",
+          "C:\\Program Files\\OpenSSH-Win64\\install-sshd.ps1"
+        ]
+      }
+    },
+    {
+      "ComponentName": "SshIn",
+      "ComponentType": "FirewallRule",
+      "Protocol": "TCP",
+      "LocalPort": 22,
+      "Direction": "Inbound",
+      "Action": "Allow"
+    },
+    {
+      "ComponentName": "InstallOpenSSH",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Command": "powershell.exe",
+      "Arguments": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "\"C:\\Program Files\\OpenSSH-Win64\\install-sshd.ps1\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "OpenSshUnzip"
+        }
+      ]
+    },
+    {
+      "ComponentName": "reg_OpenSSH_DefaultShell",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\OpenSSH",
+      "ValueName": "DefaultShell",
+      "ValueType": "String",
+      "ValueData": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+    },
+    {
+      "ComponentName": "reg_OpenSSH_DefaultShellCommandOption",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\OpenSSH",
+      "ValueName": "DefaultShellCommandOption",
+      "ValueType": "String",
+      "ValueData": "/c"
+    },
+    {
+      "ComponentName": "AdministratorSshDir",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Path": "C:\\Users\\Administrator\\.ssh"
+    },
+    {
+      "ComponentName": "AdministratorSshAuthorisedKeys",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/authorized_keys",
+      "Target": "C:\\Users\\Administrator\\.ssh\\authorized_keys",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "AdministratorSshDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "sshd_config",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1464343",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/sshd_config",
+      "Target": "C:\\ProgramData\\ssh\\sshd_config",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "InstallOpenSSH"
+        }
+      ]
+    },
+    {
+      "ComponentName": "Start_sshd",
+      "ComponentType": "ServiceControl",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Name": "sshd",
+      "StartupType": "Automatic",
+      "State": "Running",
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "sshd_config"
+        }
+      ]
+    },
+    {
+      "ComponentName": "Start_sshagent",
+      "ComponentType": "ServiceControl",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Name": "ssh-agent",
+      "StartupType": "Automatic",
+      "State": "Running",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "InstallOpenSSH"
+        }
+      ]
+    },
+    {
+      "ComponentName": "reg_DisableAntiSpyware",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
+      "ValueName": "DisableConfig",
+      "ValueType": "Dword",
+      "ValueData": "0x00000001",
+      "Hex": true
+    },
+    {
+      "ComponentName": "reg_DisableAntiSpyware_exe",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
+      "ValueName": "DisableAntiSpyware",
+      "ValueType": "Dword",
+      "ValueData": "0x00000001",
+      "Hex": true
+    },
+    {
+      "ComponentName": "vcredist_vs2015_x86",
+      "ComponentType": "ExeInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1460042",
+      "Url": "http://download.microsoft.com/download/f/3/9/f39b30ec-f8ef-4ba3-8cb4-e301fcf0e0aa/vc_redist.x86.exe",
+      "Arguments": [
+        "/install",
+        "/passive",
+        "/norestart",
+        "/log",
+        "C:\\log\\vcredist_vs2015_x86-install.log"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Windows\\SysWOW64\\vcruntime140.dll"
+        ]
+      },
+      "sha512": "c0eac71b95d1c0232ce1457561a66e24d3ef687ba8012f072d28f89df9dd409584b262b7bac9977f500ec99c0c31138c36f0da48972b818bacba2bc601d5f3a4"
+    },
+    {
+      "ComponentName": "vcredist_vs2015_x64",
+      "ComponentType": "ExeInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1460042",
+      "Url": "http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe",
+      "Arguments": [
+        "/install",
+        "/passive",
+        "/norestart",
+        "/log",
+        "C:\\log\\vcredist_vs2015_x64-install.log"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Windows\\System32\\vcruntime140.dll"
+        ]
+      },
+      "sha512": "729b1e37aefdf708df6a787b2eecd0e4e186c4e8a6d6f3028b0134f81c4216f889e67645d9279cb0ae60079a8f6f68ac88ec5d1fe27ee54f8de563b5209698f3"
+    },
+    {
+      "ComponentName": "WindowsPerformanceToolkit",
+      "ComponentType": "MsiInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485757",
+      "Url": "https://s3.amazonaws.com/windows-opencloudconfig-packages/WindowsPerformanceToolkit/WPTx64-x86_en-us.msi",
+      "Name": "WPTx64",
+      "ProductId": "39D259B7-9ECF-65EB-66ED-5344F3E1E7B2",
+      "sha512": "53912e8d6826631ec3def889c7c76a2039d684582986345f1747bac5f09bb17cdf96d68bb15514fb5ce064b41427b3c031a26730f75cbef1079ffae737cd71b0"
+    },
+    {
+      "ComponentName": "mozprofilerprobe",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485757",
+      "Source": "http://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof",
+      "Target": "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\mozprofilerprobe.mof",
+      "DependsOn": [
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "WindowsPerformanceToolkit"
+        }
+      ]
+    },
+    {
+      "ComponentName": "mofcomp_mozprofilerprobe",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485757",
+      "Command": "mofcomp",
+      "Arguments": [
+        "\"C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\mozprofilerprobe.mof\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "mozprofilerprobe"
+        }
+      ]
+    },
+    {
+      "ComponentName": "ProgramData_Mozilla_AccessRights",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1494048",
+      "Command": "icacls.exe",
+      "Arguments": [
+        "c:\\ProgramData\\Mozilla",
+        "/grant",
+        "Everyone:(OI)(CI)F"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "maintenanceservice_install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "hw-startup-check_ps1",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/hw-startup-check.ps1",
+      "Target": "C:\\DSC\\hw-startup-check.ps1"
+    },
+    {
+      "ComponentName": "EndOfManifest.semaphore",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1494704",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/EndOfManifest.semaphore",
+      "Target": "C:\\DSC\\EndOfManifest.semaphore"
+    }
+  ]
+}

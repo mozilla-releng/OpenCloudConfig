@@ -640,9 +640,9 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://s3-us-west-2.amazonaws.com/occ-package/generic-worker.exe",
-      "sha512": "fd30426e247896922a0ba8ff79b8f7882ec817ea6b88c00ed11eeb6d97c4cfd33bf52e2947a77bc50f6e6594f5f0bb02a08c9ffee22ca3e3271a8607c9bd34ff",
-      "Target": "C:\\generic-worker\\generic-worker.exe"
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v10.8.5/generic-worker-windows-amd64.exe",
+      "Target": "C:\\generic-worker\\generic-worker.exe",
+      "sha512": "f26832cfe4647877e4665c1f7e2f9283d28f31f6a321378205d1de01df404b35c903a0024721eef35bdd8375f0b994dd99e537d4ae72077a749fe6b3ed2515f3"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -654,8 +654,21 @@
         }
       ],
       "Source": "https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe",
-      "sha512": "80cc08012a766c1f4c9da82b3d82af1612d6994714e775182d6ffa1e2b61d5fac4eefc2b5031f5d5ff28caa35dd9a5c6ada9147dc80289226b6f8722f0234a95",
-      "Target": "C:\\generic-worker\\livelog.exe"
+      "Target": "C:\\generic-worker\\livelog.exe",
+      "sha512": "80cc08012a766c1f4c9da82b3d82af1612d6994714e775182d6ffa1e2b61d5fac4eefc2b5031f5d5ff28caa35dd9a5c6ada9147dc80289226b6f8722f0234a95"
+    },
+    {
+      "ComponentName": "TaskClusterProxyDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/taskcluster-proxy/releases/download/v4.1.0/taskcluster-proxy-windows-amd64.exe",
+      "Target": "C:\\generic-worker\\taskcluster-proxy.exe",
+      "sha512": "83dd123441f6bc0336103b65716ad016715864840055e07ec1959f74cd68b7e9cf5fc6e7e1034d7d4802486f1cbddc342475a61e49da06a878c3f74b8652d193"
     },
     {
       "ComponentName": "LiveLog_Get",
@@ -674,12 +687,47 @@
       "Action": "Allow"
     },
     {
+      "ComponentName": "NSSMDownload",
+      "ComponentType": "FileDownload",
+      "Source": "https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip",
+      "sha512": "517945e1452f0784e46843ab713f1103a2b2d76100b793031e7ab9c9f662dbdd57c5ae8c02931d3cc821d41558464eed926e84d21b0d0a9c43d7f4b768dc9b17",
+      "Target": "C:\\Windows\\Temp\\NSSMInstall.zip"
+    },
+    {
+      "ComponentName": "NSSMInstall",
+      "ComponentType": "CommandRun",
+      "Comment": "NSSM is required to install Generic Worker as a service. Currently ZipInstall fails, so using 7z instead.",
+      "Command": "C:\\Program Files\\7-Zip\\7z.exe",
+      "Arguments": [
+        "x",
+        "-oC:\\",
+        "C:\\Windows\\Temp\\NSSMInstall.zip"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "SevenZip"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "NSSMDownload"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe"
+        ]
+      }
+    },
+    {
       "ComponentName": "GenericWorkerInstall",
       "ComponentType": "CommandRun",
       "Command": "C:\\generic-worker\\generic-worker.exe",
       "Arguments": [
         "install",
-        "startup",
+        "service",
+        "--nssm",
+        "C:\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe",
         "--config",
         "C:\\generic-worker\\generic-worker.config"
       ],
@@ -699,6 +747,10 @@
         {
           "ComponentType": "FirewallRule",
           "ComponentName": "LiveLog_Put"
+        },
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "NSSMInstall"
         }
       ],
       "Validate": {
@@ -712,7 +764,7 @@
             "Arguments": [
               "--version"
             ],
-            "Match": "generic-worker 8.3.0"
+            "Like": "generic-worker 10.8.5 *"
           }
         ]
       }
@@ -730,6 +782,18 @@
       "Target": "C:\\generic-worker\\disable-desktop-interrupt.reg"
     },
     {
+      "ComponentName": "SetDefaultPrinter",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "GenericWorkerInstall"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/SetDefaultPrinter.ps1",
+      "Target": "C:\\generic-worker\\SetDefaultPrinter.ps1"
+    },
+    {
       "ComponentName": "GenericWorkerStateWait",
       "ComponentType": "ChecksumFileDownload",
       "DependsOn": [
@@ -742,7 +806,7 @@
           "ComponentName": "DisableDesktopInterrupt"
         }
       ],
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-hw-generic-worker-8-and-reboot.bat",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-hw-generic-worker-10-and-reboot.bat",
       "Target": "C:\\generic-worker\\run-generic-worker.bat"
     },
     {
@@ -1105,14 +1169,6 @@
       "State": "Stopped"
     },
     {
-      "ComponentName": "KTS_ssh",
-      "ComponentType": "ServiceControl",
-      "Comment": "Disable KTS SSHD",
-      "Name": "KpyM Telnet SSH Server v1.19",
-      "StartupType": "Disabled",
-      "State": "Stopped"
-    },
-    {
       "ComponentName": "W32Time",
       "ComponentType": "ServiceControl",
       "Comment": "Enable time service",
@@ -1159,20 +1215,6 @@
       "Source": "https://s3-us-west-2.amazonaws.com/occ-package/jq-win64.exe",
       "sha512": "0fc326228b61fdc64b88b9cd3b976bc4f3de542a1ae1818cb6acbc7b146b0a20ebbd935e07f1b2179e2a2ded614b309259ea944b5e217d3a137458cb5d165ccc",
       "Target": "C:\\Windows\\System32\\jq.exe"
-    },
-    {
-      "ComponentName": "ICMPv4In",
-      "ComponentType": "FirewallRule",
-      "Protocol": "ICMPv4",
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
-      "ComponentName": "ICMPv6In",
-      "ComponentType": "FirewallRule",
-      "Protocol": "ICMPv6",
-      "Direction": "Inbound",
-      "Action": "Allow"
     },
     {
       "ComponentName": "cppbuildtools",
@@ -1259,42 +1301,12 @@
       "ValueData": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
     },
     {
-      "ComponentName": "Reg_WinDefend_DisableConfig",
-      "ComponentType": "RegistryValueSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
-      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
-      "ValueName": "DisableConfig",
-      "ValueType": "Dword",
-      "ValueData": "0x00000001",
-      "Hex": true
-    },
-    {
-      "ComponentName": "Reg_WinDefend_DisableAntiSpyware",
-      "ComponentType": "RegistryValueSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
-      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
-      "ValueName": "DisableAntiSpyware",
-      "ValueType": "Dword",
-      "ValueData": "0x00000001",
-      "Hex": true
-    },
-    {
       "ComponentName": "DisableWinDefend",
       "ComponentType": "ServiceControl",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
       "Name": "WinDefend",
       "StartupType": "Manual",
-      "State": "Stopped",
-      "DependsOn": [
-        {
-          "ComponentType": "RegistryValueSet",
-          "ComponentName": "Reg_WinDefend_DisableConfig"
-        },
-        {
-          "ComponentType": "RegistryValueSet",
-          "ComponentName": "Reg_WinDefend_DisableAntiSpyware"
-        }
-      ]
+      "State": "Stopped"
     },
     {
       "ComponentName": "reg_SystemRestore",
@@ -1462,6 +1474,26 @@
       ]
     },
     {
+      "ComponentName": "reg_DisableAntiSpyware",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
+      "ValueName": "DisableConfig",
+      "ValueType": "Dword",
+      "ValueData": "0x00000001",
+      "Hex": true
+    },
+    {
+      "ComponentName": "reg_DisableAntiSpyware_exe",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
+      "ValueName": "DisableAntiSpyware",
+      "ValueType": "Dword",
+      "ValueData": "0x00000001",
+      "Hex": true
+    },
+    {
       "ComponentName": "vcredist_vs2015_x86",
       "ComponentType": "ExeInstall",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1460042",
@@ -1552,6 +1584,13 @@
           "ComponentName": "maintenanceservice_install"
         }
       ]
+    },
+    {
+      "ComponentName": "hw-startup-check_ps1",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/hw-startup-check.ps1",
+      "Target": "C:\\DSC\\hw-startup-check.ps1"
     },
     {
       "ComponentName": "EndOfManifest.semaphore",

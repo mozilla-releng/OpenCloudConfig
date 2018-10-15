@@ -7,7 +7,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 Configuration xDynamicConfig {
   Import-DscResource -ModuleName PSDesiredStateConfiguration,xPSDesiredStateConfiguration,xWindowsUpdate
   # sourceRepo is in place to toggle between production and testing environments
-  $sourceRepo = 'markcor'
+  $sourceRepo = 'mozilla-releng'
   if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) {
     $locationType = 'AWS'
   } else {
@@ -112,9 +112,9 @@ Configuration xDynamicConfig {
       }
       'Microsoft Windows 10*' {
         if (Test-Path  C:\dsc\GW10UX.semaphore) {
-          $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/markcor/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64-ux.json?{1}' -f $sourceRepo, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+          $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64-ux.json?{1}' -f $sourceRepo, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
         } else {
-          $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/markcor/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64-hw.json?{1}' -f $sourceRepo, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
+          $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/OpenCloudConfig/master/userdata/Manifest/gecko-t-win10-64-hw.json?{1}' -f $sourceRepo, [Guid]::NewGuid()) -UseBasicParsing | ConvertFrom-Json)
         }
       }	
       'Microsoft Windows Server 2012*' {

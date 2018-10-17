@@ -1150,7 +1150,7 @@ Set-DefaultStrongCryptography
 Set-NetworkRoutes
 
 # SourceRepo is in place to toggle between production and testing environments
-$SourceRepo = 'mozilla-releng'
+$SourceRepo = 'markcor'
 
 # The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing. 
 $UpdateService = Get-Service -Name wuauserv
@@ -1422,6 +1422,7 @@ if ($rebootReasons.length) {
     }
     Set-ExecutionPolicy RemoteSigned -force | Out-File -filePath $logFile -append
     & cmd @('/c', 'winrm', 'set', 'winrm/config', '@{MaxEnvelopeSizekb="32696"}')
+    & cmd @('/c', 'winrm', 'set', 'winrm/config', '@{MaxTimeoutms="1800000"}')
     $transcript = ('{0}\log\{1}.dsc-run.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
     # end pre dsc setup ###########################################################################################################################################
 

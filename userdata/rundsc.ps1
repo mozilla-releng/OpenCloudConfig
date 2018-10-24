@@ -1150,7 +1150,6 @@ Set-DefaultStrongCryptography
 Set-NetworkRoutes
 
 # SourceRepo is in place to toggle between production and testing environments
-$SourceRepo = 'markcor'
 #$SourceRepo = 'mozilla-releng'
 
 # The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing. 

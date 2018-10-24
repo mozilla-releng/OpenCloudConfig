@@ -971,7 +971,7 @@ function Conserve-DiskSpace {
 function Set-SystemClock {
   param (
     [string] $locationType,
-    [string] $ntpserverlist = $(if ($locationType -eq 'DataCenter') { 'infoblox1.private.$MozSpace.mozilla.com' } else { '0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org' })
+    [string] $ntpserverlist = $(if ($locationType -eq 'DataCenter') { "infoblox1.private.$MozSpace.mozilla.com" } else { '0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org' })
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

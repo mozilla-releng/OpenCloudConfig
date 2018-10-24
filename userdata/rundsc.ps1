@@ -971,7 +971,7 @@ function Conserve-DiskSpace {
 function Set-SystemClock {
   param (
     [string] $locationType,
-    [string] $ntpserverlist = $(if ($locationType -eq 'DataCenter') { 'infoblox1.private.mdc1.mozilla.com infoblox1.private.mdc2.mozilla.com' } else { '0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org' })
+    [string] $ntpserverlist = $(if ($locationType -eq 'DataCenter') { 'infoblox1.private.$MozSpace.mozilla.com' } else { '0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org' })
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -1150,7 +1150,8 @@ Set-DefaultStrongCryptography
 Set-NetworkRoutes
 
 # SourceRepo is in place to toggle between production and testing environments
-$SourceRepo = 'mozilla-releng'
+$SourceRepo = 'markcor'
+#$SourceRepo = 'mozilla-releng'
 
 # The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing. 
 $UpdateService = Get-Service -Name wuauserv
@@ -1160,24 +1161,13 @@ if ($UpdateService.Status -ne 'Running') {
 } else {
   Write-Log -message 'Windows update service is running'
 }
-if ($locationType -eq 'DataCenter') {
-  if (!(Test-Connection github.com -quiet)) {
-    Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-    & shutdown @('-r', '-t', '0', '-c', 'reboot; external resources are not available', '-f', '-d', '4:5') | Out-File -filePath $logFile -append
-  }
-}
+
 if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) {
   $locationType = 'AWS'
 } else {
   $locationType = 'DataCenter'
-  # Prevent other updates from sneaking in on Windows 10
-  If($OSVersion -eq "Microsoft Windows 10*") {
-    $taskName = "OneDrive Standalone Update task v2"
-    $taskExists = Get-ScheduledTask | Where-Object {$_.TaskName -like $taskName }
-      if($taskExists) {
-      Unregister-ScheduledTask -TaskName "OneDrive Standalone Update task v2" -Confirm:$false   
-    }
-  }
+  $SearchDomain = (Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain'
+  $MozSpace =  $SearchDomain -replace ".mozilla.com$"
 }
 $lock = 'C:\dsc\in-progress.lock'
 if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {

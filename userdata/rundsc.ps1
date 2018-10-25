@@ -1165,8 +1165,8 @@ if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'Am
   $locationType = 'AWS'
 } else {
   $locationType = 'DataCenter'
-  $SearchDomain = (Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain'
-  $MozSpace =  $SearchDomain -replace ".mozilla.com$"
+ Set-Variable -Name "MozSpace" -Value (((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain') -replace ".mozilla.com$") -Scope global
+ [Environment]::SetEnvironmentVariable("MozSpace", "$MozSpace", "Machine")
 }
 $lock = 'C:\dsc\in-progress.lock'
 if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {

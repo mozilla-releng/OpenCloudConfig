@@ -96,7 +96,7 @@ Configuration xDynamicConfig {
     TestScript = { return $false }
   }
 
-  if ($locationType -eq 'AWS') { 
+  if ($locationType -eq 'AWS') {
     $instancekey = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/meta-data/public-keys' -UseBasicParsing).Content
     if ($instancekey.StartsWith('0=mozilla-taskcluster-worker-')) {
       # ami creation instance
@@ -106,25 +106,25 @@ Configuration xDynamicConfig {
       $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType
     }
     if ($workerType) {
-      $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/{3}.json?{4}' -f $sourceOrg, $sourceRepo, $sourceRev, $workerType, [Guid]::NewGuid()) -UseBasicParsing | % { $_.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) } | ConvertFrom-Json)
+      $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/{3}.json?{4}' -f $sourceOrg, $sourceRepo, $sourceRev, $workerType, [Guid]::NewGuid()) -UseBasicParsing).Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
     }
   } else {
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {
-        $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-t-win7-32-hw.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing | % { $_.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) } | ConvertFrom-Json)
+        $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-t-win7-32-hw.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing).Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
       }
       'Microsoft Windows 10*' {
         if (Test-Path -Path 'C:\dsc\GW10UX.semaphore' -ErrorAction SilentlyContinue) {
-          $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-t-win10-64-ux.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing | % { $_.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) } | ConvertFrom-Json)
+          $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-t-win10-64-ux.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing).Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
         } else {
-          $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-t-win10-64-hw.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing | % { $_.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) } | ConvertFrom-Json)
+          $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-t-win10-64-hw.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing).Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
         }
       }	
       'Microsoft Windows Server 2012*' {
-        $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-1-b-win2012.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing | % { $_.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) } | ConvertFrom-Json)
+        $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-1-b-win2012.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing).Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
       }
       'Microsoft Windows Server 2016*' {
-        $manifest = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-1-b-win2016.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing | % { $_.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) } | ConvertFrom-Json)
+        $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/gecko-1-b-win2016.json?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -UseBasicParsing).Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
       }
       default {
         $manifest = ('{"Items":[{"ComponentType":"DirectoryCreate","Path":"$env:SystemDrive\\log"}]}' | ConvertFrom-Json)

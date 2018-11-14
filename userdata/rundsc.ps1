@@ -83,7 +83,7 @@ function Install-SupportingModules {
           Write-Log -message ('{0} :: failed to install module: {1} from {2}.' -f $($MyInvocation.MyCommand.Name), $moduleName, $url) -severity 'ERROR'
         }
       } catch {
-        Write-Log -message ('{0} :: error installing module: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $moduleName, $_.Exception.Message) -severity 'ERROR'
+        Write-Log -message ('{0} :: error installing module: {1} from {2}. {3}' -f $($MyInvocation.MyCommand.Name), $moduleName, $url, $_.Exception.Message) -severity 'ERROR'
       }
       try {
         Import-Module -Name $moduleName

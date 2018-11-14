@@ -1509,6 +1509,20 @@ function Wait-GenericWorkerStart {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Initialize-NativeImageCache {
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    Get-ChildItem -Path $env:SystemRoot\Microsoft.Net -Filter 'ngen.exe' -Recurse | % {
+      # todo: put framework version in name arg
+      Start-LoggedProcess -filePath $_.FullName -ArgumentList @('executeQueuedItems') -name 'ngen-executeQueuedItems'
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Run-OpenCloudConfig {
   param (
     [string] $sourceOrg = 'mozilla-releng',
@@ -1700,15 +1714,7 @@ function Run-OpenCloudConfig {
         }
       }
 
-      Get-ChildItem -Path $env:SystemRoot\Microsoft.Net -Filter ngen.exe -Recurse | % {
-        try {
-          & $_.FullName executeQueuedItems
-          Write-Log -message ('{0} :: executed: "{1} executeQueuedItems".' -f $($MyInvocation.MyCommand.Name), $_.FullName) -severity 'INFO'
-        }
-        catch {
-          Write-Log -message ('{0} :: failed to execute: "{1} executeQueuedItems"' -f $($MyInvocation.MyCommand.Name), $_.FullName) -severity 'ERROR'
-        }
-      }
+      Initialize-NativeImageCache
 
       # rename the instance
       $rebootReasons = $(if ($renameInstance) { Set-ComputerName } else { @() })

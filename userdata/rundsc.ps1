@@ -1393,6 +1393,68 @@ function hw-DiskManage {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Set-ChainOfTrustKeyAndShutdown {
+  param (
+    [string] $workerType,
+    [string] $logFile
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    switch -regex ($workerType) {
+      # level 3 builder needs key added by user intervention and must already exist in cot repo
+      '^gecko-3-b-win2012(-c[45])?$' {
+        while (-not (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue)) {
+          Write-Log -message ('{0} :: cot key missing. awaiting user intervention.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+          Sleep 60
+        }
+        while (-not ((Get-Item -Path 'C:\generic-worker\cot.key').Length -gt 0)) {
+          Write-Log -message ('{0} :: cot key empty. awaiting user intervention.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+          Sleep 60
+        }
+        while (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).Length -gt 0) {
+          Write-Log -message ('{0} :: rdp session detected. awaiting user disconnect.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+          Sleep 60
+        }
+        if (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue) {
+          Start-LoggedProcess -filePath 'icacls' -ArgumentList @('C:\generic-worker\cot.key', '/grant', 'Administrators:(GA)') -name 'icacls-cot-grant-admin'
+          Start-LoggedProcess -filePath 'icacls' -ArgumentList @('C:\generic-worker\cot.key', '/inheritance:r') -name 'icacls-cot-inheritance-remove'
+          Write-Log -message ('{0} :: cot key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+        } else {
+          Write-Log -message ('{0} :: cot key intervention failed. awaiting timeout or cancellation.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+        }
+      }
+      # all other workers can generate new keys. these don't require trust from cot repo
+      default {
+        if (-not (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue)) {
+          Write-Log -message ('{0} :: cot key missing. generating key.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+          Start-LoggedProcess -filePath 'C:\generic-worker\generic-worker.exe' -ArgumentList @('new-openpgp-keypair', '--file', 'C:\generic-worker\cot.key') -name 'generic-worker-new-openpgp-keypair'
+          if (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue) {
+            Write-Log -message ('{0} :: cot key generated.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+          } else {
+            Write-Log -message ('{0} :: cot key generation failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+          }
+        }
+        if (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue) {
+          Write-Log -message ('{0} :: cot key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+        } else {
+          Write-Log -message ('{0} :: cot key missing. awaiting timeout or cancellation.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+        } else {
+          Write-Log -message ('{0} :: rdp session detected. awaiting manual shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+        }
+      }
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Run-OpenCloudConfig {
   param (
     [string] $sourceOrg = 'mozilla-releng',
@@ -1702,44 +1764,7 @@ function Run-OpenCloudConfig {
       if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
         if ($locationType -ne 'DataCenter') {
-          switch -regex ($workerType) {
-            # level 3 builder needs key added by user intervention and must already exist in cot repo
-            '^gecko-3-b-win2012(-c[45])?$' {
-              while ((-not (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue)) -or (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -gt 0)) {
-                Write-Log -message ('{0} :: cot key missing. awaiting user intervention.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
-                Sleep 60
-              }
-              if (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue) {
-                & icacls @('C:\generic-worker\cot.key', '/grant', 'Administrators:(GA)')
-                & icacls @('C:\generic-worker\cot.key', '/inheritance:r')
-                Write-Log -message ('{0} :: cot key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-                & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
-              } else {
-                Write-Log -message ('{0} :: cot key intervention failed. awaiting timeout or cancellation.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-              }
-            }
-            # all other workers can generate new keys. these don't require trust from cot repo
-            default {
-              if (-not (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue)) {
-                Write-Log -message ('{0} :: cot key missing. generating key.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
-                & 'C:\generic-worker\generic-worker.exe' @('new-openpgp-keypair', '--file', 'C:\generic-worker\cot.key') | Out-File -filePath $logFile -append
-                if (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue) {
-                  Write-Log -message ('{0} :: cot key generated.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-                } else {
-                  Write-Log -message ('{0} :: cot key generation failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-                }
-              }
-              if (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue) {
-                Write-Log -message ('{0} :: cot key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-                & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
-              } else {
-                Write-Log -message ('{0} :: cot key missing. awaiting timeout or cancellation.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-              }
-              if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
-                & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
-              }
-            }
-          }
+          Set-ChainOfTrustKeyAndShutdown -workerType $workerType -logFile $logFile
         }
       } elseif ($isWorker) {
         if ($locationType -ne 'DataCenter') {

@@ -1455,6 +1455,60 @@ function Set-ChainOfTrustKeyAndShutdown {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Wait-GenericWorkerStart {
+  param (
+    [string] $locationType,
+    [string] $lock,
+    [string] $taskClaimSemaphore = 'C:\dsc\task-claim-state.valid'
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue) {
+      Write-Log -message ('{0} :: generic-worker installation detected.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+      New-Item -Path $taskClaimSemaphore -type file -force
+      Write-Log -message ('{0} :: semaphore {1} created.' -f $($MyInvocation.MyCommand.Name), $taskClaimSemaphore) -severity 'INFO'
+      # give g-w 2 minutes to fire up, if it doesn't, boot loop.
+      $timeout = New-Timespan -Minutes 2
+      $timer = [Diagnostics.Stopwatch]::StartNew()
+      $waitlogged = $false
+      while (($timer.Elapsed -lt $timeout) -and (@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -eq 0)) {
+        if (!$waitlogged) {
+          Write-Log -message ('{0} :: waiting for generic-worker process to start.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+          $waitlogged = $true
+        }
+      }
+      if ((@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -eq 0)) {
+        Write-Log -message ('{0} :: no generic-worker process detected.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
+        if ($locationType -eq 'DataCenter') {
+          Remove-Item -Path $taskClaimSemaphore -force -ErrorAction SilentlyContinue
+          Write-Log -message ('{0} :: semaphore {1} deleted.' -f $($MyInvocation.MyCommand.Name), $taskClaimSemaphore) -severity 'INFO'
+        }
+        & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', '4:5') | Out-File -filePath $logFile -append
+      } else {
+        $timer.Stop()
+        Write-Log -message ('{0} :: generic-worker running process detected {1} ms after task-claim-state.valid flag set.' -f $($MyInvocation.MyCommand.Name), $timer.ElapsedMilliseconds) -severity 'INFO'
+        if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
+          Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
+        }
+        $gwProcess = (Get-Process | ? { $_.ProcessName -eq 'generic-worker' })
+        if (($gwProcess) -and ($gwProcess.PriorityClass) -and ($gwProcess.PriorityClass -ne [Diagnostics.ProcessPriorityClass]::AboveNormal)) {
+          $priorityClass = $gwProcess.PriorityClass
+          $gwProcess.PriorityClass = [Diagnostics.ProcessPriorityClass]::AboveNormal
+          Write-Log -message ('{0} :: process priority for generic worker altered from {1} to {2}.' -f $($MyInvocation.MyCommand.Name), $priorityClass, $gwProcess.PriorityClass) -severity 'INFO'
+          Set-ServiceState -name 'wuauserv' -state 'Stopped'
+        }
+      }
+    } else {
+      Write-Log -message ('{0} :: generic worker install not detected (missing C:\generic-worker\run-generic-worker.bat).' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Run-OpenCloudConfig {
   param (
     [string] $sourceOrg = 'mozilla-releng',
@@ -1495,7 +1549,7 @@ function Run-OpenCloudConfig {
       if (-not (Test-Path -Path $lockDir -ErrorAction SilentlyContinue)) {
         New-Item -Path $lockDir -ItemType directory -force
       }
-      New-Item $lock -type file -force
+      New-Item -Path $lock -type file -force
     }
     if ($locationType -eq 'DataCenter') {
       hw-DiskManage
@@ -1772,41 +1826,7 @@ function Run-OpenCloudConfig {
             Map-DriveLetters
           }
         }
-        if (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue) {
-          Write-Log -message ('{0} :: generic-worker installation detected.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-          New-Item 'C:\dsc\task-claim-state.valid' -type file -force
-          # give g-w 2 minutes to fire up, if it doesn't, boot loop.
-          $timeout = New-Timespan -Minutes 2
-          $timer = [Diagnostics.Stopwatch]::StartNew()
-          $waitlogged = $false
-          while (($timer.Elapsed -lt $timeout) -and (@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -eq 0)) {
-            if (!$waitlogged) {
-              Write-Log -message ('{0} :: waiting for generic-worker process to start.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-              $waitlogged = $true
-            }
-          }
-          if ((@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -eq 0)) {
-            Write-Log -message ('{0} :: no generic-worker process detected.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-            Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-            if ($locationType -eq 'DataCenter') {
-              Remove-Item -Path C:\dsc\task-claim-state.valid -force -ErrorAction SilentlyContinue
-            }
-            & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', '4:5') | Out-File -filePath $logFile -append
-          } else {
-            $timer.Stop()
-            Write-Log -message ('{0} :: generic-worker running process detected {1} ms after task-claim-state.valid flag set.' -f $($MyInvocation.MyCommand.Name), $timer.ElapsedMilliseconds) -severity 'INFO'
-            if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
-              Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-            }
-            $gwProcess = (Get-Process | ? { $_.ProcessName -eq 'generic-worker' })
-            if (($gwProcess) -and ($gwProcess.PriorityClass) -and ($gwProcess.PriorityClass -ne [Diagnostics.ProcessPriorityClass]::AboveNormal)) {
-              $priorityClass = $gwProcess.PriorityClass
-              $gwProcess.PriorityClass = [Diagnostics.ProcessPriorityClass]::AboveNormal
-              Write-Log -message ('{0} :: process priority for generic worker altered from {1} to {2}.' -f $($MyInvocation.MyCommand.Name), $priorityClass, $gwProcess.PriorityClass) -severity 'INFO'
-              Set-ServiceState -name 'wuauserv' -state 'Stopped'
-            }
-          }
-        }
+        Wait-GenericWorkerStart -locationType $locationType -lock $lock
       }
     }
     if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {

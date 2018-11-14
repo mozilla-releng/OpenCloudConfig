@@ -97,12 +97,51 @@ function Install-SupportingModules {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Set-OpenCloudConfigSource {
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    try {
+      $userdata = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/user-data')
+    } catch {
+      $userdata = $null
+    }
+    foreach ($sourceItemName in @('Organisation', 'Repository', 'Revision')) {
+      if (Test-Path -Path ('HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source\{0}' -f $sourceItemName) -ErrorAction SilentlyContinue) {
+        Write-Log -message ('{0} :: detected Source/{1} in registry as: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name $sourceItemName)."$sourceItemName") -severity 'DEBUG'
+      } elseif(($userdata) -and ($userdata.Contains('</SourceOrganisation>') -or $userdata.Contains('</SourceRepository>') -or $userdata.Contains('</SourceRevision>'))) {
+        try {
+          $sourceItemValue = [regex]::matches($userdata, ('<Source{0}>(.*)<\/Source{0}>' -f $sourceItemName))[0].Groups[1].Value
+        }
+        catch {
+          $sourceItemValue = $null
+        }
+        if ($sourceItemValue) {
+          Write-Log -message ('{0} :: detected Source/{1} in userdata as: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue) -severity 'INFO'
+          try {
+            Set-ItemProperty 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Type 'String' -Name $sourceItemName -Value $sourceItemValue
+            Write-Log -message ('{0} :: set Source/{1} in registry to: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue) -severity 'INFO'
+          }
+          catch {
+            Write-Log -message ('{0} :: error setting Source/{1} in registry to: {2}. {3}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue, $_.Exception.Message) -severity 'ERROR'
+          }
+        } else {
+          Write-Log -message ('{0} :: detected Source/{1} in userdata as: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue) -severity 'INFO'
+        }
+      }
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 
 # modify sourceOrg and/or sourceRepo to toggle between testing environments
-# todo: determine sourceOrg, sourceRepo, sourceRev from userdata and store in registry (bug 1406354)
-$sourceOrg = $(if (Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source\Organisation' -ErrorAction SilentlyContinue) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation').'Organisation' } else { 'mozilla-releng' })
-$sourceRepo = $(if (Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source\Repository' -ErrorAction SilentlyContinue) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository').'Repository' } else { 'OpenCloudConfig' })
-$sourceRev = $(if (Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source\Revision' -ErrorAction SilentlyContinue) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Revision').'Revision' } else { 'master' })
+Set-OpenCloudConfigSource
+$sourceOrg = $(if (Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source\Organisation' -ErrorAction SilentlyContinue) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation').Organisation } else { 'mozilla-releng' })
+$sourceRepo = $(if (Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source\Repository' -ErrorAction SilentlyContinue) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository').Repository } else { 'OpenCloudConfig' })
+$sourceRev = $(if (Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source\Revision' -ErrorAction SilentlyContinue) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Revision').Revision } else { 'master' })
 
 Install-SupportingModules -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev
 Run-OpenCloudConfig -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev

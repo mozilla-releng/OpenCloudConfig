@@ -120,7 +120,7 @@ function Set-OpenCloudConfigSource {
         if ($sourceItemValue) {
           Write-Log -message ('{0} :: detected Source/{1} in userdata as: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue) -severity 'INFO'
           try {
-            Set-ItemProperty 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Type 'String' -Name $sourceItemName -Value $sourceItemValue
+            New-Item 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Force | Set-ItemProperty -Type 'String' -Name $sourceItemName -Value $sourceItemValue
             Write-Log -message ('{0} :: set Source/{1} in registry to: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue) -severity 'INFO'
           }
           catch {

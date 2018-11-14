@@ -80,7 +80,7 @@ function Install-SupportingModules {
         if (Test-Path -Path $modulePath -ErrorAction SilentlyContinue) {
           Write-Log -message ('{0} :: installed module: {1}.' -f $($MyInvocation.MyCommand.Name), $moduleName) -severity 'DEBUG'
         } else {
-          Write-Log -message ('{0} :: failed to install module: {1}.' -f $($MyInvocation.MyCommand.Name), $moduleName) -severity 'ERROR'
+          Write-Log -message ('{0} :: failed to install module: {1} from {2}.' -f $($MyInvocation.MyCommand.Name), $moduleName, $url) -severity 'ERROR'
         }
       } catch {
         Write-Log -message ('{0} :: error installing module: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $moduleName, $_.Exception.Message) -severity 'ERROR'

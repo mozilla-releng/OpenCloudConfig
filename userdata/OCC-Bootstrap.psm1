@@ -1009,14 +1009,14 @@ function Set-DefaultStrongCryptography {
         Write-Log -message ('{0} :: Detected TLS v1.2 in security protocol support list' -f $($MyInvocation.MyCommand.Name))
       }
       if (-not (Get-WmiObject -class Win32_OperatingSystem).Caption.StartsWith('Microsoft Windows 7')) {
-        if((Get-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto').SchUseStrongCrypto -ne 1) {
+        if((-not (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -ErrorAction SilentlyContinue)) -or ((Get-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto').SchUseStrongCrypto -ne 1)) {
           Set-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -Type DWord
           Write-Log -message ('{0} :: Registry updated to use strong cryptography on 64 bit .Net Framework' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         } else {
           Write-Log -message ('{0} :: Detected registry setting to use strong cryptography on 64 bit .Net Framework' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         }
       }
-      if((Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto').SchUseStrongCrypto -ne 1) {
+      if((-not (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -ErrorAction SilentlyContinue)) -or ((Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto').SchUseStrongCrypto -ne 1)) {
         Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NetFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -Type DWord
         Write-Log -message ('{0} :: Registry updated to use strong cryptography on 32 bit .Net Framework' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
       } else {

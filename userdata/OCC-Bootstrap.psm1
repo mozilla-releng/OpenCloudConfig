@@ -361,7 +361,8 @@ function Set-Ec2ConfigSettings {
       'Ec2ConfigureRDP' = 'Disabled';
       'Ec2DynamicBootVolumeSize' = 'Disabled';
       'AWS.EC2.Windows.CloudWatch.PlugIn' = 'Disabled'
-    }
+    },
+    [string[]] $rebootReasons = @()
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -384,11 +385,13 @@ function Set-Ec2ConfigSettings {
         & 'icacls' @($ec2ConfigSettingsFile, '/grant', 'System:F') | Out-File -filePath $logFile -append
         $xml.Save($ec2ConfigSettingsFile) | Out-File -filePath $logFile -append
         Write-Log -message ('{0} :: Ec2Config settings file saved at: {1}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile) -severity 'INFO'
+        $rebootReasons += 'Ec2Config settings updated'
       }
       catch {
         Write-Log -message ('{0} :: failed to save Ec2Config settings file: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile, $_.Exception.Message) -severity 'ERROR'
       }
     }
+    return $rebootReasons
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -1726,13 +1729,16 @@ function Run-OpenCloudConfig {
       Initialize-NativeImageCache
 
       # rename the instance
-      $rebootReasons = $(if ($renameInstance) { Set-ComputerName } else { @() })
+      $rebootReasons = $(if ($renameInstance) { (Set-ComputerName) } else { @() })
       # set fqdn
       if ($setFqdn) {
         Set-DomainName -workerType $workerType -dnsRegion $dnsRegion
         # Turn off DNS address registration (EC2 DNS is configured to not allow it)
         Set-DynamicDnsRegistration -enabled:$false
       }
+    }
+    if ($locationType -ne 'DataCenter') {
+      $rebootReasons = (Set-Ec2ConfigSettings -isWorker:$isWorker -rebootReasons $rebootReasons)
     }
     if ($rebootReasons.length) {
       Write-Log -message ('{0} :: reboot required: {1}' -f $($MyInvocation.MyCommand.Name), [string]::Join(', ', $rebootReasons)) -severity 'DEBUG'
@@ -1742,7 +1748,6 @@ function Run-OpenCloudConfig {
       if ($locationType -ne 'DataCenter') {
         # create a scheduled task to run HaltOnIdle every 2 minutes
         Create-ScheduledPowershellTask -taskName 'HaltOnIdle' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/HaltOnIdle.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\HaltOnIdle.ps1' -sc 'minute' -mo '2'
-        Set-Ec2ConfigSettings -isWorker:$isWorker
       }
       # create a scheduled task to run system maintenance on startup
       Create-ScheduledPowershellTask -taskName 'MaintainSystem' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/MaintainSystem.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\MaintainSystem.ps1' -sc 'onstart'

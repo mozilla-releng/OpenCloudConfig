@@ -350,7 +350,7 @@ function Set-Ec2ConfigSettings {
     [string] $ec2ConfigSettingsFile = ('{0}\Amazon\Ec2ConfigService\Settings\Config.xml' -f $env:ProgramFiles),
     [hashtable] $ec2ConfigSettings = @{
       'Ec2HandleUserData' = 'Enabled';
-      'Ec2InitializeDrives' = 'Enabled';
+      'Ec2InitializeDrives' = 'Disabled';
       'Ec2EventLog' = 'Enabled';
       'Ec2OutputRDPCert' = 'Enabled';
       'Ec2SetDriveLetter' = 'Disabled';

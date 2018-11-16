@@ -347,13 +347,14 @@ function Remove-LegacyStuff {
 }
 function Set-Ec2ConfigSettings {
   param (
+    [switch] $isWorker = $false,
     [string] $ec2ConfigSettingsFile = ('{0}\Amazon\Ec2ConfigService\Settings\Config.xml' -f $env:ProgramFiles),
     [hashtable] $ec2ConfigSettings = @{
-      'Ec2HandleUserData' = 'Enabled';
-      'Ec2InitializeDrives' = 'Disabled';
+      'Ec2HandleUserData' = $(if ($isWorker) { 'Disabled' } else { 'Enabled' });;
+      'Ec2InitializeDrives' = $(if ($isWorker) { 'Disabled' } else { 'Enabled' });
       'Ec2EventLog' = 'Enabled';
       'Ec2OutputRDPCert' = 'Enabled';
-      'Ec2SetDriveLetter' = 'Disabled';
+      'Ec2SetDriveLetter' = $(if ($isWorker) { 'Disabled' } else { 'Enabled' });;
       'Ec2WindowsActivate' = 'Disabled';
       'Ec2SetPassword' = 'Disabled';
       'Ec2SetComputerName' = 'Disabled';
@@ -1741,7 +1742,7 @@ function Run-OpenCloudConfig {
       if ($locationType -ne 'DataCenter') {
         # create a scheduled task to run HaltOnIdle every 2 minutes
         Create-ScheduledPowershellTask -taskName 'HaltOnIdle' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/HaltOnIdle.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\HaltOnIdle.ps1' -sc 'minute' -mo '2'
-        Set-Ec2ConfigSettings
+        Set-Ec2ConfigSettings -isWorker:$isWorker
       }
       # create a scheduled task to run system maintenance on startup
       Create-ScheduledPowershellTask -taskName 'MaintainSystem' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/MaintainSystem.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\MaintainSystem.ps1' -sc 'onstart'

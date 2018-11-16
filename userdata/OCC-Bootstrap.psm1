@@ -353,7 +353,7 @@ function Set-Ec2ConfigSettings {
       'Ec2InitializeDrives' = 'Enabled';
       'Ec2EventLog' = 'Enabled';
       'Ec2OutputRDPCert' = 'Enabled';
-      'Ec2SetDriveLetter' = 'Enabled';
+      'Ec2SetDriveLetter' = 'Disabled';
       'Ec2WindowsActivate' = 'Disabled';
       'Ec2SetPassword' = 'Disabled';
       'Ec2SetComputerName' = 'Disabled';

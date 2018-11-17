@@ -1702,7 +1702,7 @@ function Run-OpenCloudConfig {
           }
         }
       }
-      Write-Log -message ('{0} :: runDscOnWorker: {1}, renameInstance: {2}, setFqdn: {3}.' -f $($MyInvocation.MyCommand.Name), $runDscOnWorker, $renameInstance, $setFqdn) -severity 'DEBUG'
+      Write-Log -message ('{0} :: runDscOnWorker: {1}' -f $($MyInvocation.MyCommand.Name), $runDscOnWorker) -severity 'DEBUG'
       $instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-type'))
       Write-Log -message ('{0} :: instanceType: {1}.' -f $($MyInvocation.MyCommand.Name), $instanceType) -severity 'INFO'
       [Environment]::SetEnvironmentVariable("TASKCLUSTER_INSTANCE_TYPE", "$instanceType", "Machine")
@@ -1735,19 +1735,19 @@ function Run-OpenCloudConfig {
       $driveMapTimeout = (Get-Date).AddMinutes(10)
       $driveMapAttempt = 0
       Write-Log -message ('{0} :: drive map timeout set to {0}' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      do {
+      while (((Get-Date) -lt $driveMapTimeout) -and (-not ((Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)))) {
         if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -eq 'Z:' }).Size -ge 119GB)) {
           Resize-DiskOne
         }
         Map-DriveLetters
         $driveMapAttempt++
-        if ((-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) -or (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue))) {
+        if ((Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) {
+          Write-Log -message ('{0} :: drive map attempt {1} succeeded' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'INFO'
+        } else {
           Write-Log -message ('{0} :: drive map attempt {1} failed' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'WARN'
           Sleep 60
-        } else {
-          Write-Log -message ('{0} :: drive map attempt {1} succeeded' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'INFO'
         }
-      } while (((-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) -or (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue))) -and ((Get-Date) -lt $driveMapTimeout))
+      }
       if ($isWorker) {
         if (($isWorker) -and (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue))) {
           Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'

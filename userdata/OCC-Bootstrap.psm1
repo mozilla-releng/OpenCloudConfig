@@ -1740,7 +1740,7 @@ function Run-OpenCloudConfig {
           Resize-DiskOne
         }
         Map-DriveLetters
-        $driveMapAttempt++
+        $driveMapAttempt ++
         if ((Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) {
           Write-Log -message ('{0} :: drive map attempt {1} succeeded' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'INFO'
         } else {
@@ -1749,13 +1749,17 @@ function Run-OpenCloudConfig {
         }
       }
       if ($isWorker) {
-        if (($isWorker) -and (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue))) {
-          Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
+        while (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) {
+          Write-Log -message ('{0} :: missing task drive. awaiting user intervention...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+          Sleep 60
+          #Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+          #& shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
         }
-        if (($isWorker) -and (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue))) {
-          Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
+        while (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) {
+          Write-Log -message ('{0} :: missing cache drive. awaiting user intervention...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+          Sleep 60
+          #Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+          #& shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
         }
       }
       Initialize-NativeImageCache

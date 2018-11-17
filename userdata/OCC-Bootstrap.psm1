@@ -619,7 +619,8 @@ function Map-DriveLetters {
     $driveLetterMap.Keys | % {
       $old = $_
       $new = $driveLetterMap.Item($_)
-      if (Test-Path -Path ('{0}\' -f $old) -ErrorAction SilentlyContinue) {
+      #if (Test-Path -Path ('{0}\' -f $old) -ErrorAction SilentlyContinue) {
+      if (@(Get-Volume -DriveLetter @($old[0]) -ErrorAction SilentlyContinue).Length -eq 1) {
         $volume = Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$old'"
         if ($null -ne $volume) {
           $volume.DriveLetter = $new
@@ -628,7 +629,8 @@ function Map-DriveLetters {
         }
       }
     }
-    if ((Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue) -and (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue))) {
+    #if ((Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue) -and (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue))) {
+    if ((@(Get-Volume -DriveLetter 'Y' -ErrorAction SilentlyContinue).Length -eq 1) -and (@(Get-Volume -DriveLetter 'Z' -ErrorAction SilentlyContinue).Length -eq 0)) {
       $volume = Get-WmiObject -Class win32_volume -Filter "DriveLetter='Y:'"
       if ($null -ne $volume) {
         $volume.DriveLetter = 'Z:'
@@ -1736,7 +1738,7 @@ function Run-OpenCloudConfig {
       $driveMapAttempt = 0
       Write-Log -message ('{0} :: drive map timeout set to {1}' -f $($MyInvocation.MyCommand.Name), $driveMapTimeout) -severity 'DEBUG'
       while (((Get-Date) -lt $driveMapTimeout) -and (@(Get-Volume -DriveLetter @('Z', 'Y') -ErrorAction SilentlyContinue).Length -ne 2)) {
-        if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -eq 'Z:' }).Size -ge 119GB)) {
+        if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -ne 'C:' }).Size -ge 119GB)) {
           Resize-DiskOne
         }
         Map-DriveLetters

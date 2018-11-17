@@ -350,11 +350,11 @@ function Set-Ec2ConfigSettings {
     [switch] $isWorker = $false,
     [string] $ec2ConfigSettingsFile = ('{0}\Amazon\Ec2ConfigService\Settings\Config.xml' -f $env:ProgramFiles),
     [hashtable] $ec2ConfigSettings = @{
-      'Ec2HandleUserData' = $(if ($isWorker) { 'Disabled' } else { 'Enabled' });;
+      'Ec2HandleUserData' = $(if ($isWorker) { 'Disabled' } else { 'Enabled' });
       'Ec2InitializeDrives' = $(if ($isWorker) { 'Disabled' } else { 'Enabled' });
       'Ec2EventLog' = 'Enabled';
       'Ec2OutputRDPCert' = 'Enabled';
-      'Ec2SetDriveLetter' = $(if ($isWorker) { 'Disabled' } else { 'Enabled' });;
+      'Ec2SetDriveLetter' = 'Enabled';
       'Ec2WindowsActivate' = 'Disabled';
       'Ec2SetPassword' = 'Disabled';
       'Ec2SetComputerName' = 'Disabled';

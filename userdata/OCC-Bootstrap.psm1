@@ -349,7 +349,7 @@ function Set-Ec2ConfigSettings {
   param (
     [string] $ec2ConfigSettingsFile = ('{0}\Amazon\Ec2ConfigService\Settings\Config.xml' -f $env:ProgramFiles),
     [hashtable] $ec2ConfigSettings = @{
-      'Ec2HandleUserData' = 'Enabled';
+      'Ec2HandleUserData' = $(if ([bool](Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue)) { 'Disabled' } else { 'Enabled' });
       'Ec2InitializeDrives' = 'Enabled';
       'Ec2EventLog' = 'Enabled';
       'Ec2OutputRDPCert' = 'Enabled';
@@ -576,6 +576,10 @@ function Set-Pagefile {
           try {
             Set-WmiInstance -class Win32_PageFileSetting -Arguments @{name=$name;InitialSize=$initialSize;MaximumSize=$maximumSize}
             Write-Log -message ('{0} :: page file: {1}, created.' -f $($MyInvocation.MyCommand.Name), $name) -severity 'INFO'
+            if (-not ($isWorker)) {
+              # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
+              Set-Ec2ConfigSettings
+            }
             Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
             & shutdown @('-r', '-t', '0', '-c', ('page file {0} created' -f $name), '-f', '-d', 'p:2:4')
           }
@@ -635,13 +639,7 @@ function Map-DriveLetters {
     $volumes = @(Get-WmiObject -Class Win32_Volume | sort-object { $_.Name })
     Write-Log -message ('{0} :: {1} volumes detected.' -f $($MyInvocation.MyCommand.Name), $volumes.length) -severity 'INFO'
     foreach ($volume in $volumes) {
-      $driveletter = $volume.Name[0]
-      Write-Log -message ('{0} :: {1}: {2}gb' -f $($MyInvocation.MyCommand.Name), $driveletter, [math]::Round($volume.Capacity/1GB,2)) -severity 'DEBUG'
-      if (-not (Test-Path -Path ('{0}:\' -f $driveletter) -ErrorAction SilentlyContinue)) {
-        $volume.DriveLetter = ('{0}:' -f $driveletter)
-        $volume.Put()
-        Write-Log -message ('{0} :: drive letter reassigned ({0}): .' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-      }
+      Write-Log -message ('{0} :: {1} {2}gb' -f $($MyInvocation.MyCommand.Name), $volume.Name.Trim('\'), [math]::Round($volume.Capacity/1GB,2)) -severity 'DEBUG'
     }
     $partitions = @(Get-WmiObject -Class Win32_DiskPartition | sort-object { $_.Name })
     Write-Log -message ('{0} :: {1} disk partitions detected.' -f $($MyInvocation.MyCommand.Name), $partitions.length) -severity 'INFO'
@@ -1575,6 +1573,11 @@ function Initialize-Instance {
       Set-DynamicDnsRegistration -enabled:$false
     }
     if ($rebootReasons.length) {
+      # if this is an ami creation instance (not a worker) ...
+      if (($locationType -eq 'AWS') -and (((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')).StartsWith('0=mozilla-taskcluster-worker-'))) {
+        # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
+        Set-Ec2ConfigSettings
+      }
       Write-Log -message ('{0} :: reboot required: {1}' -f $($MyInvocation.MyCommand.Name), [string]::Join(', ', $rebootReasons)) -severity 'DEBUG'
       & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1')
     }
@@ -1661,7 +1664,6 @@ function Run-OpenCloudConfig {
         # ami creation instance
         $isWorker = $false
         $workerType = $publicKeys.Replace('0=mozilla-taskcluster-worker-', '')
-        Set-Ec2ConfigSettings
         Activate-Windows -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
       } else {
         # provisioned worker
@@ -1807,6 +1809,10 @@ function Run-OpenCloudConfig {
       
       # post dsc teardown ###########################################################################################################################################
       if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required') -or ($_ -match 'WSManNetworkFailureDetected')) }) -contains $true) {
+        if (-not ($isWorker)) {
+          # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
+          Set-Ec2ConfigSettings
+        }
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
         & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart or the dsc process did not complete', '-f', '-d', 'p:4:2') | Out-File -filePath $logFile -append
       }
@@ -1835,6 +1841,10 @@ function Run-OpenCloudConfig {
 
       # create a scheduled task to run dsc at startup
       Create-ScheduledPowershellTask -taskName 'RunDesiredStateConfigurationAtStartup' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/rundsc.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\rundsc.ps1' -sc 'onstart'
+      if (-not ($isWorker)) {
+        # ensure that Ec2HandleUserData is disabled after the RunDesiredStateConfigurationAtStartup scheduled task has been created
+        Set-Ec2ConfigSettings
+      }
     }
     if (($isWorker) -and (-not ($runDscOnWorker))) {
       Stop-DesiredStateConfig

@@ -347,11 +347,10 @@ function Remove-LegacyStuff {
 }
 function Set-Ec2ConfigSettings {
   param (
-    [switch] $isWorker = $false,
     [string] $ec2ConfigSettingsFile = ('{0}\Amazon\Ec2ConfigService\Settings\Config.xml' -f $env:ProgramFiles),
     [hashtable] $ec2ConfigSettings = @{
-      'Ec2HandleUserData' = $(if ($isWorker) { 'Disabled' } else { 'Enabled' });
-      'Ec2InitializeDrives' = $(if ($isWorker) { 'Disabled' } else { 'Enabled' });
+      'Ec2HandleUserData' = 'Enabled';
+      'Ec2InitializeDrives' = 'Enabled';
       'Ec2EventLog' = 'Enabled';
       'Ec2OutputRDPCert' = 'Enabled';
       'Ec2SetDriveLetter' = 'Enabled';
@@ -361,8 +360,7 @@ function Set-Ec2ConfigSettings {
       'Ec2ConfigureRDP' = 'Disabled';
       'Ec2DynamicBootVolumeSize' = 'Disabled';
       'AWS.EC2.Windows.CloudWatch.PlugIn' = 'Disabled'
-    },
-    [string[]] $rebootReasons = @()
+    }
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -385,13 +383,11 @@ function Set-Ec2ConfigSettings {
         & 'icacls' @($ec2ConfigSettingsFile, '/grant', 'System:F') | Out-File -filePath $logFile -append
         $xml.Save($ec2ConfigSettingsFile) | Out-File -filePath $logFile -append
         Write-Log -message ('{0} :: Ec2Config settings file saved at: {1}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile) -severity 'INFO'
-        $rebootReasons += 'Ec2Config settings updated'
       }
       catch {
         Write-Log -message ('{0} :: failed to save Ec2Config settings file: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile, $_.Exception.Message) -severity 'ERROR'
       }
     }
-    return $rebootReasons
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -1288,6 +1284,8 @@ function Set-ComputerName {
       (Get-WmiObject Win32_ComputerSystem).Rename($instanceId)
       $rebootReasons += 'host renamed'
       Write-Log -message ('{0} :: host renamed from: {1} to {2}.' -f $($MyInvocation.MyCommand.Name), $dnsHostname, $instanceId) -severity 'INFO'
+    } else {
+      Write-Log -message ('{0} :: hostname: {1} matches instance id: {2}.' -f $($MyInvocation.MyCommand.Name), $dnsHostname, $instanceId) -severity 'DEBUG'
     }
     return $rebootReasons
   }
@@ -1297,13 +1295,32 @@ function Set-ComputerName {
 }
 function Set-DomainName {
   param (
-    [string] $workerType,
-    [string] $dnsRegion
+    [string] $publicKeys = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys'),
+    [string] $workerType = $(if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) { $publicKeys.Replace('0=mozilla-taskcluster-worker-', '') } else { (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType }),
+    [string] $az = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone')
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
+    switch -wildcard ($az) {
+      'eu-central-1*'{
+        $dnsRegion = 'euc1'
+      }
+      'us-east-1*'{
+        $dnsRegion = 'use1'
+      }
+      'us-east-2*'{
+        $dnsRegion = 'use2'
+      }
+      'us-west-1*'{
+        $dnsRegion = 'usw1'
+      }
+      'us-west-2*'{
+        $dnsRegion = 'usw2'
+      }
+    }
+    Write-Log -message ('{0} :: availabilityZone: {1}, dnsRegion: {2}.' -f $($MyInvocation.MyCommand.Name), $az, $dnsRegion) -severity 'INFO'
     if (Test-Path -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\NV Domain') {
       $currentDomain = (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters' -Name 'NV Domain').'NV Domain'
     } elseif (Test-Path -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Domain') {
@@ -1318,6 +1335,8 @@ function Set-DomainName {
       Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters' -Name 'Domain' -Value "$domain"
       Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters' -Name 'NV Domain' -Value "$domain"
       Write-Log -message ('{0} :: domain set to: {1}' -f $($MyInvocation.MyCommand.Name), $domain) -severity 'INFO'
+    } else {
+      Write-Log -message ('{0} :: current domain: {1} matches expected domain: {2}.' -f $($MyInvocation.MyCommand.Name), $currentDomain, $domain) -severity 'DEBUG'
     }
   }
   end {
@@ -1535,11 +1554,35 @@ function Initialize-NativeImageCache {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Initialize-Instance {
+  param (
+    [string] $locationType
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if ($locationType -eq 'AWS') {
+      $rebootReasons = (Set-ComputerName)
+      Set-DomainName
+      # Turn off DNS address registration (EC2 DNS is configured to not allow it)
+      Set-DynamicDnsRegistration -enabled:$false
+    }
+    if ($rebootReasons.length) {
+      Write-Log -message ('{0} :: reboot required: {1}' -f $($MyInvocation.MyCommand.Name), [string]::Join(', ', $rebootReasons)) -severity 'DEBUG'
+      & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1')
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Run-OpenCloudConfig {
   param (
     [string] $sourceOrg = 'mozilla-releng',
     [string] $sourceRepo = 'OpenCloudConfig',
-    [string] $sourceRev = 'master'
+    [string] $sourceRev = 'master',
+    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } else { 'DataCenter' })
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -1549,16 +1592,14 @@ function Run-OpenCloudConfig {
     # See https://bugzilla.mozilla.org/show_bug.cgi?id=1443595 for context.
     Set-DefaultStrongCryptography
     Set-NetworkRoutes
+    Initialize-Instance -locationType $locationType
 
     # The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing.
     Set-ServiceState -name 'wuauserv' -state 'Running'
 
-    if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) {
-      $locationType = 'AWS'
-    } else {
-      $locationType = 'DataCenter'
-     Set-Variable -Name "MozSpace" -Value (((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain') -replace ".mozilla.com$") -Scope global
-     [Environment]::SetEnvironmentVariable("MozSpace", "$MozSpace", "Machine")
+    if ($locationType -eq 'DataCenter') {
+      Set-Variable -Name 'MozSpace' -Value (((Get-ItemProperty 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters').'NV Domain') -replace ".mozilla.com$") -Scope global
+      [Environment]::SetEnvironmentVariable('MozSpace', "$MozSpace", 'Machine')
     }
     $lock = 'C:\dsc\in-progress.lock'
     if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
@@ -1614,6 +1655,7 @@ function Run-OpenCloudConfig {
         # ami creation instance
         $isWorker = $false
         $workerType = $publicKeys.Replace('0=mozilla-taskcluster-worker-', '')
+        Set-Ec2ConfigSettings
         Activate-Windows -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
       } else {
         # provisioned worker
@@ -1621,26 +1663,7 @@ function Run-OpenCloudConfig {
         $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType
       }
       Write-Log -message ('{0} :: isWorker: {1}.' -f $($MyInvocation.MyCommand.Name), $isWorker) -severity 'INFO'
-      $az = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone')
       Write-Log -message ('{0} :: workerType: {1}.' -f $($MyInvocation.MyCommand.Name), $workerType) -severity 'INFO'
-      switch -wildcard ($az) {
-        'eu-central-1*'{
-          $dnsRegion = 'euc1'
-        }
-        'us-east-1*'{
-          $dnsRegion = 'use1'
-        }
-        'us-east-2*'{
-          $dnsRegion = 'use2'
-        }
-        'us-west-1*'{
-          $dnsRegion = 'usw1'
-        }
-        'us-west-2*'{
-          $dnsRegion = 'usw2'
-        }
-      }
-      Write-Log -message ('{0} :: availabilityZone: {1}, dnsRegion: {2}.' -f $($MyInvocation.MyCommand.Name), $az, $dnsRegion) -severity 'INFO'
 
       # if importing releng amis, do a little housekeeping
       try {
@@ -1652,8 +1675,6 @@ function Run-OpenCloudConfig {
       switch -wildcard ($workerType) {
         'gecko-t-win7-*' {
           $runDscOnWorker = $true
-          $renameInstance = $true
-          $setFqdn = $true
           if (-not ($isWorker)) {
             Remove-LegacyStuff -logFile $logFile
             Set-Credentials -username 'root' -password ('{0}' -f $rootPassword)
@@ -1661,8 +1682,6 @@ function Run-OpenCloudConfig {
         }
         'gecko-t-win10-*' {
           $runDscOnWorker = $true
-          $renameInstance = $true
-          $setFqdn = $true
           if (-not ($isWorker)) {
             Remove-LegacyStuff -logFile $logFile
             Set-Credentials -username 'Administrator' -password ('{0}' -f $rootPassword)
@@ -1670,8 +1689,6 @@ function Run-OpenCloudConfig {
         }
         default {
           $runDscOnWorker = $true
-          $renameInstance = $true
-          $setFqdn = $true
           if (-not ($isWorker)) {
             Set-Credentials -username 'Administrator' -password ('{0}' -f $rootPassword)
           }
@@ -1725,129 +1742,110 @@ function Run-OpenCloudConfig {
           & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
         }
       }
-
       Initialize-NativeImageCache
-
-      # rename the instance
-      $rebootReasons = $(if ($renameInstance) { (Set-ComputerName) } else { @() })
-      # set fqdn
-      if ($setFqdn) {
-        Set-DomainName -workerType $workerType -dnsRegion $dnsRegion
-        # Turn off DNS address registration (EC2 DNS is configured to not allow it)
-        Set-DynamicDnsRegistration -enabled:$false
-      }
     }
     if ($locationType -ne 'DataCenter') {
-      $rebootReasons = (Set-Ec2ConfigSettings -isWorker:$isWorker -rebootReasons $rebootReasons)
+      # create a scheduled task to run HaltOnIdle every 2 minutes
+      Create-ScheduledPowershellTask -taskName 'HaltOnIdle' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/HaltOnIdle.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\HaltOnIdle.ps1' -sc 'minute' -mo '2'
     }
-    if ($rebootReasons.length) {
-      Write-Log -message ('{0} :: reboot required: {1}' -f $($MyInvocation.MyCommand.Name), [string]::Join(', ', $rebootReasons)) -severity 'DEBUG'
-      Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-      & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1') | Out-File -filePath $logFile -append
-    } else {
-      if ($locationType -ne 'DataCenter') {
-        # create a scheduled task to run HaltOnIdle every 2 minutes
-        Create-ScheduledPowershellTask -taskName 'HaltOnIdle' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/HaltOnIdle.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\HaltOnIdle.ps1' -sc 'minute' -mo '2'
+    # create a scheduled task to run system maintenance on startup
+    Create-ScheduledPowershellTask -taskName 'MaintainSystem' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/MaintainSystem.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\MaintainSystem.ps1' -sc 'onstart'
+    if (($runDscOnWorker) -or (-not ($isWorker)) -or ("$env:RunDsc" -ne "")) {
+
+      # pre dsc setup ###############################################################################################################################################
+      switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
+        'Microsoft Windows 7*' {
+          # set network interface to private (reverted after dsc run) http://www.hurryupandwait.io/blog/fixing-winrm-firewall-exception-rule-not-working-when-internet-connection-type-is-set-to-public
+          Set-NetworkCategory -category 'private'
+          # this setting persists only for the current session
+          Enable-PSRemoting -Force
+          #if (-not ($isWorker)) {
+          #  Set-DefaultProfileProperties
+          #}
+        }
+        'Microsoft Windows 10*' {
+          # set network interface to private (reverted after dsc run) http://www.hurryupandwait.io/blog/fixing-winrm-firewall-exception-rule-not-working-when-internet-connection-type-is-set-to-public
+          Set-NetworkCategory -category 'private'
+          # this setting persists only for the current session
+          Enable-PSRemoting -SkipNetworkProfileCheck -Force
+          #if (-not ($isWorker)) {
+          #  Set-DefaultProfileProperties
+          #}
+        }
+        default {
+          # this setting persists only for the current session
+          Enable-PSRemoting -SkipNetworkProfileCheck -Force
+        }
       }
-      # create a scheduled task to run system maintenance on startup
-      Create-ScheduledPowershellTask -taskName 'MaintainSystem' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/MaintainSystem.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\MaintainSystem.ps1' -sc 'onstart'
-      if (($runDscOnWorker) -or (-not ($isWorker)) -or ("$env:RunDsc" -ne "")) {
+      Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=32696;'MaxTimeoutms'=180000}
+      $transcript = ('{0}\log\{1}.dsc-run.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
+      # end pre dsc setup ###########################################################################################################################################
 
-        # pre dsc setup ###############################################################################################################################################
-        switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
-          'Microsoft Windows 7*' {
-            # set network interface to private (reverted after dsc run) http://www.hurryupandwait.io/blog/fixing-winrm-firewall-exception-rule-not-working-when-internet-connection-type-is-set-to-public
-            Set-NetworkCategory -category 'private'
-            # this setting persists only for the current session
-            Enable-PSRemoting -Force
-            #if (-not ($isWorker)) {
-            #  Set-DefaultProfileProperties
-            #}
-          }
-          'Microsoft Windows 10*' {
-            # set network interface to private (reverted after dsc run) http://www.hurryupandwait.io/blog/fixing-winrm-firewall-exception-rule-not-working-when-internet-connection-type-is-set-to-public
-            Set-NetworkCategory -category 'private'
-            # this setting persists only for the current session
-            Enable-PSRemoting -SkipNetworkProfileCheck -Force
-            #if (-not ($isWorker)) {
-            #  Set-DefaultProfileProperties
-            #}
-          }
-          default {
-            # this setting persists only for the current session
-            Enable-PSRemoting -SkipNetworkProfileCheck -Force
-          }
-        }
-        Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=32696;'MaxTimeoutms'=180000}
-        $transcript = ('{0}\log\{1}.dsc-run.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
-        # end pre dsc setup ###########################################################################################################################################
-
-        # run dsc #####################################################################################################################################################
-        # use a code block similar to below for testing rundsc changes on beta
-        #if ($workerType.EndsWith('-beta') -or $workerType.EndsWith('-gpu-b')) {
-        #  $sourceRev = 'function-refactor'
-        #}
-        Start-Transcript -Path $transcript -Append
-        Run-RemoteDesiredStateConfig -url ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/xDynamicConfig.ps1' -f $sourceOrg, $sourceRepo, $sourceRev) -workerType $workerType
-        Stop-Transcript
-        # end run dsc #################################################################################################################################################
-        
-        # post dsc teardown ###########################################################################################################################################
-        if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required') -or ($_ -match 'WSManNetworkFailureDetected')) }) -contains $true) {
-          Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-          & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart or the dsc process did not complete', '-f', '-d', 'p:4:2') | Out-File -filePath $logFile -append
-        }
-        if (($locationType -ne 'DataCenter') -and (((Get-Content $transcript) | % { ($_ -match 'failed to execute Set-TargetResource') }) -contains $true)) {
-          Write-Log -message ('{0} :: dsc run failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          if (-not ($isWorker)) {
-            # if this is the ami creation instance, we don't have a way to communicate with the taskcluster-github job to tell it that the dsc run has failed.
-            # the best we can do is sleep until the taskcluster-github job fails, because of a task timeout.
-            $timer = [Diagnostics.Stopwatch]::StartNew()
-            while ($timer.Elapsed.TotalHours -lt 5) {
-              Write-Log -message ('{0} :: waiting for occ ci task to fail due to timeout. shutdown in {1} minutes.' -f $($MyInvocation.MyCommand.Name), [Math]::Round(((5 * 60) - $timer.Elapsed.TotalMinutes))) -severity 'WARN'
-              Start-Sleep -Seconds 600
-            }
-            & shutdown @('-s', '-t', '0', '-c', 'dsc run failed', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
-          }
-        }
-        switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
-          'Microsoft Windows 7*' {
-            Set-NetworkCategory -category 'public'
-          }
-          'Microsoft Windows 10*' {
-            Set-NetworkCategory -category 'public'
-          }
-        }
-        # end post dsc teardown #######################################################################################################################################
-
-        # create a scheduled task to run dsc at startup
-        Create-ScheduledPowershellTask -taskName 'RunDesiredStateConfigurationAtStartup' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/rundsc.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\rundsc.ps1' -sc 'onstart'
-      }
-      if (($isWorker) -and (-not ($runDscOnWorker))) {
-        Stop-DesiredStateConfig
-        Remove-DesiredStateConfigTriggers
-        New-LocalCache
-      }
-
-      # archive dsc logs
-      Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and $_.Length -eq 0 } | % { Remove-Item -Path $_.FullName -Force }
-      New-ZipFile -ZipFilePath $logFile.Replace('.log', '.zip') -Item @(Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and $_.FullName -ne $logFile } | % { $_.FullName })
-      Write-Log -message ('{0} :: log archive {1} created.' -f $($MyInvocation.MyCommand.Name), $logFile.Replace('.log', '.zip')) -severity 'INFO'
-      Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and (-not $_.Name.EndsWith('.dsc-run.log')) -and $_.FullName -ne $logFile } | % { Remove-Item -Path $_.FullName -Force }
-
-      if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
+      # run dsc #####################################################################################################################################################
+      # use a code block similar to below for testing rundsc changes on beta
+      #if ($workerType.EndsWith('-beta') -or $workerType.EndsWith('-gpu-b')) {
+      #  $sourceRev = 'function-refactor'
+      #}
+      Start-Transcript -Path $transcript -Append
+      Run-RemoteDesiredStateConfig -url ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/xDynamicConfig.ps1' -f $sourceOrg, $sourceRepo, $sourceRev) -workerType $workerType
+      Stop-Transcript
+      # end run dsc #################################################################################################################################################
+      
+      # post dsc teardown ###########################################################################################################################################
+      if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required') -or ($_ -match 'WSManNetworkFailureDetected')) }) -contains $true) {
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-        if ($locationType -ne 'DataCenter') {
-          Set-ChainOfTrustKeyAndShutdown -workerType $workerType -logFile $logFile
-        }
-      } elseif ($isWorker) {
-        if ($locationType -ne 'DataCenter') {
-          if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
-            Map-DriveLetters
-          }
-        }
-        Wait-GenericWorkerStart -locationType $locationType -lock $lock
+        & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart or the dsc process did not complete', '-f', '-d', 'p:4:2') | Out-File -filePath $logFile -append
       }
+      if (($locationType -ne 'DataCenter') -and (((Get-Content $transcript) | % { ($_ -match 'failed to execute Set-TargetResource') }) -contains $true)) {
+        Write-Log -message ('{0} :: dsc run failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+        if (-not ($isWorker)) {
+          # if this is the ami creation instance, we don't have a way to communicate with the taskcluster-github job to tell it that the dsc run has failed.
+          # the best we can do is sleep until the taskcluster-github job fails, because of a task timeout.
+          $timer = [Diagnostics.Stopwatch]::StartNew()
+          while ($timer.Elapsed.TotalHours -lt 5) {
+            Write-Log -message ('{0} :: waiting for occ ci task to fail due to timeout. shutdown in {1} minutes.' -f $($MyInvocation.MyCommand.Name), [Math]::Round(((5 * 60) - $timer.Elapsed.TotalMinutes))) -severity 'WARN'
+            Start-Sleep -Seconds 600
+          }
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run failed', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+        }
+      }
+      switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
+        'Microsoft Windows 7*' {
+          Set-NetworkCategory -category 'public'
+        }
+        'Microsoft Windows 10*' {
+          Set-NetworkCategory -category 'public'
+        }
+      }
+      # end post dsc teardown #######################################################################################################################################
+
+      # create a scheduled task to run dsc at startup
+      Create-ScheduledPowershellTask -taskName 'RunDesiredStateConfigurationAtStartup' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/rundsc.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\rundsc.ps1' -sc 'onstart'
+    }
+    if (($isWorker) -and (-not ($runDscOnWorker))) {
+      Stop-DesiredStateConfig
+      Remove-DesiredStateConfigTriggers
+      New-LocalCache
+    }
+
+    # archive dsc logs
+    Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and $_.Length -eq 0 } | % { Remove-Item -Path $_.FullName -Force }
+    New-ZipFile -ZipFilePath $logFile.Replace('.log', '.zip') -Item @(Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and $_.FullName -ne $logFile } | % { $_.FullName })
+    Write-Log -message ('{0} :: log archive {1} created.' -f $($MyInvocation.MyCommand.Name), $logFile.Replace('.log', '.zip')) -severity 'INFO'
+    Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and (-not $_.Name.EndsWith('.dsc-run.log')) -and $_.FullName -ne $logFile } | % { Remove-Item -Path $_.FullName -Force }
+
+    if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
+      Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
+      if ($locationType -ne 'DataCenter') {
+        Set-ChainOfTrustKeyAndShutdown -workerType $workerType -logFile $logFile
+      }
+    } elseif ($isWorker) {
+      if ($locationType -ne 'DataCenter') {
+        if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
+          Map-DriveLetters
+        }
+      }
+      Wait-GenericWorkerStart -locationType $locationType -lock $lock
     }
     if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue

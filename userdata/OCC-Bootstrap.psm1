@@ -1734,14 +1734,14 @@ function Run-OpenCloudConfig {
       # reattempt drive mapping for up to 10 minutes
       $driveMapTimeout = (Get-Date).AddMinutes(10)
       $driveMapAttempt = 0
-      Write-Log -message ('{0} :: drive map timeout set to {0}' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      while (((Get-Date) -lt $driveMapTimeout) -and (-not ((Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)))) {
+      Write-Log -message ('{0} :: drive map timeout set to {1}' -f $($MyInvocation.MyCommand.Name), $driveMapTimeout) -severity 'DEBUG'
+      while (((Get-Date) -lt $driveMapTimeout) -and (@(Get-Volume -DriveLetter @('Z', 'Y') -ErrorAction SilentlyContinue).Length -ne 2)) {
         if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -eq 'Z:' }).Size -ge 119GB)) {
           Resize-DiskOne
         }
         Map-DriveLetters
         $driveMapAttempt ++
-        if ((Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) {
+        if (@(Get-Volume -DriveLetter @('Z', 'Y') -ErrorAction SilentlyContinue).Length -eq 2) {
           Write-Log -message ('{0} :: drive map attempt {1} succeeded' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'INFO'
         } else {
           Write-Log -message ('{0} :: drive map attempt {1} failed' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'WARN'
@@ -1749,17 +1749,13 @@ function Run-OpenCloudConfig {
         }
       }
       if ($isWorker) {
-        while (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) {
-          Write-Log -message ('{0} :: missing task drive. awaiting user intervention...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          Sleep 60
-          #Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          #& shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
+        if (@(Get-Volume -DriveLetter @('Z') -ErrorAction SilentlyContinue).Length -ne 1) {
+          Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+          & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
         }
-        while (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) {
-          Write-Log -message ('{0} :: missing cache drive. awaiting user intervention...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          Sleep 60
-          #Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          #& shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
+        if (@(Get-Volume -DriveLetter @('Y') -ErrorAction SilentlyContinue).Length -ne 1) {
+          Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+          & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
         }
       }
       Initialize-NativeImageCache

@@ -619,8 +619,7 @@ function Map-DriveLetters {
     $driveLetterMap.Keys | % {
       $old = $_
       $new = $driveLetterMap.Item($_)
-      #if (Test-Path -Path ('{0}\' -f $old) -ErrorAction SilentlyContinue) {
-      if (@(Get-Volume -DriveLetter @($old[0]) -ErrorAction SilentlyContinue).Length -eq 1) {
+      if (@(Get-Volume -DriveLetter $old[0] -ErrorAction SilentlyContinue).Length -eq 1) {
         $volume = Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$old'"
         if ($null -ne $volume) {
           $volume.DriveLetter = $new
@@ -629,7 +628,6 @@ function Map-DriveLetters {
         }
       }
     }
-    #if ((Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue) -and (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue))) {
     if ((@(Get-Volume -DriveLetter 'Y' -ErrorAction SilentlyContinue).Length -eq 1) -and (@(Get-Volume -DriveLetter 'Z' -ErrorAction SilentlyContinue).Length -eq 0)) {
       $volume = Get-WmiObject -Class win32_volume -Filter "DriveLetter='Y:'"
       if ($null -ne $volume) {

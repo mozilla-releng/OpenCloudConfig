@@ -176,7 +176,6 @@ function Remove-DesiredStateConfigTriggers {
 }
 function Remove-LegacyStuff {
   param (
-    [string] $logFile,
     [string[]] $users = @(
       'cltbld',
       'GenericWorker',
@@ -379,9 +378,9 @@ function Set-Ec2ConfigSettings {
     }
     if ($ec2ConfigSettingsFileModified) {
       try {
-        & 'icacls' @($ec2ConfigSettingsFile, '/grant', 'Administrators:F') | Out-File -filePath $logFile -append
-        & 'icacls' @($ec2ConfigSettingsFile, '/grant', 'System:F') | Out-File -filePath $logFile -append
-        $xml.Save($ec2ConfigSettingsFile) | Out-File -filePath $logFile -append
+        Start-LoggedProcess -filePath 'icacls' -ArgumentList @($ec2ConfigSettingsFile, '/grant', 'Administrators:F') -name 'icacls-ec2config-settings-grant-admin'
+        Start-LoggedProcess -filePath 'icacls' -ArgumentList @($ec2ConfigSettingsFile, '/grant', 'System:F') -name 'icacls-ec2config-settings-grant-system'
+        $xml.Save($ec2ConfigSettingsFile)
         Write-Log -message ('{0} :: Ec2Config settings file saved at: {1}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile) -severity 'INFO'
       }
       catch {
@@ -1420,7 +1419,7 @@ function hw-DiskManage {
         Sleep 15
       } until ($TimeNow -ge $TimeEnd)
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-      & shutdown @('-s', '-t', '0', '-c', 'Restarting disk space Critical', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+      & shutdown @('-s', '-t', '0', '-c', 'Restarting disk space Critical', '-f', '-d', 'p:2:4')
       exit
     }
   }
@@ -1430,8 +1429,7 @@ function hw-DiskManage {
 }
 function Set-ChainOfTrustKeyAndShutdown {
   param (
-    [string] $workerType,
-    [string] $logFile
+    [string] $workerType
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -1456,7 +1454,7 @@ function Set-ChainOfTrustKeyAndShutdown {
           Start-LoggedProcess -filePath 'icacls' -ArgumentList @('C:\generic-worker\cot.key', '/grant', 'Administrators:(GA)') -name 'icacls-cot-grant-admin'
           Start-LoggedProcess -filePath 'icacls' -ArgumentList @('C:\generic-worker\cot.key', '/inheritance:r') -name 'icacls-cot-inheritance-remove'
           Write-Log -message ('{0} :: cot key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
         } else {
           Write-Log -message ('{0} :: cot key intervention failed. awaiting timeout or cancellation.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
         }
@@ -1474,12 +1472,12 @@ function Set-ChainOfTrustKeyAndShutdown {
         }
         if (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue) {
           Write-Log -message ('{0} :: cot key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
         } else {
           Write-Log -message ('{0} :: cot key missing. awaiting timeout or cancellation.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
         if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
-          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
         } else {
           Write-Log -message ('{0} :: rdp session detected. awaiting manual shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
         }
@@ -1521,7 +1519,7 @@ function Wait-GenericWorkerStart {
           Remove-Item -Path $taskClaimSemaphore -force -ErrorAction SilentlyContinue
           Write-Log -message ('{0} :: semaphore {1} deleted.' -f $($MyInvocation.MyCommand.Name), $taskClaimSemaphore) -severity 'INFO'
         }
-        & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', '4:5') | Out-File -filePath $logFile -append
+        & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', '4:5')
       } else {
         $timer.Stop()
         Write-Log -message ('{0} :: generic-worker running process detected {1} ms after task-claim-state.valid flag set.' -f $($MyInvocation.MyCommand.Name), $timer.ElapsedMilliseconds) -severity 'INFO'
@@ -1634,7 +1632,6 @@ function Run-OpenCloudConfig {
     Set-SystemClock -locationType $locationType
 
     # set up a log folder, an execution policy that enables the dsc run and a winrm envelope size large enough for the dynamic dsc.
-    $logFile = ('{0}\log\{1}.userdata-run.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
     New-Item -ItemType Directory -Force -Path ('{0}\log' -f $env:SystemDrive)
     if ($locationType -eq 'DataCenter') {
       switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
@@ -1684,14 +1681,14 @@ function Run-OpenCloudConfig {
         'gecko-t-win7-*' {
           $runDscOnWorker = $true
           if (-not ($isWorker)) {
-            Remove-LegacyStuff -logFile $logFile
+            Remove-LegacyStuff
             Set-Credentials -username 'root' -password ('{0}' -f $rootPassword)
           }
         }
         'gecko-t-win10-*' {
           $runDscOnWorker = $true
           if (-not ($isWorker)) {
-            Remove-LegacyStuff -logFile $logFile
+            Remove-LegacyStuff
             Set-Credentials -username 'Administrator' -password ('{0}' -f $rootPassword)
           }
         }
@@ -1711,14 +1708,14 @@ function Run-OpenCloudConfig {
       # https://support.microsoft.com/en-us/help/10164/fix-windows-update-errors
       #if ($instanceType.StartsWith('g3.')) {
       #  try {
-      #    & dism.exe @('/Online', '/Cleanup-image', '/Restorehealth') | Out-File -filePath $logFile -append
+      #    & dism.exe @('/Online', '/Cleanup-image', '/Restorehealth')
       #    Write-Log -message ('{0} :: executed: dism cleanup.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       #  }
       #  catch {
       #    Write-Log -message ('{0} :: failed to run dism cleanup. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
       #  }
       #  try {
-      #    & sfc @('/scannow') | Out-File -filePath $logFile -append
+      #    & sfc @('/scannow')
       #    Write-Log -message ('{0} :: executed: sfc scan.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       #  }
       #  catch {
@@ -1751,11 +1748,11 @@ function Run-OpenCloudConfig {
       if ($isWorker) {
         if (@(Get-Volume -DriveLetter @('Z') -ErrorAction SilentlyContinue).Length -ne 1) {
           Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
+          & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1')
         }
         if (@(Get-Volume -DriveLetter @('Y') -ErrorAction SilentlyContinue).Length -ne 1) {
           Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1') | Out-File -filePath $logFile -append
+          & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1')
         }
       }
       Initialize-NativeImageCache
@@ -1814,7 +1811,7 @@ function Run-OpenCloudConfig {
           Set-Ec2ConfigSettings
         }
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-        & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart or the dsc process did not complete', '-f', '-d', 'p:4:2') | Out-File -filePath $logFile -append
+        & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart or the dsc process did not complete', '-f', '-d', 'p:4:2')
       }
       if (($locationType -ne 'DataCenter') -and (((Get-Content $transcript) | % { ($_ -match 'failed to execute Set-TargetResource') }) -contains $true)) {
         Write-Log -message ('{0} :: dsc run failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
@@ -1826,7 +1823,7 @@ function Run-OpenCloudConfig {
             Write-Log -message ('{0} :: waiting for occ ci task to fail due to timeout. shutdown in {1} minutes.' -f $($MyInvocation.MyCommand.Name), [Math]::Round(((5 * 60) - $timer.Elapsed.TotalMinutes))) -severity 'WARN'
             Start-Sleep -Seconds 600
           }
-          & shutdown @('-s', '-t', '0', '-c', 'dsc run failed', '-f', '-d', 'p:2:4') | Out-File -filePath $logFile -append
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run failed', '-f', '-d', 'p:2:4')
         }
       }
       switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
@@ -1854,14 +1851,15 @@ function Run-OpenCloudConfig {
 
     # archive dsc logs
     Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and $_.Length -eq 0 } | % { Remove-Item -Path $_.FullName -Force }
-    New-ZipFile -ZipFilePath $logFile.Replace('.log', '.zip') -Item @(Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and $_.FullName -ne $logFile } | % { $_.FullName })
-    Write-Log -message ('{0} :: log archive {1} created.' -f $($MyInvocation.MyCommand.Name), $logFile.Replace('.log', '.zip')) -severity 'INFO'
-    Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and (-not $_.Name.EndsWith('.dsc-run.log')) -and $_.FullName -ne $logFile } | % { Remove-Item -Path $_.FullName -Force }
+    $zipFilePath = ('{0}\log\{1}.userdata-run.zip' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
+    New-ZipFile -ZipFilePath $zipFilePath -Item @(Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') } | % { $_.FullName })
+    Write-Log -message ('{0} :: log archive {1} created.' -f $($MyInvocation.MyCommand.Name), $zipFilePath) -severity 'INFO'
+    Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and (-not $_.Name.EndsWith('.dsc-run.log')) } | % { Remove-Item -Path $_.FullName -Force }
 
     if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
       if ($locationType -ne 'DataCenter') {
-        Set-ChainOfTrustKeyAndShutdown -workerType $workerType -logFile $logFile
+        Set-ChainOfTrustKeyAndShutdown -workerType $workerType
       }
     } elseif ($isWorker) {
       if ($locationType -ne 'DataCenter') {

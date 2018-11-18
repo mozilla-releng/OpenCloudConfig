@@ -378,6 +378,7 @@ function Set-Ec2ConfigSettings {
     }
     if ($ec2ConfigSettingsFileModified) {
       try {
+        Start-LoggedProcess -filePath 'takeown' -ArgumentList @('/a', '/f', $ec2ConfigSettingsFile) -name 'takeown-ec2config-settings'
         Start-LoggedProcess -filePath 'icacls' -ArgumentList @($ec2ConfigSettingsFile, '/grant', 'Administrators:F') -name 'icacls-ec2config-settings-grant-admin'
         Start-LoggedProcess -filePath 'icacls' -ArgumentList @($ec2ConfigSettingsFile, '/grant', 'System:F') -name 'icacls-ec2config-settings-grant-system'
         $xml.Save($ec2ConfigSettingsFile)

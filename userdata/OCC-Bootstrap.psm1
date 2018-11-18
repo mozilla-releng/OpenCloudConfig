@@ -619,7 +619,7 @@ function Map-DriveLetters {
     $driveLetterMap.Keys | % {
       $old = $_
       $new = $driveLetterMap.Item($_)
-      if (@(Get-Volume -DriveLetter $old[0] -ErrorAction SilentlyContinue).Length -eq 1) {
+      if (Get-VolumeExists -DriveLetter @($old[0])) {
         $volume = Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$old'"
         if ($null -ne $volume) {
           $volume.DriveLetter = $new
@@ -628,7 +628,7 @@ function Map-DriveLetters {
         }
       }
     }
-    if ((@(Get-Volume -DriveLetter 'Y' -ErrorAction SilentlyContinue).Length -eq 1) -and (@(Get-Volume -DriveLetter 'Z' -ErrorAction SilentlyContinue).Length -eq 0)) {
+    if ((Get-VolumeExists -DriveLetter 'Y') -and (-not (Get-VolumeExists -DriveLetter 'Z'))) {
       $volume = Get-WmiObject -Class win32_volume -Filter "DriveLetter='Y:'"
       if ($null -ne $volume) {
         $volume.DriveLetter = 'Z:'
@@ -710,10 +710,20 @@ function Get-ScheduledTaskExists {
   if (Get-Command 'Get-ScheduledTask' -ErrorAction 'SilentlyContinue') {
     return [bool](Get-ScheduledTask -TaskName $taskName -ErrorAction 'SilentlyContinue')
   }
-  # sceduled task commandlets are unavailable on windows 7, so we use com to access them here.
+  # sceduled task commandlets are unavailable on windows 7, so we use com to access sceduled tasks here.
   $scheduleService = (New-Object -ComObject Schedule.Service)
   $scheduleService.Connect()
   return (@($scheduleService.GetFolder("\").GetTasks(0) | ? { $_.Name -eq $taskName }).Length -gt 0)
+}
+function Get-VolumeExists {
+  param (
+    [char[]] $driveLetter
+  )
+  if (Get-Command 'Get-Volume' -ErrorAction 'SilentlyContinue') {
+    return (@(Get-Volume -DriveLetter $driveLetter -ErrorAction 'SilentlyContinue').Length -eq $driveLetter.Length)
+  }
+  # volume commandlets are unavailable on windows 7, so we use wmi to access volumes here.
+  return (@($driveLetter | % { Get-WmiObject -Class Win32_Volume -Filter ('DriveLetter=''{0}:''' -f $_) -ErrorAction 'SilentlyContinue' }).Length -eq $driveLetter.Length)
 }
 function Create-ScheduledPowershellTask {
   param (
@@ -1745,13 +1755,13 @@ function Run-OpenCloudConfig {
       $driveMapTimeout = (Get-Date).AddMinutes(10)
       $driveMapAttempt = 0
       Write-Log -message ('{0} :: drive map timeout set to {1}' -f $($MyInvocation.MyCommand.Name), $driveMapTimeout) -severity 'DEBUG'
-      while (((Get-Date) -lt $driveMapTimeout) -and (@(Get-Volume -DriveLetter @('Z', 'Y') -ErrorAction SilentlyContinue).Length -ne 2)) {
+      while (((Get-Date) -lt $driveMapTimeout) -and (-not (Get-VolumeExists -DriveLetter @('Z', 'Y')))) {
         if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -ne 'C:' }).Size -ge 119GB)) {
           Resize-DiskOne
         }
         Map-DriveLetters
         $driveMapAttempt ++
-        if (@(Get-Volume -DriveLetter @('Z', 'Y') -ErrorAction SilentlyContinue).Length -eq 2) {
+        if (Get-VolumeExists -DriveLetter @('Z', 'Y')) {
           Write-Log -message ('{0} :: drive map attempt {1} succeeded' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'INFO'
         } else {
           Write-Log -message ('{0} :: drive map attempt {1} failed' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'WARN'
@@ -1759,11 +1769,11 @@ function Run-OpenCloudConfig {
         }
       }
       if ($isWorker) {
-        if (@(Get-Volume -DriveLetter @('Z') -ErrorAction SilentlyContinue).Length -ne 1) {
+        if (-not (Get-VolumeExists -DriveLetter @('Z'))) {
           Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
           & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1')
         }
-        if (@(Get-Volume -DriveLetter @('Y') -ErrorAction SilentlyContinue).Length -ne 1) {
+        if (-not (Get-VolumeExists -DriveLetter @('Y'))) {
           Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
           & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1')
         }

@@ -348,7 +348,7 @@ function Set-Ec2ConfigSettings {
   param (
     [string] $ec2ConfigSettingsFile = ('{0}\Amazon\Ec2ConfigService\Settings\Config.xml' -f $env:ProgramFiles),
     [hashtable] $ec2ConfigSettings = @{
-      'Ec2HandleUserData' = $(if ([bool](Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue)) { 'Disabled' } else { 'Enabled' });
+      'Ec2HandleUserData' = $(if (Get-ScheduledTaskExists -TaskName $taskName) { 'Disabled' } else { 'Enabled' });
       'Ec2InitializeDrives' = 'Enabled';
       'Ec2EventLog' = 'Enabled';
       'Ec2OutputRDPCert' = 'Enabled';
@@ -703,6 +703,18 @@ function New-LocalCache {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Get-ScheduledTaskExists {
+  param (
+    [string] $taskName
+  )
+  if (Get-Command 'Get-ScheduledTask' -ErrorAction 'SilentlyContinue') {
+    return [bool](Get-ScheduledTask -TaskName $taskName -ErrorAction 'SilentlyContinue')
+  }
+  # sceduled task commandlets are unavailable on windows 7, so we use com to access them here.
+  $scheduleService = (New-Object -ComObject Schedule.Service)
+  $scheduleService.Connect()
+  return (@($scheduleService.GetFolder("\").GetTasks(0) | ? { $_.Name -eq $taskName }).Length -gt 0)
+}
 function Create-ScheduledPowershellTask {
   param (
     [string] $taskName,
@@ -716,7 +728,7 @@ function Create-ScheduledPowershellTask {
   }
   process {
     # delete scheduled task if it pre-exists
-    if ([bool](Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue)) {
+    if ((Get-ScheduledTaskExists -TaskName $taskName)) {
       try {
         Start-Process 'schtasks.exe' -ArgumentList @('/delete', '/tn', $taskName, '/f') -Wait -NoNewWindow -PassThru -RedirectStandardOutput ('{0}\log\{1}.schtask-{2}-delete.stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $taskName) -RedirectStandardError ('{0}\log\{1}.schtask-{2}-delete.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $taskName)
         Write-Log -message ('{0} :: scheduled task: {1} deleted.' -f $($MyInvocation.MyCommand.Name), $taskName) -severity 'INFO'

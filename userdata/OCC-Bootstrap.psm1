@@ -1579,8 +1579,57 @@ function Initialize-NativeImageCache {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Set-NxlogConfig {
+  param (
+    [string] $sourceOrg = 'mozilla-releng',
+    [string] $sourceRepo = 'OpenCloudConfig',
+    [string] $sourceRev = 'master',
+    [string] $osCaption = ((Get-WmiObject -class Win32_OperatingSystem).Caption)
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    switch -wildcard ($osCaption) {
+      'Microsoft Windows 7*' {
+        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win7.conf' -f $sourceOrg, $sourceRepo, $sourceRev)
+        $config = ('{0}\nxlog\conf\nxlog.conf' -f $env:ProgramFiles)
+      }
+      'Microsoft Windows 10*' {
+        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win10.conf' -f $sourceOrg, $sourceRepo, $sourceRev)
+        $config = ('{0}\nxlog\conf\nxlog.conf' -f ${env:ProgramFiles(x86)})
+      }
+      'Microsoft Windows Server 2012*' {
+        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win2012.conf' -f $sourceOrg, $sourceRepo, $sourceRev)
+        $config = ('{0}\nxlog\conf\nxlog.conf' -f ${env:ProgramFiles(x86)})
+      }
+      'Microsoft Windows Server 2016*' {
+        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win2016.conf' -f $sourceOrg, $sourceRepo, $sourceRev)
+        $config = ('{0}\nxlog\conf\nxlog.conf' -f ${env:ProgramFiles(x86)})
+      }
+    }
+    if (($url) -and ($config) -and (Test-Path -Path $config -ErrorAction SilentlyContinue)) {
+      try {
+        $oldConfig = $config.Replace('.conf', ('.{0}.conf' -f [DateTime]::Now.ToString('yyyyMMddHHmmss')))
+        Move-item -LiteralPath $config -Destination $oldConfig
+        Write-Log -message ('{0} :: renamed {1} to {2}' -f $($MyInvocation.MyCommand.Name), $config, $oldConfig) -severity 'DEBUG'
+        (New-Object Net.WebClient).DownloadFile($url, $config)
+        Unblock-File -Path $target
+        Write-Log -message ('{0} :: downloaded {1} to {2}' -f $($MyInvocation.MyCommand.Name), $url, $config) -severity 'DEBUG'
+      } catch {
+        Write-Log -message ('{0} :: failed to download {1} to {2}. {3}' -f $($MyInvocation.MyCommand.Name), $url, $config, $_.Exception.Message) -severity 'ERROR'
+      }
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Initialize-Instance {
   param (
+    [string] $sourceOrg = 'mozilla-releng',
+    [string] $sourceRepo = 'OpenCloudConfig',
+    [string] $sourceRev = 'master',
     [string] $locationType
   )
   begin {
@@ -1598,6 +1647,8 @@ function Initialize-Instance {
       if (($locationType -eq 'AWS') -and (((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')).StartsWith('0=mozilla-taskcluster-worker-'))) {
         # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
         Set-Ec2ConfigSettings
+        # ensure that an up to date nxlog configuration is used as early as possible
+        Set-NxlogConfig -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev
       }
       Write-Log -message ('{0} :: reboot required: {1}' -f $($MyInvocation.MyCommand.Name), [string]::Join(', ', $rebootReasons)) -severity 'DEBUG'
       & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1')
@@ -1622,7 +1673,7 @@ function Run-OpenCloudConfig {
     # See https://bugzilla.mozilla.org/show_bug.cgi?id=1443595 for context.
     Set-DefaultStrongCryptography
     Set-NetworkRoutes
-    Initialize-Instance -locationType $locationType
+    Initialize-Instance -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev -locationType $locationType
 
     # The Windows update service needs to be enabled for OCC to process but needs to be disabled during testing.
     Set-ServiceState -name 'wuauserv' -state 'Running'

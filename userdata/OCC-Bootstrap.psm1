@@ -1807,7 +1807,7 @@ function Run-OpenCloudConfig {
       $driveMapAttempt = 0
       Write-Log -message ('{0} :: drive map timeout set to {1}' -f $($MyInvocation.MyCommand.Name), $driveMapTimeout) -severity 'DEBUG'
       while (((Get-Date) -lt $driveMapTimeout) -and (-not (Get-VolumeExists -DriveLetter @('Z', 'Y')))) {
-        if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) -and (-not (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue)) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -ne 'C:' }).Size -ge 119GB)) {
+        if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Get-VolumeExists -DriveLetter @('Z')) -and (-not (Get-VolumeExists -DriveLetter @('Y'))) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -ne 'C:' }).Size -ge 119GB)) {
           Resize-DiskOne
         }
         Map-DriveLetters

@@ -1614,7 +1614,7 @@ function Set-NxlogConfig {
         Move-item -LiteralPath $config -Destination $oldConfig
         Write-Log -message ('{0} :: renamed {1} to {2}' -f $($MyInvocation.MyCommand.Name), $config, $oldConfig) -severity 'DEBUG'
         (New-Object Net.WebClient).DownloadFile($url, $config)
-        Unblock-File -Path $target
+        Unblock-File -Path $config
         Write-Log -message ('{0} :: downloaded {1} to {2}' -f $($MyInvocation.MyCommand.Name), $url, $config) -severity 'DEBUG'
       } catch {
         Write-Log -message ('{0} :: failed to download {1} to {2}. {3}' -f $($MyInvocation.MyCommand.Name), $url, $config, $_.Exception.Message) -severity 'ERROR'

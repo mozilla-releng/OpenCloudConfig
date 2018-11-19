@@ -348,7 +348,7 @@ function Set-Ec2ConfigSettings {
   param (
     [string] $ec2ConfigSettingsFile = ('{0}\Amazon\Ec2ConfigService\Settings\Config.xml' -f $env:ProgramFiles),
     [hashtable] $ec2ConfigSettings = @{
-      'Ec2HandleUserData' = $(if (Get-ScheduledTaskExists -TaskName $taskName) { 'Disabled' } else { 'Enabled' });
+      'Ec2HandleUserData' = $(if (Test-ScheduledTaskExists -TaskName $taskName) { 'Disabled' } else { 'Enabled' });
       'Ec2InitializeDrives' = 'Enabled';
       'Ec2EventLog' = 'Enabled';
       'Ec2OutputRDPCert' = 'Enabled';
@@ -401,7 +401,7 @@ function Mount-DiskOne {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if ((Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue) -and (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) {
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (Test-VolumeExists -DriveLetter 'Z')) {
       Write-Log -message ('{0} :: skipping disk mount (drives y: and z: already exist).' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
     } else {
       $pagefileName = $false
@@ -619,7 +619,7 @@ function Map-DriveLetters {
     $driveLetterMap.Keys | % {
       $old = $_
       $new = $driveLetterMap.Item($_)
-      if (Get-VolumeExists -DriveLetter @($old[0])) {
+      if (Test-VolumeExists -DriveLetter @($old[0])) {
         $volume = Get-WmiObject -Class Win32_Volume -Filter "DriveLetter='$old'"
         if ($null -ne $volume) {
           $volume.DriveLetter = $new
@@ -628,7 +628,7 @@ function Map-DriveLetters {
         }
       }
     }
-    if ((Get-VolumeExists -DriveLetter 'Y') -and (-not (Get-VolumeExists -DriveLetter 'Z'))) {
+    if ((Test-VolumeExists -DriveLetter 'Y') -and (-not (Test-VolumeExists -DriveLetter 'Z'))) {
       $volume = Get-WmiObject -Class win32_volume -Filter "DriveLetter='Y:'"
       if ($null -ne $volume) {
         $volume.DriveLetter = 'Z:'
@@ -683,7 +683,7 @@ function Set-Credentials {
 }
 function New-LocalCache {
   param (
-    [string] $cacheDrive = $(if (Test-Path -Path 'Y:\' -ErrorAction SilentlyContinue) {'Y:'} else {$env:SystemDrive}),
+    [string] $cacheDrive = $(if (Test-VolumeExists -DriveLetter 'Y') {'Y:'} else {$env:SystemDrive}),
     [string[]] $paths = @(
       ('{0}\hg-shared' -f $cacheDrive),
       ('{0}\pip-cache' -f $cacheDrive),
@@ -703,7 +703,7 @@ function New-LocalCache {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Get-ScheduledTaskExists {
+function Test-ScheduledTaskExists {
   param (
     [string] $taskName
   )
@@ -715,7 +715,7 @@ function Get-ScheduledTaskExists {
   $scheduleService.Connect()
   return (@($scheduleService.GetFolder("\").GetTasks(0) | ? { $_.Name -eq $taskName }).Length -gt 0)
 }
-function Get-VolumeExists {
+function Test-VolumeExists {
   param (
     [char[]] $driveLetter
   )
@@ -738,7 +738,7 @@ function Create-ScheduledPowershellTask {
   }
   process {
     # delete scheduled task if it pre-exists
-    if ((Get-ScheduledTaskExists -TaskName $taskName)) {
+    if ((Test-ScheduledTaskExists -TaskName $taskName)) {
       try {
         Start-Process 'schtasks.exe' -ArgumentList @('/delete', '/tn', $taskName, '/f') -Wait -NoNewWindow -PassThru -RedirectStandardOutput ('{0}\log\{1}.schtask-{2}-delete.stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $taskName) -RedirectStandardError ('{0}\log\{1}.schtask-{2}-delete.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $taskName)
         Write-Log -message ('{0} :: scheduled task: {1} deleted.' -f $($MyInvocation.MyCommand.Name), $taskName) -severity 'INFO'
@@ -1806,13 +1806,13 @@ function Run-OpenCloudConfig {
       $driveMapTimeout = (Get-Date).AddMinutes(10)
       $driveMapAttempt = 0
       Write-Log -message ('{0} :: drive map timeout set to {1}' -f $($MyInvocation.MyCommand.Name), $driveMapTimeout) -severity 'DEBUG'
-      while (((Get-Date) -lt $driveMapTimeout) -and (-not (Get-VolumeExists -DriveLetter @('Z', 'Y')))) {
-        if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Get-VolumeExists -DriveLetter @('Z')) -and (-not (Get-VolumeExists -DriveLetter @('Y'))) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -ne 'C:' }).Size -ge 119GB)) {
+      while (((Get-Date) -lt $driveMapTimeout) -and (-not (Test-VolumeExists -DriveLetter @('Z', 'Y')))) {
+        if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Test-VolumeExists -DriveLetter @('Z')) -and (-not (Test-VolumeExists -DriveLetter @('Y'))) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -ne 'C:' }).Size -ge 119GB)) {
           Resize-DiskOne
         }
         Map-DriveLetters
         $driveMapAttempt ++
-        if (Get-VolumeExists -DriveLetter @('Z', 'Y')) {
+        if (Test-VolumeExists -DriveLetter @('Z', 'Y')) {
           Write-Log -message ('{0} :: drive map attempt {1} succeeded' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'INFO'
         } else {
           Write-Log -message ('{0} :: drive map attempt {1} failed' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'WARN'
@@ -1820,11 +1820,11 @@ function Run-OpenCloudConfig {
         }
       }
       if ($isWorker) {
-        if (-not (Get-VolumeExists -DriveLetter @('Z'))) {
+        if (-not (Test-VolumeExists -DriveLetter @('Z'))) {
           Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
           & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1')
         }
-        if (-not (Get-VolumeExists -DriveLetter @('Y'))) {
+        if (-not (Test-VolumeExists -DriveLetter @('Y'))) {
           Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
           & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1')
         }
@@ -1937,7 +1937,7 @@ function Run-OpenCloudConfig {
       }
     } elseif ($isWorker) {
       if ($locationType -ne 'DataCenter') {
-        if (-not (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue)) { # if the Z: drive isn't mapped, map it.
+        if (-not (Test-VolumeExists -DriveLetter 'Z')) { # if the Z: drive isn't mapped, map it.
           Map-DriveLetters
         }
       }

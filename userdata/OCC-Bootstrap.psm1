@@ -80,7 +80,7 @@ function Run-RemoteDesiredStateConfig {
   param (
     [string] $url,
     [hashtable] $packageProviders = @{ 'NuGet' = 2.8.5.208 },
-    [string[]] $modules = @('xPSDesiredStateConfiguration', 'xWindowsUpdate')
+    [string[]] $modules = @('PSDesiredStateConfiguration', 'xPSDesiredStateConfiguration', 'xWindowsUpdate')
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

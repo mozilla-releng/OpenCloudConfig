@@ -184,6 +184,7 @@ function Remove-LegacyStuff {
     ),
     [string[]] $paths = @(
       ('{0}\Apache Software Foundation' -f $env:ProgramFiles),
+      ('{0}\Convert-WindowsImageInfo.txt' -f $env:SystemDrive),
       ('{0}\default_browser' -f $env:SystemDrive),
       ('{0}\etc' -f $env:SystemDrive),
       ('{0}\generic-worker' -f $env:SystemDrive),
@@ -214,6 +215,7 @@ function Remove-LegacyStuff {
       ('{0}\Temp\*.msu' -f $env:SystemRoot),
       ('{0}\Temp\*.zip' -f $env:SystemRoot),
       ('{0}\timeset.bat' -f $env:SystemDrive),
+      ('{0}\unattend.xml' -f $env:SystemDrive),
       ('{0}\updateservice' -f $env:SystemDrive),
       ('{0}\Users\Administrator\Desktop\TESTER RUNNER' -f $env:SystemDrive),
       ('{0}\Users\Administrator\Desktop\PyYAML-3.11' -f $env:SystemDrive),
@@ -378,9 +380,9 @@ function Set-Ec2ConfigSettings {
     }
     if ($ec2ConfigSettingsFileModified) {
       try {
-        Start-LoggedProcess -filePath 'takeown' -ArgumentList @('/a', '/f', $ec2ConfigSettingsFile) -name 'takeown-ec2config-settings'
-        Start-LoggedProcess -filePath 'icacls' -ArgumentList @($ec2ConfigSettingsFile, '/grant', 'Administrators:F') -name 'icacls-ec2config-settings-grant-admin'
-        Start-LoggedProcess -filePath 'icacls' -ArgumentList @($ec2ConfigSettingsFile, '/grant', 'System:F') -name 'icacls-ec2config-settings-grant-system'
+        Start-LoggedProcess -filePath 'takeown' -ArgumentList @('/a', '/f', ('"{0}"' -f $ec2ConfigSettingsFile)) -name 'takeown-ec2config-settings'
+        Start-LoggedProcess -filePath 'icacls' -ArgumentList @(('"{0}"' -f $ec2ConfigSettingsFile), '/grant', 'Administrators:F') -name 'icacls-ec2config-settings-grant-admin'
+        Start-LoggedProcess -filePath 'icacls' -ArgumentList @(('"{0}"' -f $ec2ConfigSettingsFile), '/grant', 'System:F') -name 'icacls-ec2config-settings-grant-system'
         $xml.Save($ec2ConfigSettingsFile)
         Write-Log -message ('{0} :: Ec2Config settings file saved at: {1}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile) -severity 'INFO'
       }

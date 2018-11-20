@@ -419,7 +419,7 @@ function Mount-DiskOne {
       }
       if ($pagefileName) {
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-        #& shutdown @('-r', '-t', '0', '-c', ('page file {0} removed' -f $pagefileName), '-f', '-d', 'p:2:4')
+        & shutdown @('-r', '-t', '0', '-c', ('page file {0} removed' -f $pagefileName), '-f', '-d', 'p:2:4')
       }
       if (Get-Command 'Clear-Disk' -errorAction SilentlyContinue) {
         try {
@@ -583,7 +583,7 @@ function Set-Pagefile {
               Set-Ec2ConfigSettings
             }
             Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-            #& shutdown @('-r', '-t', '0', '-c', ('page file {0} created' -f $name), '-f', '-d', 'p:2:4')
+            & shutdown @('-r', '-t', '0', '-c', ('page file {0} created' -f $name), '-f', '-d', 'p:2:4')
           }
           catch {
             Write-Log -message ('{0} :: failed to create pagefile: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $name, $_.Exception.Message) -severity 'ERROR'
@@ -1379,7 +1379,7 @@ function Invoke-HardwareDiskCleanup {
         Sleep 15
       } until ($TimeNow -ge $TimeEnd)
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-      #& shutdown @('-s', '-t', '0', '-c', 'Restarting disk space Critical', '-f', '-d', 'p:2:4')
+      & shutdown @('-s', '-t', '0', '-c', 'Restarting disk space Critical', '-f', '-d', 'p:2:4')
       exit
     }
   }
@@ -1414,7 +1414,7 @@ function Set-ChainOfTrustKeyAndShutdown {
           Start-LoggedProcess -filePath 'icacls' -ArgumentList @('C:\generic-worker\cot.key', '/grant', 'Administrators:(GA)') -name 'icacls-cot-grant-admin'
           Start-LoggedProcess -filePath 'icacls' -ArgumentList @('C:\generic-worker\cot.key', '/inheritance:r') -name 'icacls-cot-inheritance-remove'
           Write-Log -message ('{0} :: cot key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-          #& shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
         } else {
           Write-Log -message ('{0} :: cot key intervention failed. awaiting timeout or cancellation.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
         }
@@ -1432,12 +1432,12 @@ function Set-ChainOfTrustKeyAndShutdown {
         }
         if (Test-Path -Path 'C:\generic-worker\cot.key' -ErrorAction SilentlyContinue) {
           Write-Log -message ('{0} :: cot key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-          #& shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
         } else {
           Write-Log -message ('{0} :: cot key missing. awaiting timeout or cancellation.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
         }
         if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
-          #& shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
         } else {
           Write-Log -message ('{0} :: rdp session detected. awaiting manual shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
         }
@@ -1479,7 +1479,7 @@ function Wait-GenericWorkerStart {
           Remove-Item -Path $taskClaimSemaphore -force -ErrorAction SilentlyContinue
           Write-Log -message ('{0} :: semaphore {1} deleted.' -f $($MyInvocation.MyCommand.Name), $taskClaimSemaphore) -severity 'INFO'
         }
-        #& shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', '4:5')
+        & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', '4:5')
       } else {
         $timer.Stop()
         Write-Log -message ('{0} :: generic-worker running process detected {1} ms after task-claim-state.valid flag set.' -f $($MyInvocation.MyCommand.Name), $timer.ElapsedMilliseconds) -severity 'INFO'
@@ -1588,7 +1588,7 @@ function Initialize-Instance {
         Set-NxlogConfig -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev
       }
       Write-Log -message ('{0} :: reboot required: {1}' -f $($MyInvocation.MyCommand.Name), [string]::Join(', ', $rebootReasons)) -severity 'DEBUG'
-      #& shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1')
+      & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1')
     }
   }
   end {
@@ -1759,11 +1759,11 @@ function Invoke-OpenCloudConfig {
       if ($isWorker) {
         if (-not (Test-VolumeExists -DriveLetter @('Z'))) {
           Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          #& shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1')
+          & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1')
         }
         if (-not (Test-VolumeExists -DriveLetter @('Y'))) {
           Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          #& shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1')
+          & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1')
         }
       }
       Initialize-NativeImageCache
@@ -1822,7 +1822,7 @@ function Invoke-OpenCloudConfig {
           Set-Ec2ConfigSettings
         }
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-        #& shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart or the dsc process did not complete', '-f', '-d', 'p:4:2')
+        & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart or the dsc process did not complete', '-f', '-d', 'p:4:2')
       }
       if (($locationType -ne 'DataCenter') -and (((Get-Content $transcript) | % { ($_ -match 'failed to execute Set-TargetResource') }) -contains $true)) {
         Write-Log -message ('{0} :: dsc run failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
@@ -1834,7 +1834,7 @@ function Invoke-OpenCloudConfig {
             Write-Log -message ('{0} :: waiting for occ ci task to fail due to timeout. shutdown in {1} minutes.' -f $($MyInvocation.MyCommand.Name), [Math]::Round(((5 * 60) - $timer.Elapsed.TotalMinutes))) -severity 'WARN'
             Start-Sleep -Seconds 600
           }
-          #& shutdown @('-s', '-t', '0', '-c', 'dsc run failed', '-f', '-d', 'p:2:4')
+          & shutdown @('-s', '-t', '0', '-c', 'dsc run failed', '-f', '-d', 'p:2:4')
         }
       }
       switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {

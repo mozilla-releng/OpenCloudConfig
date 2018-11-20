@@ -76,7 +76,7 @@ function Start-LoggedProcess {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Run-RemoteDesiredStateConfig {
+function Invoke-RemoteDesiredStateConfig {
   param (
     [string] $url,
     [hashtable] $packageProviders = @{ 'NuGet' = 2.8.5.208 },
@@ -607,7 +607,7 @@ function Set-Pagefile {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Map-DriveLetters {
+function Set-DriveLetters {
   param (
     [hashtable] $driveLetterMap = @{
       'D:' = 'Y:';
@@ -727,7 +727,7 @@ function Test-VolumeExists {
   # volume commandlets are unavailable on windows 7, so we use wmi to access volumes here.
   return (@($driveLetter | % { Get-WmiObject -Class Win32_Volume -Filter ('DriveLetter=''{0}:''' -f $_) -ErrorAction 'SilentlyContinue' }).Length -eq $driveLetter.Length)
 }
-function Create-ScheduledPowershellTask {
+function New-PowershellScheduledTask {
   param (
     [string] $taskName,
     [string] $scriptUrl,
@@ -783,50 +783,7 @@ function Create-ScheduledPowershellTask {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Wipe-Drive {
-  # derived from http://blog.whatsupduck.net/2012/03/powershell-alternative-to-sdelete.html
-  param (
-    [char] $drive,
-    $percentFree = 0.05
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    $filename = "thinsan.tmp"
-    $filePath = Join-Path ('{0}:\' -f $drive) $filename
-    if (Test-Path $filePath -ErrorAction SilentlyContinue) {
-      Remove-Item -Path $filePath -force -ErrorAction SilentlyContinue
-    }
-    $volume = (gwmi win32_volume -filter ("name='{0}:\\'" -f $drive))
-    if ($volume) {
-      $arraySize = 64kb
-      $fileSize = $volume.FreeSpace - ($volume.Capacity * $percentFree)
-      $zeroArray = new-object byte[]($arraySize)
-      $stream = [io.File]::OpenWrite($filePath)
-      try {
-        $curfileSize = 0
-        while ($curfileSize -lt $fileSize) {
-          $stream.Write($zeroArray, 0, $zeroArray.Length)
-          $curfileSize += $zeroArray.Length
-        }
-      } finally {
-        if($stream) {
-          $stream.Close()
-        }
-        if((Test-Path $filePath)) {
-          del $filePath
-        }
-      }
-    } else {
-      Write-Log -message ('{0} :: unable to locate a volume mounted at {0}:' -f $($MyInvocation.MyCommand.Name), $drive) -severity 'ERROR'
-    }
-  }
-  end {
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
-function Activate-Windows {
+function Set-WindowsActivation {
   param (
     [string] $productKeyMapUrl = ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/product-key-map.json?{0}' -f [Guid]::NewGuid()),
     [string] $keyManagementServiceMachine = '10.48.69.100',
@@ -1057,28 +1014,6 @@ function Set-DefaultStrongCryptography {
   }
   end {
     Write-Log -message ('{0} :: SecurityProtocol: {1}' -f $($MyInvocation.MyCommand.Name), [Net.ServicePointManager]::SecurityProtocol) -severity 'DEBUG'
-    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-}
-function Conserve-DiskSpace {
-  param (
-    [string[]] $paths = @(
-      ('{0}\SoftwareDistribution\Download\*' -f $env:SystemRoot)
-    )
-  )
-  begin {
-    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
-  }
-  process {
-    # delete paths
-    foreach ($path in $paths) {
-      if (Test-Path -Path $path -ErrorAction SilentlyContinue) {
-        Remove-Item $path -confirm:$false -recurse:$true -force -ErrorAction SilentlyContinue
-        Write-Log -message ('{0} :: path: {1}, deleted.' -f $($MyInvocation.MyCommand.Name), $path) -severity 'INFO'
-      }
-    }
-  }
-  end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
@@ -1388,7 +1323,7 @@ function Set-DynamicDnsRegistration {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function hw-DiskManage {
+function Invoke-HardwareDiskCleanup {
   param (
     [string[]] $paths = @(
       ('{0}Program Files\rempl\Logs' -f $env:SystemDrive),
@@ -1408,8 +1343,8 @@ function hw-DiskManage {
   process {
     foreach ($path in $paths) {
       if (Test-Path -Path $path -ErrorAction SilentlyContinue) {
-      Remove-Item $path -confirm:$false -recurse:$true -force -ErrorAction SilentlyContinue
-      Write-Log -message ('{0} :: path: {1}, deleted.' -f $($MyInvocation.MyCommand.Name), $path) -severity 'INFO'
+        Remove-Item $path -confirm:$false -recurse:$true -force -ErrorAction SilentlyContinue
+        Write-Log -message ('{0} :: path: {1}, deleted.' -f $($MyInvocation.MyCommand.Name), $path) -severity 'INFO'
       }
     }
     Get-ChildItem $olddscfiles -Recurse | ? {-Not $_.PsIsContainer -And ($_.LastWriteTime -lt (Get-Date).AddDays(-1))} | Remove-Item -force -ErrorAction SilentlyContinue
@@ -1660,7 +1595,7 @@ function Initialize-Instance {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Run-OpenCloudConfig {
+function Invoke-OpenCloudConfig {
   param (
     [string] $sourceOrg = 'mozilla-releng',
     [string] $sourceRepo = 'OpenCloudConfig',
@@ -1702,7 +1637,7 @@ function Run-OpenCloudConfig {
       New-Item -Path $lock -type file -force
     }
     if ($locationType -eq 'DataCenter') {
-      hw-DiskManage
+      Invoke-HardwareDiskCleanup
     }
     Write-Log -message ('{0} :: userdata run starting.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
     Set-SystemClock -locationType $locationType
@@ -1737,7 +1672,7 @@ function Run-OpenCloudConfig {
         # ami creation instance
         $isWorker = $false
         $workerType = $publicKeys.Replace('0=mozilla-taskcluster-worker-', '')
-        Activate-Windows -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
+        Set-WindowsActivation -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
       } else {
         # provisioned worker
         $isWorker = $true
@@ -1812,7 +1747,7 @@ function Run-OpenCloudConfig {
         if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Test-VolumeExists -DriveLetter @('Z')) -and (-not (Test-VolumeExists -DriveLetter @('Y'))) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -ne 'C:' }).Size -ge 119GB)) {
           Resize-DiskOne
         }
-        Map-DriveLetters
+        Set-DriveLetters
         $driveMapAttempt ++
         if (Test-VolumeExists -DriveLetter @('Z', 'Y')) {
           Write-Log -message ('{0} :: drive map attempt {1} succeeded' -f $($MyInvocation.MyCommand.Name), $driveMapAttempt) -severity 'INFO'
@@ -1835,10 +1770,10 @@ function Run-OpenCloudConfig {
     }
     if ($locationType -ne 'DataCenter') {
       # create a scheduled task to run HaltOnIdle every 2 minutes
-      Create-ScheduledPowershellTask -taskName 'HaltOnIdle' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/HaltOnIdle.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\HaltOnIdle.ps1' -sc 'minute' -mo '2'
+      New-PowershellScheduledTask -taskName 'HaltOnIdle' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/HaltOnIdle.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\HaltOnIdle.ps1' -sc 'minute' -mo '2'
     }
     # create a scheduled task to run system maintenance on startup
-    Create-ScheduledPowershellTask -taskName 'MaintainSystem' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/MaintainSystem.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\MaintainSystem.ps1' -sc 'onstart'
+    New-PowershellScheduledTask -taskName 'MaintainSystem' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/MaintainSystem.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\MaintainSystem.ps1' -sc 'onstart'
     if (($runDscOnWorker) -or (-not ($isWorker)) -or ("$env:RunDsc" -ne "")) {
 
       # pre dsc setup ###############################################################################################################################################
@@ -1876,7 +1811,7 @@ function Run-OpenCloudConfig {
       #  $sourceRev = 'function-refactor'
       #}
       Start-Transcript -Path $transcript -Append
-      Run-RemoteDesiredStateConfig -url ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/xDynamicConfig.ps1' -f $sourceOrg, $sourceRepo, $sourceRev) -workerType $workerType
+      Invoke-RemoteDesiredStateConfig -url ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/xDynamicConfig.ps1' -f $sourceOrg, $sourceRepo, $sourceRev) -workerType $workerType
       Stop-Transcript
       # end run dsc #################################################################################################################################################
       
@@ -1913,7 +1848,7 @@ function Run-OpenCloudConfig {
       # end post dsc teardown #######################################################################################################################################
 
       # create a scheduled task to run dsc at startup
-      Create-ScheduledPowershellTask -taskName 'RunDesiredStateConfigurationAtStartup' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/rundsc.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\rundsc.ps1' -sc 'onstart'
+      New-PowershellScheduledTask -taskName 'RunDesiredStateConfigurationAtStartup' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/rundsc.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\rundsc.ps1' -sc 'onstart'
       if (-not ($isWorker)) {
         # ensure that Ec2HandleUserData is disabled after the RunDesiredStateConfigurationAtStartup scheduled task has been created
         Set-Ec2ConfigSettings
@@ -1940,7 +1875,7 @@ function Run-OpenCloudConfig {
     } elseif ($isWorker) {
       if ($locationType -ne 'DataCenter') {
         if (-not (Test-VolumeExists -DriveLetter 'Z')) { # if the Z: drive isn't mapped, map it.
-          Map-DriveLetters
+          Set-DriveLetters
         }
       }
       Wait-GenericWorkerStart -locationType $locationType -lock $lock

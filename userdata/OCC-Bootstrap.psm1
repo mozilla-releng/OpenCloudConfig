@@ -65,10 +65,12 @@ function Start-LoggedProcess {
     } catch {
       Write-Log -message ('{0} :: {1} - error executing command ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $name, $filePath, ($argumentList -join ' '), $_.Exception.Message) -severity 'ERROR'
     }
-    if ((Get-Item -Path $redirectStandardError).Length) {
+    $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
+    if (($standardErrorFile) -and $standardErrorFile.Length) {
       Write-Log -message ('{0} :: {1} - {2}' -f $($MyInvocation.MyCommand.Name), $name, (Get-Content -Path $redirectStandardError -Raw)) -severity 'ERROR'
     }
-    if ((Get-Item -Path $redirectStandardOutput).Length) {
+    $standardOutputFile = (Get-Item -Path $redirectStandardOutput -ErrorAction SilentlyContinue)
+    if (($standardOutputFile) -and $standardOutputFile.Length) {
       Write-Log -message ('{0} :: {1} - log: {2}' -f $($MyInvocation.MyCommand.Name), $name, $redirectStandardOutput) -severity 'INFO'
     }
   }

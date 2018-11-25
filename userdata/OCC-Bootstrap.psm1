@@ -1494,6 +1494,7 @@ function Wait-GenericWorkerStart {
           $gwProcess.PriorityClass = [Diagnostics.ProcessPriorityClass]::AboveNormal
           Write-Log -message ('{0} :: process priority for generic worker altered from {1} to {2}.' -f $($MyInvocation.MyCommand.Name), $priorityClass, $gwProcess.PriorityClass) -severity 'INFO'
           Set-ServiceState -name 'wuauserv' -state 'Stopped'
+          Set-ServiceState -name 'bits' -state 'Stopped'
         }
       }
     } else {

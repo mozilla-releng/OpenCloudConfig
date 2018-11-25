@@ -581,6 +581,44 @@ Configuration xDynamicConfig {
         }
       }
       'RegistryValueSet' {
+        if ($item.SetOwner) {
+          Script ('RegistryTakeOwnership_{0}' -f $item.ComponentName) {
+            DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
+            GetScript = "@{ RegistryTakeOwnership = $item.ComponentName }"
+            SetScript = {
+              $ntdll = Add-Type -Member '[DllImport("ntdll.dll")] public static extern int RtlAdjustPrivilege(ulong a, bool b, bool c, ref bool d);' -Name NtDll -PassThru
+              @{ SeTakeOwnership = 9; SeBackup =  17; SeRestore = 18 }.Values | % { $null = $ntdll::RtlAdjustPrivilege($_, 1, 0, [ref]0) }
+              $key = ($using:item.Key).Replace(('{0}\' -f ($using:item.Key).Split('\')[0]), '')
+              switch -regex (($using:item.Key).Split('\')[0]) {
+                'HKCU|HKEY_CURRENT_USER' {
+                  $hive = 'CurrentUser'
+                }
+                'HKLM|HKEY_LOCAL_MACHINE' {
+                  $hive = 'LocalMachine'
+                }
+                'HKCR|HKEY_CLASSES_ROOT' {
+                  $hive = 'ClassesRoot'
+                }
+                'HKCC|HKEY_CURRENT_CONFIG' {
+                  $hive = 'CurrentConfig'
+                }
+                'HKU|HKEY_USERS' {
+                  $hive = 'Users'
+                }
+              }
+              $regKey = [Microsoft.Win32.Registry]::$hive.OpenSubKey($key, 'ReadWriteSubTree', 'TakeOwnership')
+              $acl = New-Object System.Security.AccessControl.RegistrySecurity
+              $acl.SetOwner([System.Security.Principal.SecurityIdentifier]$item.SetOwner)
+              $regKey.SetAccessControl($acl)
+              $acl.SetAccessRuleProtection($false, $false)
+              $regKey.SetAccessControl($acl)
+              $regKey = $regKey.OpenSubKey('', 'ReadWriteSubTree', 'ChangePermissions')
+              $acl.ResetAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule([System.Security.Principal.SecurityIdentifier]$item.SetOwner, 'FullControl', @('ObjectInherit', 'ContainerInherit'), 'None', 'Allow')))
+              $regKey.SetAccessControl($acl)
+            }
+            TestScript = { return $false }
+          }
+        }
         Registry ('RegistryValueSet_{0}' -f $item.ComponentName) {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           Ensure = 'Present'

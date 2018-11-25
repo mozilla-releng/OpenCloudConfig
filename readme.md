@@ -318,18 +318,19 @@ Instance configuration is defined in json format and currently includes implemen
   }
   ```
 - **[RegistryValueSet](https://github.com/search?q=RegistryValueSet+language%3Apowershell+repo%3Amozilla-releng%2FOpenCloudConfig&type=Code)**:
-  Set a registry key and value or validate that the key already exists and contains the specified value
+  Set a registry key and value or validate that the key already exists and contains the specified value  (optionally assigning ownership of the registry key to a user sid specified by the SetOwner property. useful when a key has been protected from change using ACLs and/or obscure ownership)
 
   *example*:
   ```
   {
-    "ComponentName": "reg-WindowsErrorReportingDontShowUI",
+    "ComponentName": "Reg_DisableService_WinDefend",
     "ComponentType": "RegistryValueSet",
-    "Comment": "",
-    "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting",
-    "ValueName": "DontShowUI",
+    "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
+    "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WinDefend",
+    "SetOwner": "S-1-5-32-544",
+    "ValueName": "Start",
     "ValueType": "Dword",
-    "ValueData": "0x00000001",
+    "ValueData": "0x3",
     "Hex": true
   }
   ```

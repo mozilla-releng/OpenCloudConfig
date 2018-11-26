@@ -1316,14 +1316,6 @@
       "ValueData": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
     },
     {
-      "ComponentName": "DisableWinDefend",
-      "ComponentType": "ServiceControl",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
-      "Name": "WinDefend",
-      "StartupType": "Manual",
-      "State": "Stopped"
-    },
-    {
       "ComponentName": "reg_SystemRestore",
       "ComponentType": "RegistryKeySet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
@@ -1489,9 +1481,9 @@
       ]
     },
     {
-      "ComponentName": "reg_DisableAntiSpyware",
+      "ComponentName": "Reg_WinDefend_DisableConfig",
       "ComponentType": "RegistryValueSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
       "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
       "ValueName": "DisableConfig",
       "ValueType": "Dword",
@@ -1499,14 +1491,121 @@
       "Hex": true
     },
     {
-      "ComponentName": "reg_DisableAntiSpyware_exe",
+      "ComponentName": "Reg_WinDefend_DisableAntiSpyware",
       "ComponentType": "RegistryValueSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1453138",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1365909",
       "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
       "ValueName": "DisableAntiSpyware",
       "ValueType": "Dword",
       "ValueData": "0x00000001",
       "Hex": true
+    },
+    {
+      "ComponentName": "Reg_DisableService_WdNisDrv",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdNisDrv",
+      "SetOwner": "S-1-5-32-544",
+      "ValueName": "Start",
+      "ValueType": "Dword",
+      "ValueData": "0x3",
+      "Hex": true
+    },
+    {
+      "ComponentName": "Reg_DisableService_WdNisSvc",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdNisSvc",
+      "SetOwner": "S-1-5-32-544",
+      "ValueName": "Start",
+      "ValueType": "Dword",
+      "ValueData": "0x3",
+      "Hex": true
+    },
+    {
+      "ComponentName": "Reg_DisableService_SecurityHealthService",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\SecurityHealthService",
+      "SetOwner": "S-1-5-32-544",
+      "ValueName": "Start",
+      "ValueType": "Dword",
+      "ValueData": "0x3",
+      "Hex": true
+    },
+    {
+      "ComponentName": "Reg_DisableService_Sense",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Sense",
+      "SetOwner": "S-1-5-32-544",
+      "ValueName": "Start",
+      "ValueType": "Dword",
+      "ValueData": "0x3",
+      "Hex": true
+    },
+    {
+      "ComponentName": "Reg_DisableService_WdBoot",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdBoot",
+      "SetOwner": "S-1-5-32-544",
+      "ValueName": "Start",
+      "ValueType": "Dword",
+      "ValueData": "0x3",
+      "Hex": true,
+      "DependsOn": [
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "Reg_DisableService_SecurityHealthService"
+        },
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "Reg_DisableService_Sense"
+        }
+      ]
+    },
+    {
+      "ComponentName": "Reg_DisableService_WdFilter",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdFilter",
+      "SetOwner": "S-1-5-32-544",
+      "ValueName": "Start",
+      "ValueType": "Dword",
+      "ValueData": "0x3",
+      "Hex": true,
+      "DependsOn": [
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "Reg_DisableService_SecurityHealthService"
+        },
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "Reg_DisableService_Sense"
+        }
+      ]
+    },
+    {
+      "ComponentName": "Reg_DisableService_WinDefend",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WinDefend",
+      "SetOwner": "S-1-5-32-544",
+      "ValueName": "Start",
+      "ValueType": "Dword",
+      "ValueData": "0x3",
+      "Hex": true,
+      "DependsOn": [
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "Reg_DisableService_SecurityHealthService"
+        },
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "Reg_DisableService_Sense"
+        }
+      ]
     },
     {
       "ComponentName": "vcredist_vs2015_x86",

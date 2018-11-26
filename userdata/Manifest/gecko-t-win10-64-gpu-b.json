@@ -1222,7 +1222,7 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true
     },
     {
@@ -1233,7 +1233,7 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true
     },
     {
@@ -1244,7 +1244,7 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true
     },
     {
@@ -1255,7 +1255,7 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true
     },
     {
@@ -1266,7 +1266,7 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true,
       "DependsOn": [
         {
@@ -1287,7 +1287,7 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true,
       "DependsOn": [
         {
@@ -1308,7 +1308,7 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true,
       "DependsOn": [
         {

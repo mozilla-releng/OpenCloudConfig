@@ -323,7 +323,7 @@ Instance configuration is defined in json format and currently includes implemen
   *example*:
   ```
   {
-    "ComponentName": "Reg_DisableService_WinDefend",
+    "ComponentName": "RegServiceStartupType_Manual_WinDefend",
     "ComponentType": "RegistryValueSet",
     "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
     "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WinDefend",

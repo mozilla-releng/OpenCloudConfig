@@ -1198,7 +1198,18 @@
       "Hex": true
     },
     {
-      "ComponentName": "RegServiceStartupType_Manual_SecurityHealthService",
+      "ComponentName": "RegServiceStartupType_Disabled_wscsvc",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\wscsvc",
+      "SetOwner": "S-1-5-32-544",
+      "ValueName": "Start",
+      "ValueType": "Dword",
+      "ValueData": "0x4",
+      "Hex": true
+    },
+    {
+      "ComponentName": "RegServiceStartupType_Disabled_SecurityHealthService",
       "ComponentType": "RegistryValueSet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
       "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\SecurityHealthService",
@@ -1210,12 +1221,12 @@
       "DependsOn": [
         {
           "ComponentType": "RegistryValueSet",
-          "ComponentName": "RegServiceStartupType_Manual_wscsvc"
+          "ComponentName": "RegServiceStartupType_Disabled_wscsvc"
         }
       ]
     },
     {
-      "ComponentName": "RegServiceStartupType_Manual_Sense",
+      "ComponentName": "RegServiceStartupType_Disabled_Sense",
       "ComponentType": "RegistryValueSet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
       "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Sense",
@@ -1233,12 +1244,12 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x4",
+      "ValueData": "0x3",
       "Hex": true,
       "DependsOn": [
         {
           "ComponentType": "RegistryValueSet",
-          "ComponentName": "RegServiceStartupType_Manual_SecurityHealthService"
+          "ComponentName": "RegServiceStartupType_Disabled_SecurityHealthService"
         }
       ]
     },
@@ -1250,12 +1261,12 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x4",
+      "ValueData": "0x3",
       "Hex": true,
       "DependsOn": [
         {
           "ComponentType": "RegistryValueSet",
-          "ComponentName": "RegServiceStartupType_Manual_SecurityHealthService"
+          "ComponentName": "RegServiceStartupType_Disabled_SecurityHealthService"
         }
       ]
     },
@@ -1267,7 +1278,7 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x4",
+      "ValueData": "0x3",
       "Hex": true
     },
     {
@@ -1278,7 +1289,7 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x4",
+      "ValueData": "0x3",
       "Hex": true
     },
     {
@@ -1289,25 +1300,14 @@
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x4",
+      "ValueData": "0x3",
       "Hex": true,
       "DependsOn": [
         {
           "ComponentType": "RegistryValueSet",
-          "ComponentName": "RegServiceStartupType_Manual_SecurityHealthService"
+          "ComponentName": "RegServiceStartupType_Disabled_SecurityHealthService"
         }
       ]
-    },
-    {
-      "ComponentName": "RegServiceStartupType_Manual_wscsvc",
-      "ComponentType": "RegistryValueSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
-      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\wscsvc",
-      "SetOwner": "S-1-5-32-544",
-      "ValueName": "Start",
-      "ValueType": "Dword",
-      "ValueData": "0x4",
-      "Hex": true
     },
     {
       "ComponentName": "OpenSshDownload",

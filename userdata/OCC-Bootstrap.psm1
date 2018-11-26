@@ -1820,13 +1820,14 @@ function Invoke-OpenCloudConfig {
       
       # post dsc teardown ###########################################################################################################################################
       
-      if (((Get-Content $transcript) | % {
-        (
-          ($_ -match 'requires a reboot') -or ($_ -match 'reboot is required') # a package installed by dsc requested a restart
-          -or ($_ -match 'WSManNetworkFailureDetected') # a wsman network outage prevented the dsc run from completing
-          -or ($_ -match 'Attempted to perform an unauthorized operation.') # a service disable attempt through registry settings failed, because another running service interfered with the registry write
-        )
-      }) -contains $true) {
+      if (((Get-Content $transcript) | % {(
+          # a package installed by dsc requested a restart
+          ($_ -match 'requires a reboot') -or
+          ($_ -match 'reboot is required') -or
+          # a wsman network outage prevented the dsc run from completing
+          ($_ -match 'WSManNetworkFailureDetected') -or
+          # a service disable attempt through registry settings failed, because another running service interfered with the registry write
+          ($_ -match 'Attempted to perform an unauthorized operation.'))}) -contains $true) {
         if (-not ($isWorker)) {
           # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
           Set-Ec2ConfigSettings

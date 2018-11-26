@@ -1254,16 +1254,20 @@
       "Hex": true
     },
     {
-      "ComponentName": "RegServiceStartupType_Manual_WdBoot",
+      "ComponentName": "RegServiceStartupType_Disabled_WdBoot",
       "ComponentType": "RegistryValueSet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
       "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdBoot",
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true,
       "DependsOn": [
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "RegServiceStartupType_Disabled_Sense"
+        },
         {
           "ComponentType": "RegistryValueSet",
           "ComponentName": "RegServiceStartupType_Disabled_SecurityHealthService"
@@ -1271,16 +1275,20 @@
       ]
     },
     {
-      "ComponentName": "RegServiceStartupType_Manual_WdFilter",
+      "ComponentName": "RegServiceStartupType_Disabled_WdFilter",
       "ComponentType": "RegistryValueSet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
       "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdFilter",
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true,
       "DependsOn": [
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "RegServiceStartupType_Disabled_Sense"
+        },
         {
           "ComponentType": "RegistryValueSet",
           "ComponentName": "RegServiceStartupType_Disabled_SecurityHealthService"
@@ -1288,38 +1296,42 @@
       ]
     },
     {
-      "ComponentName": "RegServiceStartupType_Manual_WdNisDrv",
+      "ComponentName": "RegServiceStartupType_Disabled_WdNisDrv",
       "ComponentType": "RegistryValueSet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
       "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdNisDrv",
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true
     },
     {
-      "ComponentName": "RegServiceStartupType_Manual_WdNisSvc",
+      "ComponentName": "RegServiceStartupType_Disabled_WdNisSvc",
       "ComponentType": "RegistryValueSet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
       "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdNisSvc",
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true
     },
     {
-      "ComponentName": "RegServiceStartupType_Manual_WinDefend",
+      "ComponentName": "RegServiceStartupType_Disabled_WinDefend",
       "ComponentType": "RegistryValueSet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1509722",
       "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WinDefend",
       "SetOwner": "S-1-5-32-544",
       "ValueName": "Start",
       "ValueType": "Dword",
-      "ValueData": "0x3",
+      "ValueData": "0x4",
       "Hex": true,
       "DependsOn": [
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "RegServiceStartupType_Disabled_Sense"
+        },
         {
           "ComponentType": "RegistryValueSet",
           "ComponentName": "RegServiceStartupType_Disabled_SecurityHealthService"

@@ -1819,13 +1819,20 @@ function Invoke-OpenCloudConfig {
       # end run dsc #################################################################################################################################################
       
       # post dsc teardown ###########################################################################################################################################
-      if (((Get-Content $transcript) | % { (($_ -match 'requires a reboot') -or ($_ -match 'reboot is required') -or ($_ -match 'WSManNetworkFailureDetected')) }) -contains $true) {
+      
+      if (((Get-Content $transcript) | % {
+        (
+          ($_ -match 'requires a reboot') -or ($_ -match 'reboot is required') # a package installed by dsc requested a restart
+          -or ($_ -match 'WSManNetworkFailureDetected') # a wsman network outage prevented the dsc run from completing
+          -or ($_ -match 'Attempted to perform an unauthorized operation.') # a service disable attempt through registry settings failed, because another running service interfered with the registry write
+        )
+      }) -contains $true) {
         if (-not ($isWorker)) {
           # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
           Set-Ec2ConfigSettings
         }
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-        & shutdown @('-r', '-t', '0', '-c', 'a package installed by dsc requested a restart or the dsc process did not complete', '-f', '-d', 'p:4:2')
+        & shutdown @('-r', '-t', '0', '-c', 'the dsc process did not complete and now requires a restart', '-f', '-d', 'p:4:2')
       }
       if (($locationType -ne 'DataCenter') -and (((Get-Content $transcript) | % { ($_ -match 'failed to execute Set-TargetResource') }) -contains $true)) {
         Write-Log -message ('{0} :: dsc run failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'

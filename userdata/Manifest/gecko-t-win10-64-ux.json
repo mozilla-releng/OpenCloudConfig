@@ -1717,6 +1717,105 @@
       ]
     },
     {
+      "ComponentName": "reg_WindowsUpdate_DeferUpgrade",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1510220",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+      "ValueName": "DeferUpgrade",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_DeferUpgradePeriod",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1510220",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+      "ValueName": "DeferUpgradePeriod",
+      "ValueType": "Dword",
+      "ValueData": 8
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_DeferUpdatePeriod",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1510220",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+      "ValueName": "DeferUpdatePeriod",
+      "ValueType": "Dword",
+      "ValueData": 4
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_NoAutoRebootWithLoggedOnUsers",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "NoAutoRebootWithLoggedOnUsers",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_NoAutoUpdate",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "NoAutoUpdate",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_AUOptions",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "AUOptions",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_ScheduledInstallDay",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "ScheduledInstallDay",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_ScheduledInstallTime",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "ScheduledInstallTime",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_AutomaticMaintenanceEnabled",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "AutomaticMaintenanceEnabled",
+      "ValueType": "Dword",
+      "ValueData": 0
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_AllowMUUpdateService",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "AllowMUUpdateService",
+      "ValueType": "Dword",
+      "ValueData": 0
+    },
+    {
+      "ComponentName": "reg_ScheduleMaintenance_MaintenanceDisabled",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\Maintenance",
+      "ValueName": "MaintenanceDisabled",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
       "ComponentName": "hw-startup-check_ps1",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "Maintenance Toolchain - not essential for building firefox",

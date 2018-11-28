@@ -1141,6 +1141,41 @@
       ]
     },
     {
+      "ComponentName": "NvidiaK520DriverPackage",
+      "ComponentType": "ExeInstall",
+      "Comment": "Required for hardware acceleration on EC2 g2 (GPU) instances. http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/accelerated-computing-instances.html#install-nvidia-driver-windows",
+      "Url": "http://uk.download.nvidia.com/Windows/Quadro_Certified/GRID/369.95/369.95-quadro-grid-desktop-notebook-win10-64bit-international-whql.exe",
+      "Arguments": [
+        "/s"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\NVIDIA\\369.95\\setup.exe"
+        ]
+      },
+      "sha512": "7fd87a38e5eb760e49bd136d238ec8983a9cdacc1dfc67334c1033f887aab3c8592156a7f876de7c8938279008848ff755ec478aab9c1218f7879ca6758e29f2"
+    },
+    {
+      "ComponentName": "NvidiaK520DriverInstall",
+      "ComponentType": "CommandRun",
+      "Comment": "Required for hardware acceleration on EC2 g2 (GPU) instances. http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/accelerated-computing-instances.html#install-nvidia-driver-windows",
+      "Command": "C:\\NVIDIA\\369.95\\setup.exe",
+      "Arguments": [
+        "/s"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\NVIDIA Corporation\\license.txt"
+        ]
+      },
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "NvidiaK520DriverPackage"
+        }
+      ]
+    },
+    {
       "ComponentName": "nircmd",
       "ComponentType": "FileDownload",
       "Source": "https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmd.exe",
@@ -1559,7 +1594,7 @@
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1494048",
       "Command": "icacls.exe",
       "Arguments": [
-        "C:\\ProgramData\\Mozilla",
+        "c:\\ProgramData\\Mozilla",
         "/grant",
         "Everyone:(OI)(CI)F"
       ],
@@ -1568,19 +1603,7 @@
           "ComponentType": "CommandRun",
           "ComponentName": "maintenanceservice_install"
         }
-      ],
-      "Validate": {
-        "CommandsReturn": [
-          {
-            "Command": "icacls.exe",
-            "Arguments": [
-              "C:\\ProgramData\\Mozilla",
-              "/T"
-            ],
-            "Match": "Everyone:(OI)(CI)(F)"
-          }
-        ]
-      }
+      ]
     },
     {
       "ComponentName": "HostsFile",
@@ -1602,6 +1625,105 @@
           "ComponentName": "HostsFile"
         }
       ]
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_DeferUpgrade",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1510220",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+      "ValueName": "DeferUpgrade",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_DeferUpgradePeriod",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1510220",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+      "ValueName": "DeferUpgradePeriod",
+      "ValueType": "Dword",
+      "ValueData": 8
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_DeferUpdatePeriod",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1510220",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+      "ValueName": "DeferUpdatePeriod",
+      "ValueType": "Dword",
+      "ValueData": 4
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_NoAutoRebootWithLoggedOnUsers",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "NoAutoRebootWithLoggedOnUsers",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_NoAutoUpdate",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "NoAutoUpdate",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_AUOptions",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "AUOptions",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_ScheduledInstallDay",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "ScheduledInstallDay",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_ScheduledInstallTime",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "ScheduledInstallTime",
+      "ValueType": "Dword",
+      "ValueData": 1
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_AutomaticMaintenanceEnabled",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "AutomaticMaintenanceEnabled",
+      "ValueType": "Dword",
+      "ValueData": 0
+    },
+    {
+      "ComponentName": "reg_WindowsUpdate_AU_AllowMUUpdateService",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "ValueName": "AllowMUUpdateService",
+      "ValueType": "Dword",
+      "ValueData": 0
+    },
+    {
+      "ComponentName": "reg_ScheduleMaintenance_MaintenanceDisabled",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1485628",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\Maintenance",
+      "ValueName": "MaintenanceDisabled",
+      "ValueType": "Dword",
+      "ValueData": 1
     }
   ],
   "ProvisionerConfiguration": {

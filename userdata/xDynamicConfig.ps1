@@ -216,7 +216,7 @@ Configuration xDynamicConfig {
             try {
               $redirectStandardOutput = ('{0}\log\{1}-{2}-stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
               $redirectStandardError = ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
-              $process = (Start-Process $($using:item.Command) -ArgumentList @($using:item.Arguments | % { $($_) }) -Wait -NoNewWindow -PassThru -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
+              $process = (Start-Process $($using:item.Command) -ArgumentList @($using:item.Arguments | % { $($_) }) -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
               Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
               if ($process.ExitCode -and $process.TotalProcessorTime) {
                 Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -Message ('{0} :: command ({1} {2}) exited with code: {3} after a processing time of: {4}.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode, $process.TotalProcessorTime)

@@ -842,48 +842,66 @@ Configuration xDynamicConfig {
             }
             if (($using:item.Protocol) -and ($using:item.LocalPort)) {
               $ruleName = ('{0} ({1} {2} {3}): {4}' -f $using:item.ComponentName, $using:item.Protocol, $using:item.LocalPort, $using:item.Direction, $using:item.Action)
-              if (Get-Command 'New-NetFirewallRule' -errorAction SilentlyContinue) {
-                if ($using:item.RemoteAddress) {
-                  New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -LocalPort $using:item.LocalPort -Direction $using:item.Direction -Action $using:item.Action -RemoteAddress $using:item.RemoteAddress
+              try {
+                if (Get-Command 'New-NetFirewallRule' -errorAction SilentlyContinue) {
+                  if ($using:item.RemoteAddress) {
+                    New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -LocalPort $using:item.LocalPort -Direction $using:item.Direction -Action $using:item.Action -RemoteAddress $using:item.RemoteAddress
+                  } else {
+                    New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -LocalPort $using:item.LocalPort -Direction $using:item.Direction -Action $using:item.Action
+                  }
                 } else {
-                  New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -LocalPort $using:item.LocalPort -Direction $using:item.Direction -Action $using:item.Action
+                  if ($using:item.RemoteAddress) {
+                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort), ('remoteip={0}' -f $using:item.RemoteAddress))
+                  } else {
+                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort))
+                  }
                 }
-              } else {
-                if ($using:item.RemoteAddress) {
-                  & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort), ('remoteip={0}' -f $using:item.RemoteAddress))
-                } else {
-                  & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort))
-                }
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
+              } catch {
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
+                throw
               }
             } elseif (($using:item.Protocol -eq 'ICMPv4') -or ($using:item.Protocol -eq 'ICMPv6')) {
               $ruleName = ('{0} ({1} {2} {3}): {4}' -f $using:item.ComponentName, $using:item.Protocol, $using:item.Action)
-              if (Get-Command 'New-NetFirewallRule' -errorAction SilentlyContinue) {
-                if ($using:item.RemoteAddress) {
-                  New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -IcmpType 8 -Action $using:item.Action -RemoteAddress $using:item.RemoteAddress
+              try {
+                if (Get-Command 'New-NetFirewallRule' -errorAction SilentlyContinue) {
+                  if ($using:item.RemoteAddress) {
+                    New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -IcmpType 8 -Action $using:item.Action -RemoteAddress $using:item.RemoteAddress
+                  } else {
+                    New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -IcmpType 8 -Action $using:item.Action
+                  }
                 } else {
-                  New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -IcmpType 8 -Action $using:item.Action
+                  if ($using:item.RemoteAddress) {
+                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}:8,any' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort), ('remoteip={0}' -f $using:item.RemoteAddress))
+                  } else {
+                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}:8,any' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort))
+                  }
                 }
-              } else {
-                if ($using:item.RemoteAddress) {
-                  & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}:8,any' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort), ('remoteip={0}' -f $using:item.RemoteAddress))
-                } else {
-                  & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}:8,any' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort))
-                }
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
+              } catch {
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
+                throw
               }
             } elseif ($using:item.Program) {
               $ruleName = ('{0} ({1} {2}): {3}' -f $using:item.ComponentName, $using:item.Program, $using:item.Direction, $using:item.Action)
-              if (Get-Command 'New-NetFirewallRule' -errorAction SilentlyContinue) {
-                if ($using:item.RemoteAddress) {
-                  New-NetFirewallRule -DisplayName $ruleName -Program $using:item.Program -Direction $using:item.Direction -Action $using:item.Action -RemoteAddress $using:item.RemoteAddress
+              try {
+                if (Get-Command 'New-NetFirewallRule' -errorAction SilentlyContinue) {
+                  if ($using:item.RemoteAddress) {
+                    New-NetFirewallRule -DisplayName $ruleName -Program $using:item.Program -Direction $using:item.Direction -Action $using:item.Action -RemoteAddress $using:item.RemoteAddress
+                  } else {
+                    New-NetFirewallRule -DisplayName $ruleName -Program $using:item.Program -Direction $using:item.Direction -Action $using:item.Action
+                  }
                 } else {
-                  New-NetFirewallRule -DisplayName $ruleName -Program $using:item.Program -Direction $using:item.Direction -Action $using:item.Action
+                  if ($using:item.RemoteAddress) {
+                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('program={0}' -f $using:item.Program), ('remoteip={0}' -f $using:item.RemoteAddress))
+                  } else {
+                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('program={0}' -f $using:item.Program))
+                  }
                 }
-              } else {
-                if ($using:item.RemoteAddress) {
-                  & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('program={0}' -f $using:item.Program), ('remoteip={0}' -f $using:item.RemoteAddress))
-                } else {
-                  & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('program={0}' -f $using:item.Program))
-                }
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
+              } catch {
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
+                throw
               }
             }
           }

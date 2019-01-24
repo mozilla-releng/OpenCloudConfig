@@ -187,6 +187,7 @@ Configuration xDynamicConfig {
                 Remove-Item $($using:item.Path) -Confirm:$false -force
               } catch {
                 Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: error resetting permissions or deleting directory ({1}). {2}' -f $using:item.ComponentName, $($using:item.Path), $_.Exception.Message)
+                throw
               }
             }
           }
@@ -217,9 +218,9 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ CommandRun = $item.ComponentName }"
           SetScript = {
+            $redirectStandardOutput = ('{0}\log\{1}-{2}-stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
+            $redirectStandardError = ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
             try {
-              $redirectStandardOutput = ('{0}\log\{1}-{2}-stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
-              $redirectStandardError = ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
               $process = (Start-Process $($using:item.Command) -ArgumentList @($using:item.Arguments | % { $($_) }) -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
               Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
               if ($process.ExitCode -and $process.TotalProcessorTime) {
@@ -229,6 +230,11 @@ Configuration xDynamicConfig {
               }
             } catch {
               Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
+              $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
+              if (($standardErrorFile) -and $standardErrorFile.Length) {
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+              }
+              throw
             }
             $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
             if (($standardErrorFile) -and $standardErrorFile.Length) {

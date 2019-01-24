@@ -330,7 +330,7 @@ Configuration xDynamicConfig {
                 try {
                   # handle redirects (eg: sourceforge)
                   Invoke-WebRequest -Uri $using:item.Source -OutFile $tempTarget -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
-                  Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Source, $using:item.Target)
+                  Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Source, $tempTarget)
                   Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
                 } catch {
                   Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
@@ -393,15 +393,32 @@ Configuration xDynamicConfig {
               $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName)
             }
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              $webClient = New-Object System.Net.WebClient
-              $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-              $webClient.DownloadFile(('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512), $tempFile)
+              try {
+                $tooltoolUrl = ('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512)
+                $webClient = New-Object System.Net.WebClient
+                $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
+                $webClient.DownloadFile($tooltoolUrl, $tempFile)
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+              } catch {
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+                throw
+              }
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
+                Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Url, $tempFile)
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
               } catch {
-                # handle redirects (eg: sourceforge)
-                Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                try {
+                  # handle redirects (eg: sourceforge)
+                  Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
+                  Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Url, $tempFile)
+                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                } catch {
+                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                  throw
+                }
               }
             }
             Unblock-File -Path $tempFile

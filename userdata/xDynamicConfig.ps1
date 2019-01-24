@@ -683,7 +683,13 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ EnvironmentVariableSet = $item.ComponentName }"
           SetScript = {
-            [Environment]::SetEnvironmentVariable($using:item.Name, $using:item.Value, $using:item.Target)
+            try {
+              [Environment]::SetEnvironmentVariable($using:item.Name, $using:item.Value, $using:item.Target)
+              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $using:item.Value, $using:item.Target)
+            } catch {
+              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $using:item.Value, $using:item.Target, $_.Exception.Message)
+              throw
+            }
           }
           TestScript = {
             return Log-Validation ((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value -eq $using:item.Value) -verbose

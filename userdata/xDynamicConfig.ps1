@@ -219,20 +219,20 @@ Configuration xDynamicConfig {
               $process = (Start-Process $($using:item.Command) -ArgumentList @($using:item.Arguments | % { $($_) }) -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
               Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
               if ($process.ExitCode -and $process.TotalProcessorTime) {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -Message ('{0} :: command ({1} {2}) exited with code: {3} after a processing time of: {4}.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode, $process.TotalProcessorTime)
+                #Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -Message ('{0} :: command ({1} {2}) exited with code: {3} after a processing time of: {4}.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode, $process.TotalProcessorTime)
               } else {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -Message ('{0} :: command ({1} {2}) executed.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '))
+                #Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -Message ('{0} :: command ({1} {2}) executed.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '))
               }
             } catch {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
+              #Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
             }
             $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
             if (($standardErrorFile) -and $standardErrorFile.Length) {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+              #Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
             }
             $standardOutputFile = (Get-Item -Path $redirectStandardOutput -ErrorAction SilentlyContinue)
             if (($standardOutputFile) -and $standardOutputFile.Length) {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -Message ('{0} :: ({1} {2}). log: {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $redirectStandardOutput)
+              #Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -Message ('{0} :: ({1} {2}). log: {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $redirectStandardOutput)
             }
           }
           TestScript = {

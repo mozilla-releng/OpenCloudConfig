@@ -445,9 +445,34 @@ Configuration xDynamicConfig {
             } else {
               $exe = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName)
             }
-            $process = Start-Process $exe -ArgumentList $using:item.Arguments -Wait -NoNewWindow -PassThru -RedirectStandardOutput ('{0}\log\{1}-{2}-stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), ('{0}.exe' -f $using:item.ComponentName)) -RedirectStandardError ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), ('{0}.exe' -f $using:item.ComponentName))
-            if (-not (($process.ExitCode -eq 0) -or ($using:item.AllowedExitCodes -contains $process.ExitCode))) {
+            $redirectStandardOutput = ('{0}\log\{1}-{2}-stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
+            $redirectStandardError = ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
+            try {
+              $process = (Start-Process $exe -ArgumentList @($using:item.Arguments | % { $($_) }) -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
+              Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
+              if (-not (($process.ExitCode -eq 0) -or ($using:item.AllowedExitCodes -contains $process.ExitCode))) {
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: command ({1} {2}) exited with code {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode)
+                $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
+                if (($standardErrorFile) -and $standardErrorFile.Length) {
+                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+                }
+                throw
+              }
+            } catch {
+              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
+              $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
+              if (($standardErrorFile) -and $standardErrorFile.Length) {
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+              }
               throw
+            }
+            $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
+            if (($standardErrorFile) -and $standardErrorFile.Length) {
+              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+            }
+            $standardOutputFile = (Get-Item -Path $redirectStandardOutput -ErrorAction SilentlyContinue)
+            if (($standardOutputFile) -and $standardOutputFile.Length) {
+              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: ({1} {2}). log: {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $redirectStandardOutput)
             }
           }
           TestScript = {

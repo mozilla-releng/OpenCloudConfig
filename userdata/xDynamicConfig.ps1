@@ -361,10 +361,16 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ SymbolicLink = $item.ComponentName }"
           SetScript = {
-            if (Test-Path -Path $using:item.Target -PathType Container -ErrorAction SilentlyContinue) {
-              & 'cmd' @('/c', 'mklink', '/D', $using:item.Link, $using:item.Target)
-            } elseif (Test-Path -Path $using:item.Target -PathType Leaf -ErrorAction SilentlyContinue) {
-              & 'cmd' @('/c', 'mklink', $using:item.Link, $using:item.Target)
+            try {
+              if (Test-Path -Path $using:item.Target -PathType Container -ErrorAction SilentlyContinue) {
+                & 'cmd' @('/c', 'mklink', '/D', $using:item.Link, $using:item.Target)
+              } elseif (Test-Path -Path $using:item.Target -PathType Leaf -ErrorAction SilentlyContinue) {
+                & 'cmd' @('/c', 'mklink', $using:item.Link, $using:item.Target)
+              }
+              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: created symlink {1} to {2}' -f $using:item.ComponentName, $using:item.Link, $using:item.Target)
+            } catch {
+              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to create symlink {1} from {2}' -f $using:item.ComponentName, $using:item.Link, $using:item.Target)
+              throw
             }
           }
           TestScript = {

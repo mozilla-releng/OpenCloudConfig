@@ -181,9 +181,13 @@ Configuration xDynamicConfig {
             try {
               Remove-Item $($using:item.Path) -Confirm:$false -force
             } catch {
-              Start-Process 'icacls' -ArgumentList @($($using:item.Path), '/grant', ('{0}:(OI)(CI)F' -f $env:Username), '/inheritance:r') -Wait -NoNewWindow -PassThru | Out-Null
-              Remove-Item $($using:item.Path) -Confirm:$false -force
-              # todo: another try catch block with move to recycle bin, empty recycle bin
+              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: error deleting directory ({1}). {2}' -f $using:item.ComponentName, $($using:item.Path), $_.Exception.Message)
+              try {
+                Start-Process 'icacls' -ArgumentList @($($using:item.Path), '/grant', ('{0}:(OI)(CI)F' -f $env:Username), '/inheritance:r') -Wait -NoNewWindow -PassThru | Out-Null
+                Remove-Item $($using:item.Path) -Confirm:$false -force
+              } catch {
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: error resetting permissions or deleting directory ({1}). {2}' -f $using:item.ComponentName, $($using:item.Path), $_.Exception.Message)
+              }
             }
           }
           TestScript = {

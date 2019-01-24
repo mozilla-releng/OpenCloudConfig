@@ -761,35 +761,41 @@ Configuration xDynamicConfig {
             DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
             GetScript = "@{ RegistryTakeOwnership = $item.ComponentName }"
             SetScript = {
-              $ntdll = Add-Type -Member '[DllImport("ntdll.dll")] public static extern int RtlAdjustPrivilege(ulong a, bool b, bool c, ref bool d);' -Name NtDll -PassThru
-              @{ SeTakeOwnership = 9; SeBackup =  17; SeRestore = 18 }.Values | % { $null = $ntdll::RtlAdjustPrivilege($_, 1, 0, [ref]0) }
-              $key = ($using:item.Key).Replace(('{0}\' -f ($using:item.Key).Split('\')[0]), '')
-              switch -regex (($using:item.Key).Split('\')[0]) {
-                'HKCU|HKEY_CURRENT_USER' {
-                  $hive = 'CurrentUser'
+              try {
+                $ntdll = Add-Type -Member '[DllImport("ntdll.dll")] public static extern int RtlAdjustPrivilege(ulong a, bool b, bool c, ref bool d);' -Name NtDll -PassThru
+                @{ SeTakeOwnership = 9; SeBackup =  17; SeRestore = 18 }.Values | % { $null = $ntdll::RtlAdjustPrivilege($_, 1, 0, [ref]0) }
+                $key = ($using:item.Key).Replace(('{0}\' -f ($using:item.Key).Split('\')[0]), '')
+                switch -regex (($using:item.Key).Split('\')[0]) {
+                  'HKCU|HKEY_CURRENT_USER' {
+                    $hive = 'CurrentUser'
+                  }
+                  'HKLM|HKEY_LOCAL_MACHINE' {
+                    $hive = 'LocalMachine'
+                  }
+                  'HKCR|HKEY_CLASSES_ROOT' {
+                    $hive = 'ClassesRoot'
+                  }
+                  'HKCC|HKEY_CURRENT_CONFIG' {
+                    $hive = 'CurrentConfig'
+                  }
+                  'HKU|HKEY_USERS' {
+                    $hive = 'Users'
+                  }
                 }
-                'HKLM|HKEY_LOCAL_MACHINE' {
-                  $hive = 'LocalMachine'
-                }
-                'HKCR|HKEY_CLASSES_ROOT' {
-                  $hive = 'ClassesRoot'
-                }
-                'HKCC|HKEY_CURRENT_CONFIG' {
-                  $hive = 'CurrentConfig'
-                }
-                'HKU|HKEY_USERS' {
-                  $hive = 'Users'
-                }
+                $regKey = [Microsoft.Win32.Registry]::$hive.OpenSubKey($key, 'ReadWriteSubTree', 'TakeOwnership')
+                $acl = New-Object System.Security.AccessControl.RegistrySecurity
+                $acl.SetOwner([System.Security.Principal.SecurityIdentifier]$using:item.SetOwner)
+                $regKey.SetAccessControl($acl)
+                $acl.SetAccessRuleProtection($false, $false)
+                $regKey.SetAccessControl($acl)
+                $regKey = $regKey.OpenSubKey('', 'ReadWriteSubTree', 'ChangePermissions')
+                $acl.ResetAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule([System.Security.Principal.SecurityIdentifier]$using:item.SetOwner, 'FullControl', @('ObjectInherit', 'ContainerInherit'), 'None', 'Allow')))
+                $regKey.SetAccessControl($acl)
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: registry key owner set to: {1} for {2}' -f $using:item.ComponentName, $using:item.SetOwner, $using:item.Key)
+              } catch {
+                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to set registry key owner to: {1} for {2}. {3}' -f $using:item.ComponentName,  $using:item.SetOwner, $using:item.Key, $_.Exception.Message)
+                throw
               }
-              $regKey = [Microsoft.Win32.Registry]::$hive.OpenSubKey($key, 'ReadWriteSubTree', 'TakeOwnership')
-              $acl = New-Object System.Security.AccessControl.RegistrySecurity
-              $acl.SetOwner([System.Security.Principal.SecurityIdentifier]$item.SetOwner)
-              $regKey.SetAccessControl($acl)
-              $acl.SetAccessRuleProtection($false, $false)
-              $regKey.SetAccessControl($acl)
-              $regKey = $regKey.OpenSubKey('', 'ReadWriteSubTree', 'ChangePermissions')
-              $acl.ResetAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule([System.Security.Principal.SecurityIdentifier]$item.SetOwner, 'FullControl', @('ObjectInherit', 'ContainerInherit'), 'None', 'Allow')))
-              $regKey.SetAccessControl($acl)
             }
             TestScript = { return $false }
           }

@@ -84,18 +84,23 @@ function Invoke-RemoteDesiredStateConfig {
     [hashtable] $packageProviders = @{ 'NuGet' = 2.8.5.208 },
     [hashtable[]] $modules = @(
       @{
+        'ModuleName' = 'PSDscResources';
+        'Repository' = 'PSGallery';
+        'ModuleVersion' = '2.9.0.0'
+      },
+      @{
         'ModuleName' = 'xPSDesiredStateConfiguration';
-        'GUID' = 'cc8dc021-fa5f-4f96-8ecf-dfd68a6d9d48';
+        'Repository' = 'PSGallery';
         'ModuleVersion' = '8.4.0.0'
       },
       @{
         'ModuleName' = 'xWindowsUpdate';
-        'GUID' = 'a9cba250-ea73-4d82-b31b-7e58cc50ffd1';
+        'Repository' = 'PSGallery';
         'ModuleVersion' = '2.7.0.0'
       },
       @{
         'ModuleName' = 'OpenCloudConfig';
-        'GUID' = 'd1235f10-0ae3-4353-9a31-0abeb2b9093e';
+        'Repository' = 'PSGallery';
         'ModuleVersion' = '0.0.1'
       }
     )
@@ -122,11 +127,16 @@ function Invoke-RemoteDesiredStateConfig {
       if ((Get-Module -ListAvailable -Name $module['ModuleName'] | ? { $_.Version -eq $module['ModuleVersion'] })) {
         Write-Log -message ('{0} :: powershell module: {1}, version: {2}, detected.' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion']) -severity 'DEBUG'
       } else {
+        Write-Log -message ('{0} :: powershell module: {1}, version: {2}, not detected.' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion']) -severity 'DEBUG'
+        if (@(Get-PSRepository -Name $module['Repository'])[0].InstallationPolicy -ne 'Trusted') {
+          Set-PSRepository -Name $module['Repository'] -InstallationPolicy 'Trusted'
+          Write-Log -message ('{0} :: installation policy for repository: {1}, set to "Trusted".' -f $($MyInvocation.MyCommand.Name), $module['Repository']) -severity 'INFO'
+        }
         try {
-          Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository 'PSGallery'
-          Write-Log -message ('{0} :: powershell module: {1}, version: {2}, installed.' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion']) -severity 'INFO'
+          Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['ModuleVersion'] -AllowClobber
+          Write-Log -message ('{0} :: powershell module: {1}, version: {2}, from repository: {3}, installed.' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository']) -severity 'INFO'
         } catch {
-          Write-Log -message ('{0} :: failed to install powershell module: {1}, version: {2}. {3}' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $_.Exception.Message) -severity 'ERROR'
+          Write-Log -message ('{0} :: failed to install powershell module: {1}, version: {2}, from repository: {3}. {4}' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository'], $_.Exception.Message) -severity 'ERROR'
         }
       }
     }

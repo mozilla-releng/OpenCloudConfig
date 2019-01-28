@@ -5,7 +5,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #>
 
 Configuration xDynamicConfig {
-  Import-DscResource -ModuleName PSDesiredStateConfiguration,xPSDesiredStateConfiguration,xWindowsUpdate
+  Import-DscResource -ModuleName PSDesiredStateConfiguration,xPSDesiredStateConfiguration,xWindowsUpdate,OpenCloudConfig
 
   $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation').Organisation } else { 'mozilla-releng' })
   $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository').Repository } else { 'OpenCloudConfig' })
@@ -180,13 +180,14 @@ Configuration xDynamicConfig {
           SetScript = {
             try {
               Remove-Item $($using:item.Path) -Confirm:$false -force
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: deleted directory {1}.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '))
             } catch {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: error deleting directory ({1}). {2}' -f $using:item.ComponentName, $($using:item.Path), $_.Exception.Message)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: error deleting directory ({1}). {2}' -f $using:item.ComponentName, $($using:item.Path), $_.Exception.Message)
               try {
                 Start-Process 'icacls' -ArgumentList @($($using:item.Path), '/grant', ('{0}:(OI)(CI)F' -f $env:Username), '/inheritance:r') -Wait -NoNewWindow -PassThru | Out-Null
                 Remove-Item $($using:item.Path) -Confirm:$false -force
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: error resetting permissions or deleting directory ({1}). {2}' -f $using:item.ComponentName, $($using:item.Path), $_.Exception.Message)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: error resetting permissions or deleting directory ({1}). {2}' -f $using:item.ComponentName, $($using:item.Path), $_.Exception.Message)
                 throw
               }
             }
@@ -224,25 +225,25 @@ Configuration xDynamicConfig {
               $process = (Start-Process $($using:item.Command) -ArgumentList @($using:item.Arguments | % { $($_) }) -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
               Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
               if ($process.ExitCode -and $process.TotalProcessorTime) {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: command ({1} {2}) exited with code: {3} after a processing time of: {4}.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode, $process.TotalProcessorTime)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: command ({1} {2}) exited with code: {3} after a processing time of: {4}.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode, $process.TotalProcessorTime)
               } else {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: command ({1} {2}) executed.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '))
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: command ({1} {2}) executed.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '))
               }
             } catch {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
               $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
               if (($standardErrorFile) -and $standardErrorFile.Length) {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
               }
               throw
             }
             $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
             if (($standardErrorFile) -and $standardErrorFile.Length) {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
             }
             $standardOutputFile = (Get-Item -Path $redirectStandardOutput -ErrorAction SilentlyContinue)
             if (($standardOutputFile) -and $standardOutputFile.Length) {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: ({1} {2}). log: {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $redirectStandardOutput)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: ({1} {2}). log: {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $redirectStandardOutput)
             }
           }
           TestScript = {
@@ -265,25 +266,25 @@ Configuration xDynamicConfig {
                 $webClient = New-Object System.Net.WebClient
                 $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
                 $webClient.DownloadFile($tooltoolUrl, $using:item.Target)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $using:item.Target, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $using:item.Target, $tooltoolUrl)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $using:item.Target, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $using:item.Target, $tooltoolUrl)
                 throw
               }
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Source, $using:item.Target)
                 Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Source, $using:item.Target)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
                 try {
                   # handle redirects (eg: sourceforge)
                   Invoke-WebRequest -Uri $using:item.Source -OutFile $using:item.Target -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
                   Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Source, $using:item.Target)
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
                 } catch {
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
                   throw
                 }
               }
@@ -315,25 +316,25 @@ Configuration xDynamicConfig {
                 $webClient = New-Object System.Net.WebClient
                 $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
                 $webClient.DownloadFile($tooltoolUrl, $tempTarget)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempTarget, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempTarget, $tooltoolUrl)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempTarget, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempTarget, $tooltoolUrl)
                 throw
               }
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Source, $tempTarget)
                 Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Source, $tempTarget)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
                 try {
                   # handle redirects (eg: sourceforge)
                   Invoke-WebRequest -Uri $using:item.Source -OutFile $tempTarget -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
                   Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Source, $tempTarget)
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
                 } catch {
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
                   throw
                 }
               }
@@ -367,9 +368,9 @@ Configuration xDynamicConfig {
               } elseif (Test-Path -Path $using:item.Target -PathType Leaf -ErrorAction SilentlyContinue) {
                 & 'cmd' @('/c', 'mklink', $using:item.Link, $using:item.Target)
               }
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: created symlink {1} to {2}' -f $using:item.ComponentName, $using:item.Link, $using:item.Target)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: created symlink {1} to {2}' -f $using:item.ComponentName, $using:item.Link, $using:item.Target)
             } catch {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to create symlink {1} from {2}' -f $using:item.ComponentName, $using:item.Link, $using:item.Target)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to create symlink {1} from {2}' -f $using:item.ComponentName, $using:item.Link, $using:item.Target)
               throw
             }
           }
@@ -398,25 +399,25 @@ Configuration xDynamicConfig {
                 $webClient = New-Object System.Net.WebClient
                 $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
                 $webClient.DownloadFile($tooltoolUrl, $tempFile)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
                 throw
               }
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
                 Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Url, $tempFile)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                 try {
                   # handle redirects (eg: sourceforge)
                   Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
                   Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Url, $tempFile)
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                 } catch {
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                   throw
                 }
               }
@@ -451,28 +452,28 @@ Configuration xDynamicConfig {
               $process = (Start-Process $exe -ArgumentList @($using:item.Arguments | % { $($_) }) -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
               Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
               if (-not (($process.ExitCode -eq 0) -or ($using:item.AllowedExitCodes -contains $process.ExitCode))) {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: command ({1} {2}) exited with code {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: command ({1} {2}) exited with code {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode)
                 $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
                 if (($standardErrorFile) -and $standardErrorFile.Length) {
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
                 }
                 throw
               }
             } catch {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
               $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
               if (($standardErrorFile) -and $standardErrorFile.Length) {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
               }
               throw
             }
             $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
             if (($standardErrorFile) -and $standardErrorFile.Length) {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
             }
             $standardOutputFile = (Get-Item -Path $redirectStandardOutput -ErrorAction SilentlyContinue)
             if (($standardOutputFile) -and $standardOutputFile.Length) {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: ({1} {2}). log: {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $redirectStandardOutput)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: ({1} {2}). log: {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $redirectStandardOutput)
             }
           }
           TestScript = {
@@ -496,25 +497,25 @@ Configuration xDynamicConfig {
                 $webClient = New-Object System.Net.WebClient
                 $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
                 $webClient.DownloadFile($tooltoolUrl, $tempFile)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
                 throw
               }
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
                 Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Url, $tempFile)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                 try {
                   # handle redirects (eg: sourceforge)
                   Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
                   Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Url, $tempFile)
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                 } catch {
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                   throw
                 }
               }
@@ -552,25 +553,25 @@ Configuration xDynamicConfig {
                 $webClient = New-Object System.Net.WebClient
                 $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
                 $webClient.DownloadFile($tooltoolUrl, $tempFile)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
                 throw
               }
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
                 Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Url, $tempFile)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                 try {
                   # handle redirects (eg: sourceforge)
                   Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
                   Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Url, $tempFile)
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                 } catch {
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                   throw
                 }
               }
@@ -617,25 +618,25 @@ Configuration xDynamicConfig {
                 $webClient = New-Object System.Net.WebClient
                 $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
                 $webClient.DownloadFile($tooltoolUrl, $tempFile)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
                 throw
               }
             } else {
               try {
                 (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
                 Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Url, $tempFile)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                 try {
                   # handle redirects (eg: sourceforge)
                   Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
                   Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Url, $tempFile)
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                 } catch {
-                  Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
+                  Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
                   throw
                 }
               }
@@ -685,9 +686,9 @@ Configuration xDynamicConfig {
           SetScript = {
             try {
               [Environment]::SetEnvironmentVariable($using:item.Name, $using:item.Value, $using:item.Target)
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $using:item.Value, $using:item.Target)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $using:item.Value, $using:item.Target)
             } catch {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $using:item.Value, $using:item.Target, $_.Exception.Message)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $using:item.Value, $using:item.Target, $_.Exception.Message)
               throw
             }
           }
@@ -708,9 +709,9 @@ Configuration xDynamicConfig {
             $value = (@((@(((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value) -split ';') + $using:item.Values) | select -Unique) -join ';')
             try {
               [Environment]::SetEnvironmentVariable($using:item.Name, $value, $using:item.Target)
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target)
             } catch {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target, $_.Exception.Message)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target, $_.Exception.Message)
               throw
             }
           }
@@ -729,9 +730,9 @@ Configuration xDynamicConfig {
             $value = (@(($using:item.Values + @(((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value) -split ';')) | select -Unique) -join ';')
             try {
               [Environment]::SetEnvironmentVariable($using:item.Name, $value, $using:item.Target)
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target)
             } catch {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target, $_.Exception.Message)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target, $_.Exception.Message)
               throw
             }
           }
@@ -791,9 +792,9 @@ Configuration xDynamicConfig {
                 $regKey = $regKey.OpenSubKey('', 'ReadWriteSubTree', 'ChangePermissions')
                 $acl.ResetAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule([System.Security.Principal.SecurityIdentifier]$using:item.SetOwner, 'FullControl', @('ObjectInherit', 'ContainerInherit'), 'None', 'Allow')))
                 $regKey.SetAccessControl($acl)
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: registry key owner set to: {1} for {2}' -f $using:item.ComponentName, $using:item.SetOwner, $using:item.Key)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: registry key owner set to: {1} for {2}' -f $using:item.ComponentName, $using:item.SetOwner, $using:item.Key)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to set registry key owner to: {1} for {2}. {3}' -f $using:item.ComponentName,  $using:item.SetOwner, $using:item.Key, $_.Exception.Message)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to set registry key owner to: {1} for {2}. {3}' -f $using:item.ComponentName,  $using:item.SetOwner, $using:item.Key, $_.Exception.Message)
                 throw
               }
             }
@@ -856,9 +857,9 @@ Configuration xDynamicConfig {
                     & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort))
                   }
                 }
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
                 throw
               }
             } elseif (($using:item.Protocol -eq 'ICMPv4') -or ($using:item.Protocol -eq 'ICMPv6')) {
@@ -877,9 +878,9 @@ Configuration xDynamicConfig {
                     & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}:8,any' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort))
                   }
                 }
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
                 throw
               }
             } elseif ($using:item.Program) {
@@ -898,9 +899,9 @@ Configuration xDynamicConfig {
                     & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('program={0}' -f $using:item.Program))
                   }
                 }
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
               } catch {
-                Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
+                Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
                 throw
               }
             }
@@ -933,9 +934,9 @@ Configuration xDynamicConfig {
             try {
               $content = ((Get-Content -Path $using:item.Path) | Foreach-Object { $_ -replace $using:item.Match, (Invoke-Expression -Command $using:item.Replace) })
               [System.IO.File]::WriteAllLines($using:item.Path, $content, (New-Object System.Text.UTF8Encoding $false))
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Information' -EventId 1 -Message ('{0} :: replaced occurences of: {1} with: {2} in: {3}' -f $using:item.ComponentName, $using:item.Match, $using:item.Replace, $using:item.Path)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: replaced occurences of: {1} with: {2} in: {3}' -f $using:item.ComponentName, $using:item.Match, $using:item.Replace, $using:item.Path)
             } catch {
-              Write-EventLog -LogName 'Application' -Source 'occ-dsc' -EntryType 'Error' -EventId 9 -Message ('{0} :: failed to replace occurences of: {1} with: {2} in: {3}. {4}' -f $using:item.ComponentName, $using:item.Match, $using:item.Replace, $using:item.Path, $_.Exception.Message)
+              Write-Log -LogName 'Application' -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to replace occurences of: {1} with: {2} in: {3}. {4}' -f $using:item.ComponentName, $using:item.Match, $using:item.Replace, $using:item.Path, $_.Exception.Message)
               throw
             }
           }

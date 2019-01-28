@@ -365,15 +365,15 @@ Configuration xDynamicConfig {
               if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
                 Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
               } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                Write-Verbose ('failed to download {0} from tooltool' -f $tempFile)
                 throw ('failed to download {0} from tooltool' -f $tempFile)
               }
             } else {
-              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
+              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Url -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Url)
               } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
-                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
+                Write-Verbose ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
+                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
               }
             }
             Unblock-File -Path $tempFile
@@ -449,15 +449,15 @@ Configuration xDynamicConfig {
               if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
                 Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
               } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                Write-Verbose ('failed to download {0} from tooltool' -f $tempFile)
                 throw ('failed to download {0} from tooltool' -f $tempFile)
               }
             } else {
-              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
+              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Url -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Url)
               } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
-                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
+                Write-Verbose ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
+                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
               }
             }
             Unblock-File -Path $tempFile
@@ -491,15 +491,15 @@ Configuration xDynamicConfig {
               if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
                 Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
               } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                Write-Verbose ('failed to download {0} from tooltool' -f $tempFile)
                 throw ('failed to download {0} from tooltool' -f $tempFile)
               }
             } else {
-              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
+              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Url -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Url)
               } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
-                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
+                Write-Verbose ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
+                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
               }
             }
             Unblock-File -Path $tempFile
@@ -542,15 +542,15 @@ Configuration xDynamicConfig {
               if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
                 Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
               } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                Write-Verbose ('failed to download {0} from tooltool' -f $tempFile)
                 throw ('failed to download {0} from tooltool' -f $tempFile)
               }
             } else {
-              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
+              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Url -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Url)
               } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
-                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
+                Write-Verbose ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
+                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
               }
             }
             Unblock-File -Path $tempFile

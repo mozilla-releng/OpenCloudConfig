@@ -101,7 +101,7 @@ function Invoke-RemoteDesiredStateConfig {
       @{
         'ModuleName' = 'OpenCloudConfig';
         'Repository' = 'PSGallery';
-        'ModuleVersion' = '0.0.1'
+        'ModuleVersion' = '0.0.2'
       }
     )
   )

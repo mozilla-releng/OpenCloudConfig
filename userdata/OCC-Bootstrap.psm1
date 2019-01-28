@@ -133,7 +133,12 @@ function Invoke-RemoteDesiredStateConfig {
           Write-Log -message ('{0} :: installation policy for repository: {1}, set to "Trusted".' -f $($MyInvocation.MyCommand.Name), $module['Repository']) -severity 'INFO'
         }
         try {
-          Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['ModuleVersion'] -AllowClobber
+          # AllowClobber was introduced in powershell 6
+          if (((Get-Command 'Install-Module').ParameterSets | Select-Object -ExpandProperty 'Parameters' | Where-Object { $_.Name -eq 'AllowClobber' })) {
+            Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['ModuleVersion'] -Force -AllowClobber
+          } else {
+            Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['ModuleVersion'] -Force
+          }
           Write-Log -message ('{0} :: powershell module: {1}, version: {2}, from repository: {3}, installed.' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository']) -severity 'INFO'
         } catch {
           Write-Log -message ('{0} :: failed to install powershell module: {1}, version: {2}, from repository: {3}. {4}' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository'], $_.Exception.Message) -severity 'ERROR'

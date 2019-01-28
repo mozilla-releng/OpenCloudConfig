@@ -5,28 +5,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #>
 
 Configuration xDynamicConfig {
-  Import-DscResource -ModuleName @(
-    @{
-      ModuleName = 'PSDscResources';
-      GUID = '7b750b98-bc2c-4059-80b9-f7228941a34f';
-      ModuleVersion = '2.9.0.0'
-    },
-    @{
-      ModuleName = 'xPSDesiredStateConfiguration';
-      GUID = 'cc8dc021-fa5f-4f96-8ecf-dfd68a6d9d48';
-      ModuleVersion = '8.4.0.0'
-    },
-    @{
-      ModuleName = 'xWindowsUpdate';
-      GUID = 'a9cba250-ea73-4d82-b31b-7e58cc50ffd1';
-      ModuleVersion = '2.7.0.0'
-    },
-    @{
-      ModuleName = 'OpenCloudConfig';
-      GUID = 'd1235f10-0ae3-4353-9a31-0abeb2b9093e';
-      ModuleVersion = '0.0.1'
-    }
-  )
+  Import-DscResource -ModuleName PSDscResources,xPSDesiredStateConfiguration,xWindowsUpdate,OpenCloudConfig
 
   $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation').Organisation } else { 'mozilla-releng' })
   $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository').Repository } else { 'OpenCloudConfig' })

@@ -7,9 +7,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 Configuration xDynamicConfig {
   Import-DscResource -ModuleName @(
     @{
-      ModuleName='PSDscResources';
-      GUID='7b750b98-bc2c-4059-80b9-f7228941a34f';
-      ModuleVersion='2.9.0.0'
+      ModuleName='PSDesiredStateConfiguration'
     },
     @{
       ModuleName='xPSDesiredStateConfiguration';

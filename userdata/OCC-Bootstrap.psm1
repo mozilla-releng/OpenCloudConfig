@@ -84,11 +84,6 @@ function Invoke-RemoteDesiredStateConfig {
     [hashtable] $packageProviders = @{ 'NuGet' = 2.8.5.208 },
     [hashtable[]] $modules = @(
       @{
-        'ModuleName' = 'PSDscResources';
-        'GUID' = '7b750b98-bc2c-4059-80b9-f7228941a34f';
-        'ModuleVersion' = '2.9.0.0'
-      },
-      @{
         'ModuleName' = 'xPSDesiredStateConfiguration';
         'GUID' = 'cc8dc021-fa5f-4f96-8ecf-dfd68a6d9d48';
         'ModuleVersion' = '8.4.0.0'

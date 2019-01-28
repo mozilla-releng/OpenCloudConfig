@@ -5,7 +5,28 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #>
 
 Configuration xDynamicConfig {
-  Import-DscResource -ModuleName PSDesiredStateConfiguration,xPSDesiredStateConfiguration,xWindowsUpdate,OpenCloudConfig
+  Import-DscResource -ModuleName @(
+    @{
+      ModuleName='PSDscResources';
+      GUID='7b750b98-bc2c-4059-80b9-f7228941a34f';
+      ModuleVersion='2.9.0.0'
+    },
+    @{
+      ModuleName='xPSDesiredStateConfiguration';
+      GUID='cc8dc021-fa5f-4f96-8ecf-dfd68a6d9d48';
+      ModuleVersion='8.4.0.0'
+    },
+    @{
+      ModuleName='xWindowsUpdate';
+      GUID='a9cba250-ea73-4d82-b31b-7e58cc50ffd1';
+      ModuleVersion='2.7.0.0'
+    },
+    @{
+      ModuleName='OpenCloudConfig';
+      GUID='d1235f10-0ae3-4353-9a31-0abeb2b9093e';
+      ModuleVersion='0.0.1'
+    }
+  )
 
   $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation').Organisation } else { 'mozilla-releng' })
   $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository').Repository } else { 'OpenCloudConfig' })
@@ -261,32 +282,18 @@ Configuration xDynamicConfig {
           GetScript = "@{ FileDownload = $item.ComponentName }"
           SetScript = {
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              try {
-                $tooltoolUrl = ('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512)
-                $webClient = New-Object System.Net.WebClient
-                $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-                $webClient.DownloadFile($tooltoolUrl, $using:item.Target)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $using:item.Target, $tooltoolUrl)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $using:item.Target, $tooltoolUrl)
-                throw
+              if ((Get-TooltoolResource -localPath $using:item.Target -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from tooltool' -f $using:item.Target)
+              } else {
+                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                throw ('failed to download {0} from tooltool' -f $using:item.Target)
               }
             } else {
-              try {
-                (New-Object Net.WebClient).DownloadFile($using:item.Source, $using:item.Target)
-                Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Source, $using:item.Target)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
-                try {
-                  # handle redirects (eg: sourceforge)
-                  Invoke-WebRequest -Uri $using:item.Source -OutFile $using:item.Target -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
-                  Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Source, $using:item.Target)
-                  Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
-                } catch {
-                  Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $using:item.Target, $using:item.Source)
-                  throw
-                }
+              if ((Get-RemoteResource -localPath $using:item.Target -url $using:item.Source -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $using:item.Target, $using:item.Source)
+              } else {
+                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
+                throw ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
               }
             }
             Unblock-File -Path $using:item.Target
@@ -305,41 +312,27 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ ChecksumFileDownload = $item.ComponentName }"
           SetScript = {
-            $tempTarget = ('{0}\Temp\{1}' -f $env:SystemRoot, [IO.Path]::GetFileName($using:item.Target))
-            if (Test-Path -Path $tempTarget -ErrorAction SilentlyContinue) {
-              Remove-Item -Path $tempTarget -Force
-              Write-Verbose ('Deleted {0}' -f $tempTarget)
+            $tempFile = ('{0}\Temp\{1}' -f $env:SystemRoot, [IO.Path]::GetFileName($using:item.Target))
+            if (Test-Path -Path $tempFile -ErrorAction SilentlyContinue) {
+              Remove-Item -Path $tempFile -Force
+              Write-Verbose ('deleted {0}' -f $tempFile)
             }
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              try {
-                $tooltoolUrl = ('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512)
-                $webClient = New-Object System.Net.WebClient
-                $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-                $webClient.DownloadFile($tooltoolUrl, $tempTarget)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempTarget, $tooltoolUrl)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempTarget, $tooltoolUrl)
-                throw
+              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
+              } else {
+                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                throw ('failed to download {0} from tooltool' -f $tempFile)
               }
             } else {
-              try {
-                (New-Object Net.WebClient).DownloadFile($using:item.Source, $tempTarget)
-                Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Source, $tempTarget)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
-                try {
-                  # handle redirects (eg: sourceforge)
-                  Invoke-WebRequest -Uri $using:item.Source -OutFile $tempTarget -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
-                  Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Source, $tempTarget)
-                  Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
-                } catch {
-                  Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempTarget, $using:item.Source)
-                  throw
-                }
+              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
+              } else {
+                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
+                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
               }
             }
-            Unblock-File -Path $tempTarget
+            Unblock-File -Path $tempFile
           }
           TestScript = { return $false }
         }
@@ -388,38 +381,20 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ ExeDownload = $item.ComponentName }"
           SetScript = {
-            if ($using:item.sha512) {
-              $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.sha512)
-            } else {
-              $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName)
-            }
+            $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName }))
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              try {
-                $tooltoolUrl = ('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512)
-                $webClient = New-Object System.Net.WebClient
-                $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-                $webClient.DownloadFile($tooltoolUrl, $tempFile)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
-                throw
+              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
+              } else {
+                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                throw ('failed to download {0} from tooltool' -f $tempFile)
               }
             } else {
-              try {
-                (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
-                Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Url, $tempFile)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                try {
-                  # handle redirects (eg: sourceforge)
-                  Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
-                  Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Url, $tempFile)
-                  Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                } catch {
-                  Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                  throw
-                }
+              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
+              } else {
+                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
+                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
               }
             }
             Unblock-File -Path $tempFile
@@ -492,32 +467,18 @@ Configuration xDynamicConfig {
           SetScript = {
             $tempFile = ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId)
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              try {
-                $tooltoolUrl = ('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512)
-                $webClient = New-Object System.Net.WebClient
-                $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-                $webClient.DownloadFile($tooltoolUrl, $tempFile)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
-                throw
+              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
+              } else {
+                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                throw ('failed to download {0} from tooltool' -f $tempFile)
               }
             } else {
-              try {
-                (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
-                Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Url, $tempFile)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                try {
-                  # handle redirects (eg: sourceforge)
-                  Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
-                  Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Url, $tempFile)
-                  Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                } catch {
-                  Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                  throw
-                }
+              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
+              } else {
+                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
+                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
               }
             }
             Unblock-File -Path $tempFile
@@ -548,32 +509,18 @@ Configuration xDynamicConfig {
           SetScript = {
             $tempFile = ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName }))
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              try {
-                $tooltoolUrl = ('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512)
-                $webClient = New-Object System.Net.WebClient
-                $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-                $webClient.DownloadFile($tooltoolUrl, $tempFile)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
-                throw
+              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
+              } else {
+                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                throw ('failed to download {0} from tooltool' -f $tempFile)
               }
             } else {
-              try {
-                (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
-                Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Url, $tempFile)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                try {
-                  # handle redirects (eg: sourceforge)
-                  Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
-                  Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Url, $tempFile)
-                  Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                } catch {
-                  Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                  throw
-                }
+              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
+              } else {
+                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
+                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
               }
             }
             Unblock-File -Path $tempFile
@@ -613,32 +560,18 @@ Configuration xDynamicConfig {
           SetScript = {
             $tempFile = ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName }))
             if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              try {
-                $tooltoolUrl = ('https://tooltool.mozilla-releng.net/sha512/{0}' -f $using:item.sha512)
-                $webClient = New-Object System.Net.WebClient
-                $webClient.Headers.Add('Authorization', ('Bearer {0}' -f (Get-Content ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -Raw)))
-                $webClient.DownloadFile($tooltoolUrl, $tempFile)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2}' -f $using:item.ComponentName, $tempFile, $tooltoolUrl)
-                throw
+              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
+              } else {
+                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
+                throw ('failed to download {0} from tooltool' -f $tempFile)
               }
             } else {
-              try {
-                (New-Object Net.WebClient).DownloadFile($using:item.Url, $tempFile)
-                Write-Verbose ('Downloaded {0} to {1} on first attempt' -f $using:item.Url, $tempFile)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on first attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                try {
-                  # handle redirects (eg: sourceforge)
-                  Invoke-WebRequest -Uri $using:item.Url -OutFile $tempFile -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
-                  Write-Verbose ('Downloaded {0} to {1} on second attempt' -f $using:item.Url, $tempFile)
-                  Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: downloaded {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                } catch {
-                  Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to download {1} from {2} on second attempt' -f $using:item.ComponentName, $tempFile, $using:item.Url)
-                  throw
-                }
+              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
+                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
+              } else {
+                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
+                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
               }
             }
             Unblock-File -Path $tempFile

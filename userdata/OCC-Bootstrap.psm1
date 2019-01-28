@@ -89,11 +89,6 @@ function Invoke-RemoteDesiredStateConfig {
         'ModuleVersion' = '2.0.4'
       },
       @{
-        'ModuleName' = 'PSDscResources';
-        'Repository' = 'PSGallery';
-        'ModuleVersion' = '2.9.0.0'
-      },
-      @{
         'ModuleName' = 'xPSDesiredStateConfiguration';
         'Repository' = 'PSGallery';
         'ModuleVersion' = '8.4.0.0'
@@ -144,9 +139,10 @@ function Invoke-RemoteDesiredStateConfig {
           } else {
             Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['Repository'] -Force
           }
+          # todo: log an exception if we don't get the module, wait for instance build to time out.
           while (-not (Get-Module -ListAvailable -Name $module['ModuleName'] | ? { $_.Version -eq $module['ModuleVersion'] })) {
             Write-Log -message ('{0} :: waiting for installation of powershell module: {1}, version: {2}, from repository: {3}, to complete' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository']) -severity 'DEBUG'
-            Start-Sleep -Seconds 1
+            Start-Sleep -Seconds 30
           }
           Write-Log -message ('{0} :: powershell module: {1}, version: {2}, from repository: {3}, installed' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository']) -severity 'INFO'
         } catch {

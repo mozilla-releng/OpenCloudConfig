@@ -84,6 +84,11 @@ function Invoke-RemoteDesiredStateConfig {
     [hashtable] $packageProviders = @{ 'NuGet' = 2.8.5.208 },
     [hashtable[]] $modules = @(
       @{
+        'ModuleName' = 'PowerShellGet';
+        'Repository' = 'PSGallery';
+        'ModuleVersion' = '2.0.4'
+      },
+      @{
         'ModuleName' = 'PSDscResources';
         'Repository' = 'PSGallery';
         'ModuleVersion' = '2.9.0.0'
@@ -115,22 +120,22 @@ function Invoke-RemoteDesiredStateConfig {
       if ((-not ($packageProvider)) -or ($packageProvider.Version -lt $version)) {
         try {
           Install-PackageProvider -Name $packageProviderName -MinimumVersion $version -Force
-          Write-Log -message ('{0} :: powershell package provider: {1}, version: {2}, installed.' -f $($MyInvocation.MyCommand.Name), $packageProviderName, $version) -severity 'INFO'
+          Write-Log -message ('{0} :: powershell package provider: {1}, version: {2}, installed' -f $($MyInvocation.MyCommand.Name), $packageProviderName, $version) -severity 'INFO'
         } catch {
           Write-Log -message ('{0} :: failed to install powershell package provider: {1}, version: {2}. {3}' -f $($MyInvocation.MyCommand.Name), $packageProviderName, $version, $_.Exception.Message) -severity 'ERROR'
         }
       } else {
-        Write-Log -message ('{0} :: powershell package provider: {1}, version: {2}, detected.' -f $($MyInvocation.MyCommand.Name), $packageProviderName, $packageProvider.Version) -severity 'DEBUG'
+        Write-Log -message ('{0} :: powershell package provider: {1}, version: {2}, detected' -f $($MyInvocation.MyCommand.Name), $packageProviderName, $packageProvider.Version) -severity 'DEBUG'
       }
     }
     foreach ($module in $modules) {
       if ((Get-Module -ListAvailable -Name $module['ModuleName'] | ? { $_.Version -eq $module['ModuleVersion'] })) {
         Write-Log -message ('{0} :: powershell module: {1}, version: {2}, detected.' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion']) -severity 'DEBUG'
       } else {
-        Write-Log -message ('{0} :: powershell module: {1}, version: {2}, not detected.' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion']) -severity 'DEBUG'
+        Write-Log -message ('{0} :: powershell module: {1}, version: {2}, not detected' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion']) -severity 'DEBUG'
         if (@(Get-PSRepository -Name $module['Repository'])[0].InstallationPolicy -ne 'Trusted') {
           Set-PSRepository -Name $module['Repository'] -InstallationPolicy 'Trusted'
-          Write-Log -message ('{0} :: installation policy for repository: {1}, set to "Trusted".' -f $($MyInvocation.MyCommand.Name), $module['Repository']) -severity 'INFO'
+          Write-Log -message ('{0} :: installation policy for repository: {1}, set to "Trusted"' -f $($MyInvocation.MyCommand.Name), $module['Repository']) -severity 'INFO'
         }
         try {
           # AllowClobber was introduced in powershell 6
@@ -139,7 +144,11 @@ function Invoke-RemoteDesiredStateConfig {
           } else {
             Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['ModuleVersion'] -Force
           }
-          Write-Log -message ('{0} :: powershell module: {1}, version: {2}, from repository: {3}, installed.' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository']) -severity 'INFO'
+          while (-not (Get-Module -ListAvailable -Name $module['ModuleName'] | ? { $_.Version -eq $module['ModuleVersion'] })) {
+            Write-Log -message ('{0} :: waiting for installation of powershell module: {1}, version: {2}, from repository: {3}, to complete' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository']) -severity 'DEBUG'
+            Start-Sleep -Seconds 1
+          }
+          Write-Log -message ('{0} :: powershell module: {1}, version: {2}, from repository: {3}, installed' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository']) -severity 'INFO'
         } catch {
           Write-Log -message ('{0} :: failed to install powershell module: {1}, version: {2}, from repository: {3}. {4}' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository'], $_.Exception.Message) -severity 'ERROR'
         }
@@ -150,7 +159,7 @@ function Invoke-RemoteDesiredStateConfig {
     $target = ('{0}\{1}.ps1' -f $env:Temp, $config)
     Remove-Item $target -confirm:$false -force -ErrorAction SilentlyContinue
     (New-Object Net.WebClient).DownloadFile(('{0}?{1}' -f $url, [Guid]::NewGuid()), $target)
-    Write-Log -message ('{0} :: downloaded {1}, from {2}.' -f $($MyInvocation.MyCommand.Name), $target, $url) -severity 'DEBUG'
+    Write-Log -message ('{0} :: downloaded {1}, from {2}' -f $($MyInvocation.MyCommand.Name), $target, $url) -severity 'DEBUG'
     Unblock-File -Path $target
     . $target
     $mof = ('{0}\{1}' -f $env:Temp, $config)

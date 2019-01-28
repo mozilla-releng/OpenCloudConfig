@@ -140,9 +140,9 @@ function Invoke-RemoteDesiredStateConfig {
         try {
           # AllowClobber was introduced in powershell 6
           if (((Get-Command 'Install-Module').ParameterSets | Select-Object -ExpandProperty 'Parameters' | Where-Object { $_.Name -eq 'AllowClobber' })) {
-            Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['ModuleVersion'] -Force -AllowClobber
+            Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['Repository'] -Force -AllowClobber
           } else {
-            Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['ModuleVersion'] -Force
+            Install-Module -Name $module['ModuleName'] -RequiredVersion $module['ModuleVersion'] -Repository $module['Repository'] -Force
           }
           while (-not (Get-Module -ListAvailable -Name $module['ModuleName'] | ? { $_.Version -eq $module['ModuleVersion'] })) {
             Write-Log -message ('{0} :: waiting for installation of powershell module: {1}, version: {2}, from repository: {3}, to complete' -f $($MyInvocation.MyCommand.Name), $module['ModuleName'], $module['ModuleVersion'], $module['Repository']) -severity 'DEBUG'

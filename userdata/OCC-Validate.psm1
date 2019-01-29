@@ -117,10 +117,14 @@ function Validate-CommandsReturnOrNotRequested {
         Write-Verbose ('Command: {0} {1}' -f $cr.Command, ($cr.Arguments -join ' '))
         if ($cr.Match) {
           Write-Verbose ('Search (match): {0}' -f $cr.Match)
-          if (@(& $cr.Command $cr.Arguments 2>&1) -contains $cr.Match) {
-            Write-Verbose ('Output (match): {0}' -f $_)
-            $true
-          } else {
+          try {
+            if (@(& $cr.Command $cr.Arguments 2>&1) -contains $cr.Match) {
+              Write-Verbose ('Output (match): {0}' -f $_)
+              $true
+            } else {
+              $false
+            }
+          } catch {
             $false
           }
         } elseif ($cr.Like) {

@@ -257,10 +257,8 @@ function Invoke-FirewallRuleSet {
     [Parameter(Mandatory = $true)]
     [string] $action,
 
-    [Parameter(Mandatory = $true)]
     [string] $direction,
 
-    [Parameter(Mandatory = $true)]
     [string] $remoteAddress,
 
     [string] $program,

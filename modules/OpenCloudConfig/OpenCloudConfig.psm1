@@ -156,7 +156,12 @@ function Get-RemoteResource {
   process {
     try {
       if (Test-Path -Path $localPath -ErrorAction SilentlyContinue) {
-        throw [System.IO.IOException] ('file exists at {0}' -f $localPath)
+        try {
+          Remove-Item $localPath -force
+          Write-Log -logName $eventLogName -source $eventLogSource -severity 'warn' -message ('{0} :: deleted {1} before download from {2}' -f $($MyInvocation.MyCommand.Name), $localPath, $url)
+        } catch {
+          Write-Log -LogName $eventLogName -Source $eventLogSource -Severity 'error' -message ('{0} :: failed to delete {1} before download from {2}. {3}' -f $($MyInvocation.MyCommand.Name), $localPath, $url, $_.Exception.Message)
+        }
       }
       $webClient = New-Object -TypeName 'System.Net.WebClient'
       if (($headers) -and ($headers.ContainsKey('Authorization')) -and ($headers['Authorization'])) {

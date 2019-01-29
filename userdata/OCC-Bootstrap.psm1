@@ -78,9 +78,8 @@ function Start-LoggedProcess {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
-function Invoke-RemoteDesiredStateConfig {
+function Install-Dependencies {
   param (
-    [string] $url,
     [hashtable] $packageProviders = @{ 'NuGet' = 2.8.5.208 },
     [hashtable[]] $modules = @(
       @{
@@ -150,6 +149,19 @@ function Invoke-RemoteDesiredStateConfig {
         }
       }
     }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Invoke-RemoteDesiredStateConfig {
+  param (
+    [string] $url
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
     Stop-DesiredStateConfig
     $config = [IO.Path]::GetFileNameWithoutExtension($url)
     $target = ('{0}\{1}.ps1' -f $env:Temp, $config)
@@ -1857,6 +1869,7 @@ function Invoke-OpenCloudConfig {
       } else {
         Write-Log -message ('{0} :: event log source "occ-dsc" detected.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       }
+      Install-Dependencies
       Invoke-RemoteDesiredStateConfig -url ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/xDynamicConfig.ps1' -f $sourceOrg, $sourceRepo, $sourceRev) -workerType $workerType
       Stop-Transcript
       # end run dsc #################################################################################################################################################

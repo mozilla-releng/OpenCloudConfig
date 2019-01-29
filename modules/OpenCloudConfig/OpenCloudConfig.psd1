@@ -12,7 +12,7 @@
   RootModule = 'OpenCloudConfig.psm1'
 
   # Version number of this module.
-  ModuleVersion = '0.0.4'
+  ModuleVersion = '0.0.5'
 
   # ID used to uniquely identify this module
   GUID = 'd1235f10-0ae3-4353-9a31-0abeb2b9093e'

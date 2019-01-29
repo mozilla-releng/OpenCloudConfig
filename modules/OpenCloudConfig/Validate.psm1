@@ -185,9 +185,17 @@ function Confirm-FilesContainOrNotRequested {
 function Confirm-LogValidation {
   [CmdletBinding()]
   param(
-    [bool] $validationsSatisfied
+    [Parameter(Mandatory = $true)]
+    [Alias('satisfied')]
+    [bool] $validationsSatisfied,
+
+    [string] $eventLogName = 'Application',
+
+    [Alias('source')]
+    [string] $eventLogSource = 'OpenCloudConfig'
   )
   begin {
+    Write-Log -logName $eventLogName -source $eventLogSource -severity 'debug' -message @('Validations not satisfied','Validations satisfied')[$validationsSatisfied]
     Write-Verbose @('Validations not satisfied','Validations satisfied')[$validationsSatisfied]
   }
   process {

@@ -369,7 +369,7 @@ function Invoke-ReplaceInFile {
     try {
       $content = ((Get-Content -Path $path) | Foreach-Object { $_ -replace $matchString, (Invoke-Expression -Command $replaceString) })
       [System.IO.File]::WriteAllLines($path, $content, (New-Object System.Text.UTF8Encoding $false))
-      Write-Log -logName $eventLogName -source $eventLogSource -severity 'info' -message -Message ('{0} :: replaced occurences of: {1} with: {2} in: {3}' -f $($MyInvocation.MyCommand.Name), $matchString, $replaceString, $path)
+      Write-Log -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} :: replaced occurences of: {1} with: {2} in: {3}' -f $($MyInvocation.MyCommand.Name), $matchString, $replaceString, $path)
     } catch {
       Write-Log -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} :: failed to replace occurences of: {1} with: {2} in: {3}. {4}' -f $($MyInvocation.MyCommand.Name), $matchString, $replaceString, $path, $_.Exception.Message)
       throw

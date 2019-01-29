@@ -1,10 +1,8 @@
-#
-# Module manifest for module 'OpenCloudConfig'
-#
-# Created by: grenade
-#
-# Created on: 2019-01-25
-#
+<#
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#>
 
 @{
 
@@ -12,7 +10,7 @@
   RootModule = 'OpenCloudConfig.psm1'
 
   # Version number of this module.
-  ModuleVersion = '0.0.5'
+  ModuleVersion = '0.0.6'
 
   # ID used to uniquely identify this module
   GUID = 'd1235f10-0ae3-4353-9a31-0abeb2b9093e'
@@ -65,6 +63,7 @@
   # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
   NestedModules = @(
     'Archive.psm1',
+    'DynamicConfig.psm1',
     'User.psm1',
     'Validate.psm1'
   )
@@ -85,6 +84,16 @@ FunctionsToExport = @(
 
    # Archive.psm1
    'New-ZipFile',
+
+   # DynamicConfig.psm1
+   'Invoke-DirectoryDelete',
+   'Invoke-CommandRun',
+   'Invoke-FileDownload',
+   'Invoke-SymbolicLink',
+   'Invoke-EnvironmentVariableSet',
+   'Invoke-RegistryKeySetOwner',
+   'Invoke-FirewallRuleSet',
+   'Invoke-ReplaceInFile',
 
    # User.psm1
    'Set-KnownFolderPath',

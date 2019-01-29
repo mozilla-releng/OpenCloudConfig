@@ -17,7 +17,7 @@ function New-ZipFile {
  
     # Items that we want to add to the ZipFile
     [Parameter(Position=1, Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
-    [Alias("PSPath","Item")]
+    [Alias('PSPath', 'Item')]
     [string[]]$InputObject = $Pwd,
  
     # Append to an existing zip file, instead of overwriting it

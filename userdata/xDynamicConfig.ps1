@@ -152,19 +152,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ DirectoryDelete = $($item.Path) }"
           SetScript = {
-            try {
-              Remove-Item $($using:item.Path) -Confirm:$false -force
-              Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: deleted directory {1}.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '))
-            } catch {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: error deleting directory ({1}). {2}' -f $using:item.ComponentName, $($using:item.Path), $_.Exception.Message)
-              try {
-                Start-Process 'icacls' -ArgumentList @($($using:item.Path), '/grant', ('{0}:(OI)(CI)F' -f $env:Username), '/inheritance:r') -Wait -NoNewWindow -PassThru | Out-Null
-                Remove-Item $($using:item.Path) -Confirm:$false -force
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: error resetting permissions or deleting directory ({1}). {2}' -f $using:item.ComponentName, $($using:item.Path), $_.Exception.Message)
-                throw
-              }
-            }
+            Invoke-DirectoryDelete -path $($using:item.Path) -eventLogSource 'occ-dsc'
           }
           TestScript = {
             return Confirm-LogValidation -source 'occ-dsc' -satisfied (Confirm-PathsNotExistOrNotRequested -items @($using:item.Path) -verbose) -verbose
@@ -193,32 +181,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ CommandRun = $item.ComponentName }"
           SetScript = {
-            $redirectStandardOutput = ('{0}\log\{1}-{2}-stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
-            $redirectStandardError = ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
-            try {
-              $process = (Start-Process $($using:item.Command) -ArgumentList @($using:item.Arguments | % { $($_) }) -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
-              Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
-              if ($process.ExitCode -and $process.TotalProcessorTime) {
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: command ({1} {2}) exited with code: {3} after a processing time of: {4}.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode, $process.TotalProcessorTime)
-              } else {
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: command ({1} {2}) executed.' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '))
-              }
-            } catch {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
-              $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
-              if (($standardErrorFile) -and $standardErrorFile.Length) {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
-              }
-              throw
-            }
-            $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
-            if (($standardErrorFile) -and $standardErrorFile.Length) {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
-            }
-            $standardOutputFile = (Get-Item -Path $redirectStandardOutput -ErrorAction SilentlyContinue)
-            if (($standardOutputFile) -and $standardOutputFile.Length) {
-              Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: ({1} {2}). log: {3}' -f $using:item.ComponentName, $($using:item.Command), (@($using:item.Arguments | % { $($_) }) -join ' '), $redirectStandardOutput)
-            }
+            Invoke-CommandRun -command $($using:item.Command) -arguments @($using:item.Arguments | % { $($_) }) -eventLogSource 'occ-dsc'
           }
           TestScript = {
             return Confirm-LogValidation -source 'occ-dsc' -satisfied (Confirm-All -validations $using:item.Validate -verbose) -verbose
@@ -234,22 +197,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ FileDownload = $item.ComponentName }"
           SetScript = {
-            if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              if ((Get-TooltoolResource -localPath $using:item.Target -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from tooltool' -f $using:item.Target)
-              } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
-                throw ('failed to download {0} from tooltool' -f $using:item.Target)
-              }
-            } else {
-              if ((Get-RemoteResource -localPath $using:item.Target -url $using:item.Source -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $using:item.Target, $using:item.Source)
-              } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
-                throw ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
-              }
-            }
-            Unblock-File -Path $using:item.Target
+            Invoke-FileDownload -localPath $using:item.Target -sha512 $($using:item.sha512) -tooltoolHost 'tooltool.mozilla-releng.net' -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -url $using:item.Source -eventLogSource 'occ-dsc'
           }
           TestScript = {
             return ((Confirm-LogValidation -source 'occ-dsc' -satisfied (Confirm-PathsExistOrNotRequested -items @($using:item.Target) -verbose) -verbose) -and ((-not ($using:item.sha512)) -or ((Get-FileHash -Path $using:item.Target -Algorithm 'SHA512').Hash -eq $using:item.sha512)))
@@ -265,27 +213,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ ChecksumFileDownload = $item.ComponentName }"
           SetScript = {
-            $tempFile = ('{0}\Temp\{1}' -f $env:SystemRoot, [IO.Path]::GetFileName($using:item.Target))
-            if (Test-Path -Path $tempFile -ErrorAction SilentlyContinue) {
-              Remove-Item -Path $tempFile -Force
-              Write-Verbose ('deleted {0}' -f $tempFile)
-            }
-            if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
-              } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $using:item.Target)
-                throw ('failed to download {0} from tooltool' -f $tempFile)
-              }
-            } else {
-              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Source -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Source)
-              } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $using:item.Target, $using:item.Source)
-                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Source)
-              }
-            }
-            Unblock-File -Path $tempFile
+            Invoke-FileDownload -localPath ('{0}\Temp\{1}' -f $env:SystemRoot, [IO.Path]::GetFileName($using:item.Target)) -sha512 $($using:item.sha512) -tooltoolHost 'tooltool.mozilla-releng.net' -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -url $using:item.Source -eventLogSource 'occ-dsc'
           }
           TestScript = { return $false }
         }
@@ -308,17 +236,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ SymbolicLink = $item.ComponentName }"
           SetScript = {
-            try {
-              if (Test-Path -Path $using:item.Target -PathType Container -ErrorAction SilentlyContinue) {
-                & 'cmd' @('/c', 'mklink', '/D', $using:item.Link, $using:item.Target)
-              } elseif (Test-Path -Path $using:item.Target -PathType Leaf -ErrorAction SilentlyContinue) {
-                & 'cmd' @('/c', 'mklink', $using:item.Link, $using:item.Target)
-              }
-              Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: created symlink {1} to {2}' -f $using:item.ComponentName, $using:item.Link, $using:item.Target)
-            } catch {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to create symlink {1} from {2}' -f $using:item.ComponentName, $using:item.Link, $using:item.Target)
-              throw
-            }
+            Invoke-SymbolicLink -target $using:item.Target -link $using:item.Link -eventLogSource 'occ-dsc'
           }
           TestScript = {
             return Confirm-LogValidation -source 'occ-dsc' -satisfied ((Test-Path -Path $using:item.Link -ErrorAction SilentlyContinue) -and ((Get-Item $using:item.Link).Attributes.ToString() -match "ReparsePoint")) -verbose
@@ -334,23 +252,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ ExeDownload = $item.ComponentName }"
           SetScript = {
-            $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName }))
-            if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
-              } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $tempFile)
-                throw ('failed to download {0} from tooltool' -f $tempFile)
-              }
-            } else {
-              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Url -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Url)
-              } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
-                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
-              }
-            }
-            Unblock-File -Path $tempFile
+            Invoke-FileDownload -localPath ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName })) -sha512 $($using:item.sha512) -tooltoolHost 'tooltool.mozilla-releng.net' -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -url $using:item.Url -eventLogSource 'occ-dsc'
           }
           TestScript = {
             if ($using:item.sha512) {
@@ -369,40 +271,7 @@ Configuration xDynamicConfig {
           DependsOn = ('[Script]ExeDownload_{0}' -f $item.ComponentName)
           GetScript = "@{ ExeInstall = $item.ComponentName }"
           SetScript = {
-            if ($using:item.sha512) {
-              $exe = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.sha512)
-            } else {
-              $exe = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $using:item.ComponentName)
-            }
-            $redirectStandardOutput = ('{0}\log\{1}-{2}-stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
-            $redirectStandardError = ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $using:item.ComponentName)
-            try {
-              $process = (Start-Process $exe -ArgumentList @($using:item.Arguments | % { $($_) }) -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
-              Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
-              if (-not (($process.ExitCode -eq 0) -or ($using:item.AllowedExitCodes -contains $process.ExitCode))) {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: command ({1} {2}) exited with code {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $process.ExitCode)
-                $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
-                if (($standardErrorFile) -and $standardErrorFile.Length) {
-                  Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
-                }
-                throw
-              }
-            } catch {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: error executing command ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $_.Exception.Message)
-              $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
-              if (($standardErrorFile) -and $standardErrorFile.Length) {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
-              }
-              throw
-            }
-            $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction SilentlyContinue)
-            if (($standardErrorFile) -and $standardErrorFile.Length) {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: ({1} {2}). {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), (Get-Content -Path $redirectStandardError -Raw))
-            }
-            $standardOutputFile = (Get-Item -Path $redirectStandardOutput -ErrorAction SilentlyContinue)
-            if (($standardOutputFile) -and $standardOutputFile.Length) {
-              Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: ({1} {2}). log: {3}' -f $using:item.ComponentName, $exe, (@($using:item.Arguments | % { $($_) }) -join ' '), $redirectStandardOutput)
-            }
+            Invoke-CommandRun -command ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName })) -arguments @($using:item.Arguments | % { $($_) }) -eventLogSource 'occ-dsc'
           }
           TestScript = {
             return Confirm-LogValidation -source 'occ-dsc' -satisfied (Confirm-All -validations $using:item.Validate -verbose) -verbose
@@ -418,23 +287,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ MsiDownload = $item.ComponentName }"
           SetScript = {
-            $tempFile = ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId)
-            if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
-              } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $tempFile)
-                throw ('failed to download {0} from tooltool' -f $tempFile)
-              }
-            } else {
-              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Url -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Url)
-              } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
-                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
-              }
-            }
-            Unblock-File -Path $tempFile
+            Invoke-FileDownload -localPath ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId) -sha512 $($using:item.sha512) -tooltoolHost 'tooltool.mozilla-releng.net' -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -url $using:item.Url -eventLogSource 'occ-dsc'
           }
           TestScript = { return (Test-Path -Path ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId) -ErrorAction SilentlyContinue) }
         }
@@ -460,23 +313,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ MsuDownload = $item.ComponentName }"
           SetScript = {
-            $tempFile = ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName }))
-            if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
-              } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $tempFile)
-                throw ('failed to download {0} from tooltool' -f $tempFile)
-              }
-            } else {
-              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Url -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Url)
-              } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
-                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
-              }
-            }
-            Unblock-File -Path $tempFile
+            Invoke-FileDownload -localPath ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName })) -sha512 $($using:item.sha512) -tooltoolHost 'tooltool.mozilla-releng.net' -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -url $using:item.Url -eventLogSource 'occ-dsc'
           }
           TestScript = { return (Test-Path -Path ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $using:item.ComponentName) -ErrorAction SilentlyContinue) }
         }
@@ -511,23 +348,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ ZipDownload = $item.ComponentName }"
           SetScript = {
-            $tempFile = ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName }))
-            if (($using:item.sha512) -and (Test-Path -Path ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue)) {
-              if ((Get-TooltoolResource -localPath $tempFile -sha512 $using:item.sha512 -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -tooltoolHost 'tooltool.mozilla-releng.net' -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from tooltool' -f $tempFile)
-              } else {
-                Write-Verbose ('failed to download {0} from tooltool' -f $tempFile)
-                throw ('failed to download {0} from tooltool' -f $tempFile)
-              }
-            } else {
-              if ((Get-RemoteResource -localPath $tempFile -url $using:item.Url -eventLogSource 'occ-dsc')) {
-                Write-Verbose ('downloaded {0} from {1}' -f $tempFile, $using:item.Url)
-              } else {
-                Write-Verbose ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
-                throw ('failed to download {0} from {1}' -f $tempFile, $using:item.Url)
-              }
-            }
-            Unblock-File -Path $tempFile
+            Invoke-FileDownload -localPath ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName })) -sha512 $($using:item.sha512) -tooltoolHost 'tooltool.mozilla-releng.net' -tokenPath ('{0}\builds\occ-installers.tok' -f $env:SystemDrive) -url $using:item.Url -eventLogSource 'occ-dsc'
           }
           TestScript = {
             if ($using:item.sha512) {
@@ -570,13 +391,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ EnvironmentVariableSet = $item.ComponentName }"
           SetScript = {
-            try {
-              [Environment]::SetEnvironmentVariable($using:item.Name, $using:item.Value, $using:item.Target)
-              Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $using:item.Value, $using:item.Target)
-            } catch {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $using:item.Value, $using:item.Target, $_.Exception.Message)
-              throw
-            }
+            Invoke-EnvironmentVariableSet -name $using:item.Name -value $using:item.Value -target $using:item.Target -eventLogSource 'occ-dsc'
           }
           TestScript = {
             return Confirm-LogValidation -source 'occ-dsc' -satisfied ((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value -eq $using:item.Value) -verbose
@@ -592,14 +407,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ EnvironmentVariableUniqueAppend = $item.ComponentName }"
           SetScript = {
-            $value = (@((@(((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value) -split ';') + $using:item.Values) | select -Unique) -join ';')
-            try {
-              [Environment]::SetEnvironmentVariable($using:item.Name, $value, $using:item.Target)
-              Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target)
-            } catch {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target, $_.Exception.Message)
-              throw
-            }
+            Invoke-EnvironmentVariableSet -name $using:item.Name -value (@((@(((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value) -split ';') + $using:item.Values) | select -Unique) -join ';') $using:item.Target -eventLogSource 'occ-dsc'
           }
           TestScript = { return $false }
         }
@@ -613,14 +421,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ EnvironmentVariableUniquePrepend = $item.ComponentName }"
           SetScript = {
-            $value = (@(($using:item.Values + @(((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value) -split ';')) | select -Unique) -join ';')
-            try {
-              [Environment]::SetEnvironmentVariable($using:item.Name, $value, $using:item.Target)
-              Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: environment variable: {1} set to: {2} for {3}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target)
-            } catch {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to set environment variable: {1} to: {2} for {3}. {4}' -f $using:item.ComponentName, $using:item.Name, $value, $using:item.Target, $_.Exception.Message)
-              throw
-            }
+            Invoke-EnvironmentVariableSet -name $using:item.Name -value (@(($using:item.Values + @(((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value) -split ';')) | select -Unique) -join ';') -target $using:item.Target -eventLogSource 'occ-dsc'
           }
           TestScript = { return $false }
         }
@@ -648,41 +449,7 @@ Configuration xDynamicConfig {
             DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
             GetScript = "@{ RegistryTakeOwnership = $item.ComponentName }"
             SetScript = {
-              try {
-                $ntdll = Add-Type -Member '[DllImport("ntdll.dll")] public static extern int RtlAdjustPrivilege(ulong a, bool b, bool c, ref bool d);' -Name NtDll -PassThru
-                @{ SeTakeOwnership = 9; SeBackup =  17; SeRestore = 18 }.Values | % { $null = $ntdll::RtlAdjustPrivilege($_, 1, 0, [ref]0) }
-                $key = ($using:item.Key).Replace(('{0}\' -f ($using:item.Key).Split('\')[0]), '')
-                switch -regex (($using:item.Key).Split('\')[0]) {
-                  'HKCU|HKEY_CURRENT_USER' {
-                    $hive = 'CurrentUser'
-                  }
-                  'HKLM|HKEY_LOCAL_MACHINE' {
-                    $hive = 'LocalMachine'
-                  }
-                  'HKCR|HKEY_CLASSES_ROOT' {
-                    $hive = 'ClassesRoot'
-                  }
-                  'HKCC|HKEY_CURRENT_CONFIG' {
-                    $hive = 'CurrentConfig'
-                  }
-                  'HKU|HKEY_USERS' {
-                    $hive = 'Users'
-                  }
-                }
-                $regKey = [Microsoft.Win32.Registry]::$hive.OpenSubKey($key, 'ReadWriteSubTree', 'TakeOwnership')
-                $acl = New-Object System.Security.AccessControl.RegistrySecurity
-                $acl.SetOwner([System.Security.Principal.SecurityIdentifier]$using:item.SetOwner)
-                $regKey.SetAccessControl($acl)
-                $acl.SetAccessRuleProtection($false, $false)
-                $regKey.SetAccessControl($acl)
-                $regKey = $regKey.OpenSubKey('', 'ReadWriteSubTree', 'ChangePermissions')
-                $acl.ResetAccessRule((New-Object System.Security.AccessControl.RegistryAccessRule([System.Security.Principal.SecurityIdentifier]$using:item.SetOwner, 'FullControl', @('ObjectInherit', 'ContainerInherit'), 'None', 'Allow')))
-                $regKey.SetAccessControl($acl)
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: registry key owner set to: {1} for {2}' -f $using:item.ComponentName, $using:item.SetOwner, $using:item.Key)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to set registry key owner to: {1} for {2}. {3}' -f $using:item.ComponentName,  $using:item.SetOwner, $using:item.Key, $_.Exception.Message)
-                throw
-              }
+              Invoke-RegistryKeySetOwner -key $using:item.Key -sid $using:item.SetOwner -eventLogSource 'occ-dsc'
             }
             TestScript = { return $false }
           }
@@ -722,75 +489,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ FirewallRule = $item.ComponentName }"
           SetScript = {
-            if ($using:item.Direction -ieq 'Outbound') {
-              $dir = 'out'
-            } else {
-              $dir = 'in'
-            }
-            if (($using:item.Protocol) -and ($using:item.LocalPort)) {
-              $ruleName = ('{0} ({1} {2} {3}): {4}' -f $using:item.ComponentName, $using:item.Protocol, $using:item.LocalPort, $using:item.Direction, $using:item.Action)
-              try {
-                if (Get-Command 'New-NetFirewallRule' -errorAction SilentlyContinue) {
-                  if ($using:item.RemoteAddress) {
-                    New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -LocalPort $using:item.LocalPort -Direction $using:item.Direction -Action $using:item.Action -RemoteAddress $using:item.RemoteAddress
-                  } else {
-                    New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -LocalPort $using:item.LocalPort -Direction $using:item.Direction -Action $using:item.Action
-                  }
-                } else {
-                  if ($using:item.RemoteAddress) {
-                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort), ('remoteip={0}' -f $using:item.RemoteAddress))
-                  } else {
-                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort))
-                  }
-                }
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
-                throw
-              }
-            } elseif (($using:item.Protocol -eq 'ICMPv4') -or ($using:item.Protocol -eq 'ICMPv6')) {
-              $ruleName = ('{0} ({1} {2} {3}): {4}' -f $using:item.ComponentName, $using:item.Protocol, $using:item.Action)
-              try {
-                if (Get-Command 'New-NetFirewallRule' -errorAction SilentlyContinue) {
-                  if ($using:item.RemoteAddress) {
-                    New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -IcmpType 8 -Action $using:item.Action -RemoteAddress $using:item.RemoteAddress
-                  } else {
-                    New-NetFirewallRule -DisplayName $ruleName -Protocol $using:item.Protocol -IcmpType 8 -Action $using:item.Action
-                  }
-                } else {
-                  if ($using:item.RemoteAddress) {
-                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}:8,any' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort), ('remoteip={0}' -f $using:item.RemoteAddress))
-                  } else {
-                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('protocol={0}:8,any' -f $using:item.Protocol), ('localport={0}' -f $using:item.LocalPort))
-                  }
-                }
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
-                throw
-              }
-            } elseif ($using:item.Program) {
-              $ruleName = ('{0} ({1} {2}): {3}' -f $using:item.ComponentName, $using:item.Program, $using:item.Direction, $using:item.Action)
-              try {
-                if (Get-Command 'New-NetFirewallRule' -errorAction SilentlyContinue) {
-                  if ($using:item.RemoteAddress) {
-                    New-NetFirewallRule -DisplayName $ruleName -Program $using:item.Program -Direction $using:item.Direction -Action $using:item.Action -RemoteAddress $using:item.RemoteAddress
-                  } else {
-                    New-NetFirewallRule -DisplayName $ruleName -Program $using:item.Program -Direction $using:item.Direction -Action $using:item.Action
-                  }
-                } else {
-                  if ($using:item.RemoteAddress) {
-                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('program={0}' -f $using:item.Program), ('remoteip={0}' -f $using:item.RemoteAddress))
-                  } else {
-                    & 'netsh.exe' @('advfirewall', 'firewall', 'add', 'rule', ('name="{0}"' -f $ruleName), ('dir={0}' -f $dir), ('action={0}' -f $using:item.Action), ('program={0}' -f $using:item.Program))
-                  }
-                }
-                Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: firewall rule: {1} created' -f $using:item.ComponentName, $ruleName)
-              } catch {
-                Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to create firewall rule: {1}. {2}' -f $using:item.ComponentName,  $ruleName, $_.Exception.Message)
-                throw
-              }
-            }
+            Invoke-FirewallRuleSet -component $using:item.ComponentName -action $using:item.Action -direction $using:item.Direction -remoteAddress $using:item.RemoteAddress -program $using:item.Program -protocol $using:item.Protocol -localPort $using:item.LocalPort -eventLogSource 'occ-dsc'
           }
           TestScript = {
             if ($using:item.LocalPort) {
@@ -817,14 +516,7 @@ Configuration xDynamicConfig {
           DependsOn = @( @($item.DependsOn) | ? { (($_) -and ($_.ComponentType)) } | % { ('[{0}]{1}_{2}' -f $componentMap.Item($_.ComponentType), $_.ComponentType, $_.ComponentName) } )
           GetScript = "@{ ReplaceInFile = $item.ComponentName }"
           SetScript = {
-            try {
-              $content = ((Get-Content -Path $using:item.Path) | Foreach-Object { $_ -replace $using:item.Match, (Invoke-Expression -Command $using:item.Replace) })
-              [System.IO.File]::WriteAllLines($using:item.Path, $content, (New-Object System.Text.UTF8Encoding $false))
-              Write-Log -Source 'occ-dsc' -Severity 'Info' -Message ('{0} :: replaced occurences of: {1} with: {2} in: {3}' -f $using:item.ComponentName, $using:item.Match, $using:item.Replace, $using:item.Path)
-            } catch {
-              Write-Log -Source 'occ-dsc' -Severity 'Error' -Message ('{0} :: failed to replace occurences of: {1} with: {2} in: {3}. {4}' -f $using:item.ComponentName, $using:item.Match, $using:item.Replace, $using:item.Path, $_.Exception.Message)
-              throw
-            }
+            Invoke-ReplaceInFile -path $using:item.Path -matchString $using:item.Match -replaceString $using:item.Replace -eventLogSource 'occ-dsc'
           }
           TestScript = { return $false }
         }

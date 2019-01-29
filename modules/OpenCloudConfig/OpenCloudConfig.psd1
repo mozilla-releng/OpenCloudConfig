@@ -10,7 +10,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
   RootModule = 'OpenCloudConfig.psm1'
 
   # Version number of this module.
-  ModuleVersion = '0.0.7'
+  ModuleVersion = '0.0.8'
 
   # ID used to uniquely identify this module
   GUID = 'd1235f10-0ae3-4353-9a31-0abeb2b9093e'
@@ -123,7 +123,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
       # Tags = @('software')
       
       # A URL to the license for this module.
-      # LicenseUri = ''
+      LicenseUri = 'http://mozilla.org/MPL/2.0/'
       
       # A URL to the main website for this project.
       ProjectUri = 'https://github.com/mozilla-releng/OpenCloudConfig'

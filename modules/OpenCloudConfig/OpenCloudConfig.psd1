@@ -12,7 +12,7 @@
   RootModule = 'OpenCloudConfig.psm1'
 
   # Version number of this module.
-  ModuleVersion = '0.0.3'
+  ModuleVersion = '0.0.4'
 
   # ID used to uniquely identify this module
   GUID = 'd1235f10-0ae3-4353-9a31-0abeb2b9093e'
@@ -70,7 +70,13 @@
   )
 
   # Functions to export from this module and nested modules
-  FunctionsToExport = @(
+  <#
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#>
+
+FunctionsToExport = @(
 
     # OpenCloudConfig.psm1
    'Write-Log',
@@ -84,12 +90,12 @@
    'Set-KnownFolderPath',
 
    # Validate.psm1
-   'Validate-All',
-   'Validate-PathsExistOrNotRequested',
-   'Validate-PathsNotExistOrNotRequested',
-   'Validate-CommandsReturnOrNotRequested',
-   'Validate-FilesContainOrNotRequested',
-   'Log-Validation'
+   'Confirm-All',
+   'Confirm-PathsExistOrNotRequested',
+   'Confirm-PathsNotExistOrNotRequested',
+   'Confirm-CommandsReturnOrNotRequested',
+   'Confirm-FilesContainOrNotRequested',
+   'Confirm-LogValidation'
   )
 
   # Cmdlets to export from this module

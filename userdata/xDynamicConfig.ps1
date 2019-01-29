@@ -167,7 +167,7 @@ Configuration xDynamicConfig {
             }
           }
           TestScript = {
-            return Log-Validation (Validate-PathsNotExistOrNotRequested -items @($using:item.Path) -verbose) -verbose
+            return Confirm-LogValidation (Confirm-PathsNotExistOrNotRequested -items @($using:item.Path) -verbose) -verbose
           }
         }
         Log ('Log_DirectoryDelete_{0}' -f $item.ComponentName) {
@@ -221,7 +221,7 @@ Configuration xDynamicConfig {
             }
           }
           TestScript = {
-            return Log-Validation (Validate-All -validations $using:item.Validate -verbose) -verbose
+            return Confirm-LogValidation (Confirm-All -validations $using:item.Validate -verbose) -verbose
           }
         }
         Log ('Log_CommandRun_{0}' -f $item.ComponentName) {
@@ -252,7 +252,7 @@ Configuration xDynamicConfig {
             Unblock-File -Path $using:item.Target
           }
           TestScript = {
-            return ((Log-Validation (Validate-PathsExistOrNotRequested -items @($using:item.Target) -verbose) -verbose) -and ((-not ($using:item.sha512)) -or ((Get-FileHash -Path $using:item.Target -Algorithm 'SHA512').Hash -eq $using:item.sha512)))
+            return ((Confirm-LogValidation (Confirm-PathsExistOrNotRequested -items @($using:item.Target) -verbose) -verbose) -and ((-not ($using:item.sha512)) -or ((Get-FileHash -Path $using:item.Target -Algorithm 'SHA512').Hash -eq $using:item.sha512)))
           }
         }
         Log ('Log_FileDownload_{0}' -f $item.ComponentName) {
@@ -321,7 +321,7 @@ Configuration xDynamicConfig {
             }
           }
           TestScript = {
-            return Log-Validation ((Test-Path -Path $using:item.Link -ErrorAction SilentlyContinue) -and ((Get-Item $using:item.Link).Attributes.ToString() -match "ReparsePoint")) -verbose
+            return Confirm-LogValidation ((Test-Path -Path $using:item.Link -ErrorAction SilentlyContinue) -and ((Get-Item $using:item.Link).Attributes.ToString() -match "ReparsePoint")) -verbose
           }
         }
         Log ('Log_SymbolicLink_{0}' -f $item.ComponentName) {
@@ -405,7 +405,7 @@ Configuration xDynamicConfig {
             }
           }
           TestScript = {
-            return Log-Validation (Validate-All -validations $using:item.Validate -verbose) -verbose
+            return Confirm-LogValidation (Confirm-All -validations $using:item.Validate -verbose) -verbose
           }
         }
         Log ('Log_ExeInstall_{0}' -f $item.ComponentName) {
@@ -579,7 +579,7 @@ Configuration xDynamicConfig {
             }
           }
           TestScript = {
-            return Log-Validation ((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value -eq $using:item.Value) -verbose
+            return Confirm-LogValidation ((Get-ChildItem env: | ? { $_.Name -ieq $using:item.Name } | Select-Object -first 1).Value -eq $using:item.Value) -verbose
           }
         }
         Log ('Log_EnvironmentVariableSet_{0}' -f $item.ComponentName) {
@@ -801,7 +801,7 @@ Configuration xDynamicConfig {
               return $false
             }
             if (Get-Command 'Get-NetFirewallRule' -errorAction SilentlyContinue) {
-              return Log-Validation ([bool](Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue)) -verbose
+              return Confirm-LogValidation ([bool](Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue)) -verbose
             } else {
               return ((& 'netsh.exe' @('advfirewall', 'firewall', 'show', 'rule', $ruleName)) -notcontains 'No rules match the specified criteria.')
             }

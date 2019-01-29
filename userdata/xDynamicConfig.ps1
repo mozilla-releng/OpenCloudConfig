@@ -19,7 +19,7 @@ Configuration xDynamicConfig {
 
   if ($locationType -eq 'AWS') {
     Script GpgKeyImport {
-      DependsOn = @('[Script]InstallSupportingModules', '[Script]ExeInstall_GpgForWin')
+      DependsOn = @('[Script]ExeInstall_GpgForWin')
       GetScript = { @{ Result = (((Test-Path -Path ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb)) -or ((Test-Path -Path ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb))) } }
       SetScript = {
         if ("${env:ProgramFiles(x86)}") {
@@ -68,32 +68,6 @@ Configuration xDynamicConfig {
       }
       TestScript = { if ((Test-Path -Path ('{0}\builds\*.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue) -and (-not (Compare-Object -ReferenceObject (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/releng-secrets.json' -f $using:sourceOrg, $using:sourceRepo, $using:sourceRev) -UseBasicParsing | ConvertFrom-Json) -DifferenceObject (Get-ChildItem -Path ('{0}\builds' -f $env:SystemDrive) | Where-Object { !$_.PSIsContainer } | % { $_.Name })))) { $true } else { $false } }
     }
-  }
-
-  $supportingModules = @(
-    ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/OCC-User.psm1' -f $sourceOrg, $sourceRepo, $sourceRev),
-    ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/OCC-Validate.psm1' -f $sourceOrg, $sourceRepo, $sourceRev),
-    ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/OCC-Archive.psm1' -f $sourceOrg, $sourceRepo, $sourceRev)
-  )
-  Script InstallSupportingModules {
-    GetScript = "@{ Script = InstallSupportingModules }"
-    SetScript = {
-      $modulesPath = ('{0}\Modules' -f $pshome)
-      foreach ($url in $using:supportingModules) {
-        $filename = [IO.Path]::GetFileName($url)
-        $moduleName = [IO.Path]::GetFileNameWithoutExtension($filename)
-        $modulePath = ('{0}\{1}' -f $modulesPath, $moduleName)
-        if (Test-Path -Path $modulePath -ErrorAction SilentlyContinue) {
-          Remove-Module -Name $moduleName -Force -ErrorAction SilentlyContinue
-          Remove-Item -path $modulePath -recurse -force
-        }
-        New-Item -ItemType Directory -Force -Path $modulePath
-        (New-Object Net.WebClient).DownloadFile(('{0}?{1}' -f $url, [Guid]::NewGuid()), ('{0}\{1}' -f $modulePath, $filename))
-        Unblock-File -Path ('{0}\{1}' -f $modulePath, $filename)
-        Import-Module -Name $moduleName
-      }
-    }
-    TestScript = { return $false }
   }
 
   if ($locationType -eq 'AWS') {
@@ -863,7 +837,7 @@ Configuration xDynamicConfig {
   }
   if (($locationType -eq 'AWS') -and ($workerType)) {
     Script CotGpgKeyImport {
-      DependsOn = @('[Script]InstallSupportingModules', '[Script]ExeInstall_GpgForWin', '[File]DirectoryCreate_GenericWorkerDirectory')
+      DependsOn = @('[Script]ExeInstall_GpgForWin', '[File]DirectoryCreate_GenericWorkerDirectory')
       GetScript = "@{ Script = CotGpgKeyImport }"
       SetScript = {
         if ("${env:ProgramFiles(x86)}") {

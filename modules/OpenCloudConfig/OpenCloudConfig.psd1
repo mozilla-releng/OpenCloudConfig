@@ -63,13 +63,33 @@
   # FormatsToProcess = @()
 
   # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-  # NestedModules = @()
+  NestedModules = @(
+    'Archive.psm1',
+    'User.psm1',
+    'Validate.psm1'
+  )
 
-  # Functions to export from this module
+  # Functions to export from this module and nested modules
   FunctionsToExport = @(
+
+    # OpenCloudConfig.psm1
    'Write-Log',
    'Get-TooltoolResource',
-   'Get-RemoteResource'
+   'Get-RemoteResource',
+
+   # Archive.psm1
+   'New-ZipFile',
+
+   # User.psm1
+   'Set-KnownFolderPath',
+
+   # Validate.psm1
+   'Validate-All',
+   'Validate-PathsExistOrNotRequested',
+   'Validate-PathsNotExistOrNotRequested',
+   'Validate-CommandsReturnOrNotRequested',
+   'Validate-FilesContainOrNotRequested',
+   'Log-Validation'
   )
 
   # Cmdlets to export from this module

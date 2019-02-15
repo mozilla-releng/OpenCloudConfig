@@ -26,5 +26,4 @@ if [ -x "$(command -v pass)" ]; then
   cat ${temp_dir}/ed25519-public.key | pass insert -e Mozilla/relops/cot/ed25519/${timestamp}-gecko-3-b-win2012_public
 fi
 
-
 rm -rf ${work_dir}

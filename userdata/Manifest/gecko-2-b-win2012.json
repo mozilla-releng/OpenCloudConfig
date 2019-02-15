@@ -889,7 +889,7 @@
     },
     {
       "ComponentName": "env_PATH",
-      "ComponentType": "EnvironmentVariableUniqueAppend",
+      "ComponentType": "EnvironmentVariableUniquePrepend",
       "DependsOn": [
         {
           "ComponentType": "ExeInstall",

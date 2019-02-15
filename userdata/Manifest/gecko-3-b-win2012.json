@@ -1367,10 +1367,10 @@
     "userData": {
       "genericWorker": {
         "config": {
-          "cachesDir": "Y:\\caches",
+          "cachesDir": "Z:\\caches",
           "cleanUpTaskDirs": true,
           "disableReboots": true,
-          "downloadsDir": "Y:\\downloads",
+          "downloadsDir": "Z:\\downloads",
           "ed25519SigningKeyLocation": "C:\\generic-worker\\ed25519.key",
           "livelogCertificate": "C:\\generic-worker\\livelog.crt",
           "livelogExecutable": "C:\\generic-worker\\livelog.exe",

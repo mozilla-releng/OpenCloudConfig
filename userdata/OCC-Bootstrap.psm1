@@ -2179,8 +2179,8 @@ function Invoke-OpenCloudConfig {
       }
       Install-Dependencies
 
-      switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
-        'Microsoft Windows 10*' {
+      switch -regex ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
+        '^Microsoft Windows (7|10).*$' {
           Invoke-CustomDesiredStateProvider -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev -workerType $workerType
         }
         default {

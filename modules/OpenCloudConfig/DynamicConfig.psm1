@@ -630,18 +630,19 @@ function Invoke-RegistryValueSet {
     }
     if (Get-ItemProperty -Path $path -Name $component.ValueName -ErrorAction 'SilentlyContinue') {
       try {
-        # todo: implement hex handling...
+        trap [System.UnauthorizedAccessException] {
+          Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to update registry value to: [{2}]{3}{4} for key {5} at path {6}. {7}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path, $_)
+        }
         Set-ItemProperty -Path $path -Name $component.ValueName -Value $component.ValueData -Force
         Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry value updated with value: [{2}]{3}{4} for key {5} at path {6}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path)
-      } catch [System.UnauthorizedAccessException] {
+      } catch {
         Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to update registry value to: [{2}]{3}{4} for key {5} at path {6}. {7}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path, $_.Exception.Message)
       }
     } else {
       try {
-        # todo: implement hex handling...
         New-ItemProperty -Path $path -Name $component.ValueName -PropertyType $component.ValueType -Value $component.ValueData -Force
         Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry value created with value: [{2}]{3}{4} for key {5} at path {6}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path)
-      } catch [System.UnauthorizedAccessException] {
+      } catch {
         Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to create registry value to: [{2}]{3}{4} for key {5} at path {6}. {7}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path, $_.Exception.Message)
       }
     }

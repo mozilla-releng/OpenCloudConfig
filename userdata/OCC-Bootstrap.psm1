@@ -2184,8 +2184,8 @@ function Invoke-OpenCloudConfig {
       }
       Install-Dependencies
 
-      switch -regex ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
-        '^Microsoft Windows (7|10).*$' {
+      switch -regex ($workerType) {
+        '^gecko-t-win10-(a64-beta|64-(hw|ux)(-[ab])?)$' {
           Invoke-CustomDesiredStateProvider -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev -workerType $workerType
         }
         default {

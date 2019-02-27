@@ -1053,7 +1053,8 @@
         "--nssm",
         "C:\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe",
         "--config",
-        "C:\\generic-worker\\generic-worker.config"
+        "C:\\generic-worker\\generic-worker.config",
+        "--configure-for-aws"
       ],
       "DependsOn": [
         {

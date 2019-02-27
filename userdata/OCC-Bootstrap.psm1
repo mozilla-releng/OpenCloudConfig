@@ -222,134 +222,139 @@ function Invoke-CustomDesiredStateProvider {
       # loop through all components that have not already been applied
       foreach ($component in ($manifest.Components | ? { (-not (Get-ComponentAppliedState -component $_ -appliedComponents $appliedComponents)) })) {
         if (Get-AllDependenciesAppliedState -dependencies $component.DependsOn -appliedComponents $appliedComponents) {
-          switch ($component.ComponentType) {
-            'DirectoryCreate' {
-              if (-not (Confirm-DirectoryCreate -verbose -component $component)) {
-                Invoke-DirectoryCreate -verbose -component $component
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of DirectoryCreate component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+          try {
+            switch ($component.ComponentType) {
+              'DirectoryCreate' {
+                if (-not (Confirm-DirectoryCreate -verbose -component $component)) {
+                  Invoke-DirectoryCreate -verbose -component $component
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of DirectoryCreate component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
               }
-            }
-            'DirectoryDelete' {
-              if (-not (Confirm-DirectoryDelete -verbose -component $component)) {
-                Invoke-DirectoryDelete -verbose -component $component
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of DirectoryDelete component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+              'DirectoryDelete' {
+                if (-not (Confirm-DirectoryDelete -verbose -component $component)) {
+                  Invoke-DirectoryDelete -verbose -component $component
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of DirectoryDelete component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
               }
-            }
-            'DirectoryCopy' {
-              if (-not (Confirm-DirectoryCopy -verbose -component $component)) {
-                Invoke-DirectoryCopy -verbose -component $component
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of DirectoryCopy component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+              'DirectoryCopy' {
+                if (-not (Confirm-DirectoryCopy -verbose -component $component)) {
+                  Invoke-DirectoryCopy -verbose -component $component
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of DirectoryCopy component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
               }
-            }
-            'CommandRun' {
-              if (-not (Confirm-CommandRun -verbose -component $component)) {
-                Invoke-CommandRun -verbose -component $component
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of CommandRun component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+              'CommandRun' {
+                if (-not (Confirm-CommandRun -verbose -component $component)) {
+                  Invoke-CommandRun -verbose -component $component
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of CommandRun component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
               }
-            }
-            'FileDownload' {
-              if (-not (Confirm-FileDownload -verbose -component $component -localPath $component.Target)) {
-                Invoke-FileDownload -verbose -component $component -localPath $component.Target
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of FileDownload component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+              'FileDownload' {
+                if (-not (Confirm-FileDownload -verbose -component $component -localPath $component.Target)) {
+                  Invoke-FileDownload -verbose -component $component -localPath $component.Target
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of FileDownload component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
               }
-            }
-            'ChecksumFileDownload' {
-              if (-not (Confirm-FileDownload -verbose -component $component -localPath $component.Target)) {
-                Invoke-FileDownload -verbose -component $component -localPath $component.Target
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of FileDownload component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+              'ChecksumFileDownload' {
+                if (-not (Confirm-FileDownload -verbose -component $component -localPath $component.Target)) {
+                  Invoke-FileDownload -verbose -component $component -localPath $component.Target
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of FileDownload component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
               }
-            }
-            'SymbolicLink' {
-              if (-not (Confirm-SymbolicLink -verbose -component $component)) {
+              'SymbolicLink' {
+                if (-not (Confirm-SymbolicLink -verbose -component $component)) {
+                  Invoke-SymbolicLink -verbose -component $component
+                }
                 Invoke-SymbolicLink -verbose -component $component
               }
-              Invoke-SymbolicLink -verbose -component $component
-            }
-            'ExeInstall' {
-              if (-not (Confirm-ExeInstall -verbose -component $component)) {
-                Invoke-ExeInstall -verbose -component $component
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of ExeInstall component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+              'ExeInstall' {
+                if (-not (Confirm-ExeInstall -verbose -component $component)) {
+                  Invoke-ExeInstall -verbose -component $component
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of ExeInstall component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
+              }
+              'MsiInstall' {
+                if (-not (Confirm-MsiInstall -verbose -component $component)) {
+                  Invoke-MsiInstall -verbose -component $component
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of MsiInstall component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
+              }
+              'MsuInstall' {
+                if (-not (Confirm-MsuInstall -verbose -component $component)) {
+                  Invoke-MsuInstall -verbose -component $component
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of MsuInstall component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
+              }
+              'WindowsFeatureInstall' {
+                # todo: implement WindowsFeatureInstall in the DynamicConfig module
+                Write-Log -message ('{0} :: not implemented: WindowsFeatureInstall.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+              }
+              'ZipInstall' {
+                $localPath = ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $(if ($component.sha512) { $component.sha512 } else { $component.ComponentName }))
+                if (-not (Confirm-FileDownload -verbose -component $component -localPath $localPath)) {
+                  Invoke-FileDownload -verbose -component $component -localPath $localPath
+                }
+                # todo: confirm or refute prior install with comparison of directory and zip contents
+                Invoke-ZipInstall -verbose -component $component -path $localPath -overwrite
+              }
+              'ServiceControl' {
+                # todo: implement ServiceControl in the DynamicConfig module
+                Set-ServiceState -name $component.Name -state $component.State
+                Set-Service -name $component.Name -StartupType $component.StartupType
+              }
+              'EnvironmentVariableSet' {
+                Invoke-EnvironmentVariableSet -verbose -component $component
+              }
+              'EnvironmentVariableUniqueAppend' {
+                Invoke-EnvironmentVariableUniqueAppend -verbose -component $component
+              }
+              'EnvironmentVariableUniquePrepend' {
+                Invoke-EnvironmentVariableUniquePrepend -verbose -component $component
+              }
+              'RegistryKeySet' {
+                Invoke-RegistryKeySet -verbose -component $component
+              }
+              'RegistryValueSet' {
+                if ($component.SetOwner) {
+                  Invoke-RegistryKeySetOwner -verbose -component $component
+                }
+                Invoke-RegistryValueSet -verbose -component $component
+              }
+              'DisableIndexing' {
+                if (-not (Confirm-DisableIndexing -verbose -component $component)) {
+                  Invoke-DisableIndexing -verbose -component $component
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of DisableIndexing component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
+              }
+              'FirewallRule' {
+                if (-not (Confirm-FirewallRuleSet -verbose -component $component)) {
+                  Invoke-FirewallRuleSet -verbose -component $component
+                } else {
+                  Write-Log -verbose -message ('{0} :: skipping invocation of FirewallRule component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
+                }
+              }
+              'ReplaceInFile' {
+                Invoke-ReplaceInFile -verbose -component $component
               }
             }
-            'MsiInstall' {
-              if (-not (Confirm-MsiInstall -verbose -component $component)) {
-                Invoke-MsiInstall -verbose -component $component
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of MsiInstall component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
-              }
+            if ($component.DependsOn) {
+              Write-Log -severity 'debug' -message ('{0} :: component {1}_{2} applied. component has {3} dependencies ({4}) which have already been applied' -f $($MyInvocation.MyCommand.Name), $component.ComponentType, $component.ComponentName, $component.DependsOn.Length, (($component.DependsOn | % { '{0}_{1}' -f $_.ComponentType, $_.ComponentName }) -join ', '))
+            } else {
+              Write-Log -severity 'debug' -message ('{0} :: component {1}_{2} applied. component has no dependencies' -f $($MyInvocation.MyCommand.Name), $component.ComponentType, $component.ComponentName)
             }
-            'MsuInstall' {
-              if (-not (Confirm-MsuInstall -verbose -component $component)) {
-                Invoke-MsuInstall -verbose -component $component
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of MsuInstall component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
-              }
-            }
-            'WindowsFeatureInstall' {
-              # todo: implement WindowsFeatureInstall in the DynamicConfig module
-              Write-Log -message ('{0} :: not implemented: WindowsFeatureInstall.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
-            }
-            'ZipInstall' {
-              $localPath = ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $(if ($component.sha512) { $component.sha512 } else { $component.ComponentName }))
-              if (-not (Confirm-FileDownload -verbose -component $component -localPath $localPath)) {
-                Invoke-FileDownload -verbose -component $component -localPath $localPath
-              }
-              # todo: confirm or refute prior install with comparison of directory and zip contents
-              Invoke-ZipInstall -verbose -component $component -path $localPath -overwrite
-            }
-            'ServiceControl' {
-              # todo: implement ServiceControl in the DynamicConfig module
-              Set-ServiceState -name $component.Name -state $component.State
-              Set-Service -name $component.Name -StartupType $component.StartupType
-            }
-            'EnvironmentVariableSet' {
-              Invoke-EnvironmentVariableSet -verbose -component $component
-            }
-            'EnvironmentVariableUniqueAppend' {
-              Invoke-EnvironmentVariableUniqueAppend -verbose -component $component
-            }
-            'EnvironmentVariableUniquePrepend' {
-              Invoke-EnvironmentVariableUniquePrepend -verbose -component $component
-            }
-            'RegistryKeySet' {
-              Invoke-RegistryKeySet -verbose -component $component
-            }
-            'RegistryValueSet' {
-              if ($component.SetOwner) {
-                Invoke-RegistryKeySetOwner -verbose -component $component
-              }
-              Invoke-RegistryValueSet -verbose -component $component
-            }
-            'DisableIndexing' {
-              if (-not (Confirm-DisableIndexing -verbose -component $component)) {
-                Invoke-DisableIndexing -verbose -component $component
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of DisableIndexing component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
-              }
-            }
-            'FirewallRule' {
-              if (-not (Confirm-FirewallRuleSet -verbose -component $component)) {
-                Invoke-FirewallRuleSet -verbose -component $component
-              } else {
-                Write-Log -verbose -message ('{0} :: skipping invocation of FirewallRule component: {1}. prior application detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName) -severity 'DEBUG'
-              }
-            }
-            'ReplaceInFile' {
-              Invoke-ReplaceInFile -verbose -component $component
-            }
-          }
-          $appliedComponents += New-Object -TypeName 'PSObject' -Property @{ 'ComponentName' = $component.ComponentName; 'ComponentType' = $component.ComponentType; 'AppliedState' = 'Success' }
-          if ($component.DependsOn) {
-            Write-Log -severity 'debug' -message ('{0} :: component {1}_{2} applied. component has {3} dependencies ({4}) which have already been applied' -f $($MyInvocation.MyCommand.Name), $component.ComponentType, $component.ComponentName, $component.DependsOn.Length, (($component.DependsOn | % { '{0}_{1}' -f $_.ComponentType, $_.ComponentName }) -join ', '))
-          } else {
-            Write-Log -severity 'debug' -message ('{0} :: component {1}_{2} applied. component has no dependencies' -f $($MyInvocation.MyCommand.Name), $component.ComponentType, $component.ComponentName)
+            $appliedComponents += New-Object -TypeName 'PSObject' -Property @{ 'ComponentName' = $component.ComponentName; 'ComponentType' = $component.ComponentType; 'AppliedState' = 'Success' }
+          } catch {
+            Write-Log -severity 'error' -message ('{0} :: component {1}_{2} apply failure. {3}' -f $($MyInvocation.MyCommand.Name), $component.ComponentType, $component.ComponentName, $_.Exception.Message)
+            $appliedComponents += New-Object -TypeName 'PSObject' -Property @{ 'ComponentName' = $component.ComponentName; 'ComponentType' = $component.ComponentType; 'AppliedState' = 'Failure' }
           }
         }
       }

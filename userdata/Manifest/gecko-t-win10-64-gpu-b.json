@@ -79,6 +79,7 @@
       "Arguments": [
         "/S"
       ],
+      "Timeout": 120,
       "Validate": {
         "PathsExist": [
           "C:\\Program Files (x86)\\GNU\\GnuPG\\pub\\gpg.exe",

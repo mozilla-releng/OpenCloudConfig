@@ -177,6 +177,8 @@ function Invoke-LoggedCommandRun {
     [string] $command,
 
     [string[]] $arguments,
+
+    [int] $timeoutInSeconds = 600,
     
     [string] $eventLogName = 'Application',
     [string] $eventLogSource = 'OpenCloudConfig'
@@ -189,8 +191,11 @@ function Invoke-LoggedCommandRun {
     $redirectStandardError = ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), [IO.Path]::GetFileNameWithoutExtension($command))
     try {
       $process = (Start-Process $command -ArgumentList $arguments -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
-      Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
-      if ($process.ExitCode -and $process.TotalProcessorTime) {
+      $timeoutError = $null
+      Wait-Process -Timeout $timeoutInSeconds -InputObject $process -ErrorAction 'SilentlyContinue' -ErrorVariable timeoutError # see: https://stackoverflow.com/a/43728914/68115
+      if ($timeoutError) {
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'warn' -message ('{0} ({1}) :: command ({2} {3}) execution timed out with error: {4} after {5} seconds.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), $timeoutError, $timeoutInSeconds)
+      } elseif ($process.ExitCode -and $process.TotalProcessorTime) {
         Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: command ({2} {3}) exited with code: {4} after a processing time of: {5}.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), $process.ExitCode, $process.TotalProcessorTime)
       } else {
         Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: command ({2} {3}) executed.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '))
@@ -613,27 +618,32 @@ function Invoke-RegistryValueSet {
         $path = $component.Key
       }
     }
-    try {
-      if (-not (Get-Item -Path $path -ErrorAction 'SilentlyContinue')) {
-        try {
-          New-Item -Path $path -Force
-          Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry path: {2} created' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $path)
-        } catch {
-          Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to create registry path {2}. {3}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $path, $_.Exception.Message)
-        }
-      } else {
-        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} ({1}) :: registry path: {2} detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $path)
+    if (-not (Get-Item -Path $path -ErrorAction 'SilentlyContinue')) {
+      try {
+        New-Item -Path $path -Force
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry path: {2} created' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $path)
+      } catch {
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to create registry path {2}. {3}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $path, $_.Exception.Message)
       }
-      if (Get-ItemProperty -Path $path -Name $component.ValueName -ErrorAction 'SilentlyContinue') {
+    } else {
+      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} ({1}) :: registry path: {2} detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $path)
+    }
+    if (Get-ItemProperty -Path $path -Name $component.ValueName -ErrorAction 'SilentlyContinue') {
+      try {
         # todo: implement hex handling...
         Set-ItemProperty -Path $path -Name $component.ValueName -Value $component.ValueData -Force
-      } else {
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry value updated with value: [{2}]{3}{4} for key {5} at path {6}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path)
+      } catch [System.UnauthorizedAccessException] {
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to update registry value to: [{2}]{3}{4} for key {5} at path {6}. {7}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path, $_.Exception.Message)
+      }
+    } else {
+      try {
         # todo: implement hex handling...
         New-ItemProperty -Path $path -Name $component.ValueName -PropertyType $component.ValueType -Value $component.ValueData -Force
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry value created with value: [{2}]{3}{4} for key {5} at path {6}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path)
+      } catch [System.UnauthorizedAccessException] {
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to create registry value to: [{2}]{3}{4} for key {5} at path {6}. {7}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path, $_.Exception.Message)
       }
-      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry value set to: [{2}]{3}{4} for key {5} at path {6}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path)
-    } catch {
-      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to set registry value to: [{2}]{3}{4} for key {5} at path {6}. {7}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueType, $component.ValueData, $(if ($component.Hex) { '(hex)' } else { '' }), $component.ValueName, $path, $_.Exception.Message)
     }
   }
   end {
@@ -924,7 +934,7 @@ function Invoke-DownloadInstall {
       }
     }
     Invoke-FileDownload -verbose:$verbose -eventLogName $eventLogName -eventLogSource $eventLogSource -component $component -localPath $localPath -tooltoolHost $tooltoolHost -tokenPath $tokenPath
-    Invoke-LoggedCommandRun -verbose:$verbose -eventLogName $eventLogName -eventLogSource $eventLogSource -componentName $component.ComponentName -command $command -arguments $arguments
+    Invoke-LoggedCommandRun -verbose:$verbose -eventLogName $eventLogName -eventLogSource $eventLogSource -componentName $component.ComponentName -command $command -arguments $arguments -timeoutInSeconds $(if ($component.Timeout) { [int]$component.Timeout } else { 600 })
   }
   end {
     Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} ({1}) :: end - {2:o}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, (Get-Date).ToUniversalTime())

@@ -87,40 +87,29 @@ fi
 echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] git sha: ${aws_client_token} used for aws client token"
 
 case "${tc_worker_type}" in
-  gecko-t-win7-32-gpu*)
-    aws_base_ami_search_term=${aws_base_ami_search_term:='gecko-t-win7-32-base-20171018'}
-    aws_base_ami_id="$(aws ec2 describe-images --region ${aws_region} --owners self --filters "Name=state,Values=available" "Name=name,Values=${aws_base_ami_search_term}" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
-    ami_description="Gecko test worker for Windows 7 32 bit; TaskCluster worker type: ${tc_worker_type}, OCC version ${aws_client_token}, ${GITHUB_HEAD_REPO_URL}/tree/${GITHUB_HEAD_SHA}"}
-    root_username=root
-    worker_username=GenericWorker
-    ;;
   gecko-t-win7-32*)
-    aws_base_ami_search_term=${aws_base_ami_search_term:='gecko-t-win7-32-base-20171018'}
+    aws_base_ami_search_term=${aws_base_ami_search_term:='gecko-t-win7-32-base-*'}
     aws_base_ami_id="$(aws ec2 describe-images --region ${aws_region} --owners self --filters "Name=state,Values=available" "Name=name,Values=${aws_base_ami_search_term}" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
     ami_description="Gecko test worker for Windows 7 32 bit; TaskCluster worker type: ${tc_worker_type}, OCC version ${aws_client_token}, ${GITHUB_HEAD_REPO_URL}/tree/${GITHUB_HEAD_SHA}"}
     root_username=root
-    worker_username=GenericWorker
     ;;
   gecko-t-win10-64*)
     aws_base_ami_search_term=${aws_base_ami_search_term:='Windows_10_Enterprise_1803_17134_285_en-US_x64_MBR-VAC-*'}
     aws_base_ami_id="$(aws ec2 describe-images --region ${aws_region} --owners self --filters "Name=state,Values=available" "Name=name,Values=${aws_base_ami_search_term}" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
     ami_description="Gecko tester for Windows 10 64 bit; TaskCluster worker type: ${tc_worker_type}, OCC version ${aws_client_token}, ${GITHUB_HEAD_REPO_URL}/tree/${GITHUB_HEAD_SHA}"}
     root_username=Administrator
-    worker_username=GenericWorker
     ;;
   gecko-[123]-b-win2012*)
     aws_base_ami_search_term=${aws_base_ami_search_term:='gecko-b-win2012-ena-base-*'}
     aws_base_ami_id="$(aws ec2 describe-images --region ${aws_region} --owners self --filters "Name=state,Values=available" "Name=name,Values=${aws_base_ami_search_term}" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
     ami_description="Gecko builder for Windows; TaskCluster worker type: ${tc_worker_type}, OCC version ${aws_client_token}, ${GITHUB_HEAD_REPO_URL}/tree/${GITHUB_HEAD_SHA}"}
     root_username=Administrator
-    worker_username=GenericWorker
     ;;
   relops-image-builder)
     aws_base_ami_search_term=${aws_base_ami_search_term:='Windows_Server-2016-English-Full-Base-*'}
     aws_base_ami_id="$(aws ec2 describe-images --region ${aws_region} --owners amazon --filters "Name=state,Values=available" "Name=name,Values=${aws_base_ami_search_term}" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
     ami_description="RelOps image builder for Windows; TaskCluster worker type: ${tc_worker_type}, OCC version ${aws_client_token}, ${GITHUB_HEAD_REPO_URL}/tree/${GITHUB_HEAD_SHA}"}
     root_username=Administrator
-    worker_username=GenericWorker
     ;;
   *)
     echo "ERROR: unknown worker type: '${tc_worker_type}'"
@@ -310,7 +299,7 @@ cat ./update-response.json | jq '.' > ./${tc_worker_type}-post.json
 git diff --no-index -- ./${tc_worker_type}-pre.json ./${tc_worker_type}-post.json > ./${tc_worker_type}.diff || true
 
 # set latest timestamp and new credentials
-cat ./workertype-secrets.json | jq --arg timestamp $(date -u +"%Y-%m-%dT%H:%M:%SZ") --arg rootusername $root_username --arg rootpassword "$root_password" --arg workerusername $worker_username --arg workerpassword "$worker_password" -c '.secret.latest.timestamp = $timestamp | .secret.latest.users.root.username = $rootusername | .secret.latest.users.root.password = $rootpassword | .secret.latest.users.worker.username = "GenericWorker" | .secret.latest.users.worker.password = $workerpassword' > ./.workertype-secrets.json && rm ./workertype-secrets.json && mv ./.workertype-secrets.json ./workertype-secrets.json
+cat ./workertype-secrets.json | jq --arg timestamp $(date -u +"%Y-%m-%dT%H:%M:%SZ") --arg rootusername $root_username --arg rootpassword "$root_password" -c '.secret.latest.timestamp = $timestamp | .secret.latest.users.root.username = $rootusername | .secret.latest.users.root.password = $rootpassword' > ./.workertype-secrets.json && rm ./workertype-secrets.json && mv ./.workertype-secrets.json ./workertype-secrets.json
 # get previous secrets, move old "latest" to "previous" (list) and discard all but 10 newest records
 curl --silent http://taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig:${tc_worker_type} | jq '.secret.previous = (.secret.previous + [.secret.latest] | sort_by(.timestamp) | reverse [0:10]) | del(.secret.latest)' > ./old-workertype-secrets.json
 # combine old and new secrets and update tc secret service

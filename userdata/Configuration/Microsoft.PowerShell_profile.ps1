@@ -35,13 +35,21 @@ if (Get-ItemProperty 'HKCU:\Control Panel\Cursors' -ErrorAction SilentlyContinue
 }
 
 # powershell, cmd, event viewer and subl pinned to taskbar
-((New-Object -c Shell.Application).Namespace('{0}\System32\WindowsPowerShell\v1.0' -f $env:SystemRoot).parsename('powershell.exe')).InvokeVerb('taskbarpin')
-((New-Object -c Shell.Application).Namespace('{0}\System32' -f $env:SystemRoot).parsename('cmd.exe')).InvokeVerb('taskbarpin')
-((New-Object -c Shell.Application).Namespace('{0}\System32' -f $env:SystemRoot).parsename('eventvwr.msc')).InvokeVerb('taskbarpin')
-if (Test-Path -Path ('{0}\Sublime Text 3' -f $env:ProgramFiles) -ErrorAction 'SilentlyContinue') {
-  ((New-Object -c Shell.Application).Namespace('{0}\Sublime Text 3' -f $env:ProgramFiles).parsename('sublime_text.exe')).InvokeVerb('taskbarpin')
-} elseif (Test-Path -Path ('{0}\Sublime Text 3' -f ${env:ProgramFiles(x86)}) -ErrorAction 'SilentlyContinue') {
-  ((New-Object -c Shell.Application).Namespace('{0}\Sublime Text 3' -f ${env:ProgramFiles(x86)}).parsename('sublime_text.exe')).InvokeVerb('taskbarpin')
+$taskbarPinItems = @(
+  ('{0}\System32\WindowsPowerShell\v1.0\powershell.exe' -f $env:SystemRoot),
+  ('{0}\System32\cmd.exe' -f $env:SystemRoot),
+  ('{0}\System32\eventvwr.msc' -f $env:SystemRoot),
+  ('{0}\Sublime Text 3\sublime_text.exe' -f $env:ProgramFiles),
+  ('{0}\Sublime Text 3\sublime_text.exe' -f ${env:ProgramFiles(x86)})
+)
+foreach ($taskbarPinItem in $taskbarPinItems) {
+  if (Test-Path -Path $taskbarPinItem -ErrorAction 'SilentlyContinue') {
+    $pathParent = (Split-Path -Path $taskbarPinItem)
+    $pathLeaf = (Split-Path -Path $taskbarPinItem -Leaf -Resolve)
+    try {
+      ((New-Object -c Shell.Application).Namespace($pathParent).parsename($pathLeaf)).InvokeVerb('taskbarpin')
+    } catch {}
+  }
 }
 
 if (-not ((Get-WmiObject -Class 'Win32_OperatingSystem').Caption.Contains('Windows 10'))) { # Windows versions other than 10

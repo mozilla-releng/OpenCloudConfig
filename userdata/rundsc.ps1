@@ -108,7 +108,7 @@ function Install-SupportingModules {
 }
 function Set-OpenCloudConfigSource {
   param (
-    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } else { 'DataCenter' })
+    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) { 'GCP' } else { 'DataCenter' })
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -145,7 +145,46 @@ function Set-OpenCloudConfigSource {
                 Write-Log -message ('{0} :: error setting Source/{1} in registry to: {2}. {3}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue, $_.Exception.Message) -severity 'ERROR'
               }
             } else {
-              Write-Log -message ('{0} :: detected Source/{1} in userdata as: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue) -severity 'INFO'
+              Write-Log -message ('{0} :: failed to detect Source/{1} in userdata' -f $($MyInvocation.MyCommand.Name), $sourceItemName) -severity 'ERROR'
+            }
+          }
+        }
+      }
+      'GCP' {
+        foreach ($sourceItemName in @('Organisation', 'Repository', 'Revision')) {
+          if (Test-Path -Path ('HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source\{0}' -f $sourceItemName) -ErrorAction SilentlyContinue) {
+            Write-Log -message ('{0} :: detected Source/{1} in registry as: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name $sourceItemName)."$sourceItemName") -severity 'DEBUG'
+          } else {
+            try {
+              $sourceItemValue = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/source{0}' -f $sourceItemName)
+            } catch {
+              switch ($sourceItemName) {
+                'Organisation' {
+                  $sourceItemValue = 'mozilla-releng'
+                }
+                'Repository' {
+                  $sourceItemValue = 'OpenCloudConfig'
+                }
+                'Revision' {
+                  $sourceItemValue = 'gamma'
+                }
+              }
+            }
+            if ($sourceItemValue) {
+              Write-Log -message ('{0} :: detected Source/{1} in instance metadata attributes as: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue) -severity 'INFO'
+              try {
+                if (-not (Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue)) {
+                  New-Item -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Force
+                  Write-Log -message ('{0} :: created registry path: HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+                }
+                Set-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Type 'String' -Name $sourceItemName -Value $sourceItemValue
+                Write-Log -message ('{0} :: set Source/{1} in registry to: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue) -severity 'INFO'
+              }
+              catch {
+                Write-Log -message ('{0} :: error setting Source/{1} in registry to: {2}. {3}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, $sourceItemValue, $_.Exception.Message) -severity 'ERROR'
+              }
+            } else {
+              Write-Log -message ('{0} :: failed to detect Source/{1} in instance metadata attributes' -f $($MyInvocation.MyCommand.Name), $sourceItemName) -severity 'ERROR'
             }
           }
         }

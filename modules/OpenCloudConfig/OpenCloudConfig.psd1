@@ -10,7 +10,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
   RootModule = 'OpenCloudConfig.psm1'
 
   # Version number of this module.
-  ModuleVersion = '0.0.46'
+  ModuleVersion = '0.0.47'
 
   # ID used to uniquely identify this module
   GUID = 'd1235f10-0ae3-4353-9a31-0abeb2b9093e'

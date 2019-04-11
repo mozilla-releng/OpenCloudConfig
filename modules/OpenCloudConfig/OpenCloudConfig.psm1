@@ -129,19 +129,21 @@ function Get-TooltoolResource {
       if ($bearerToken) {
         Write-Log -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} :: tooltool bearer token obtained at {1}' -f $($MyInvocation.MyCommand.Name), $tokenPath)
       } else {
-        throw ('invalid or null token found at {0}' -f $tokenPath)
+        Write-Log -logName $eventLogName -source $eventLogSource -Severity 'error' -message ('{0} :: invalid or null token found at {1}' -f $($MyInvocation.MyCommand.Name), $tokenPath)
       }
     } catch {
       Write-Log -logName $eventLogName -source $eventLogSource -Severity 'error' -message ('{0} :: failed to read valid tooltool bearer token at {1}. {2}' -f $($MyInvocation.MyCommand.Name), $tokenPath, $_.Exception.Message)
-      throw
     }
-
-    # download remote resource
-    $url = ('https://{0}/sha512/{1}' -f $tooltoolHost, $sha512)
-    $headers = @{
-      'Authorization' = ('Bearer {0}' -f $bearerToken)
+    if ($bearerToken) {
+      # download remote resource
+      $url = ('https://{0}/sha512/{1}' -f $tooltoolHost, $sha512)
+      $headers = @{
+        'Authorization' = ('Bearer {0}' -f $bearerToken)
+      }
+      return (Get-RemoteResource -url $url -headers $headers -localPath $localPath -eventLogName $eventLogName -eventLogSource $eventLogSource)
+    } else {
+      return $false
     }
-    return (Get-RemoteResource -url $url -headers $headers -localPath $localPath -eventLogName $eventLogName -eventLogSource $eventLogSource)
   }
   end {
     Write-Log -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime())

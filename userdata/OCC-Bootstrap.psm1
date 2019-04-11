@@ -113,14 +113,14 @@ function Install-Dependencies {
       @{
         'ModuleName' = 'OpenCloudConfig';
         'Repository' = 'PSGallery';
-        'ModuleVersion' = '0.0.46'
+        'ModuleVersion' = '0.0.47'
       }
     ),
     # if modules are detected with a version **less than** specified in ModuleVersion below, they will be purged
     [hashtable[]] $purgeModules = @(
       @{
         'ModuleName' = 'OpenCloudConfig';
-        'ModuleVersion' = '0.0.46'
+        'ModuleVersion' = '0.0.47'
       }
     )
   )
@@ -627,28 +627,32 @@ function Set-Ec2ConfigSettings {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    $ec2ConfigSettingsFileModified = $false;
-    [xml]$xml = (Get-Content $ec2ConfigSettingsFile)
-    foreach ($plugin in $xml.DocumentElement.Plugins.Plugin) {
-      if ($ec2ConfigSettings.ContainsKey($plugin.Name)) {
-        if ($plugin.State -ne $ec2ConfigSettings[$plugin.Name]) {
-          $plugin.State = $ec2ConfigSettings[$plugin.Name]
-          $ec2ConfigSettingsFileModified = $true
-          Write-Log -message ('{0} :: Ec2Config {1} set to: {2}, in: {3}' -f $($MyInvocation.MyCommand.Name), $plugin.Name, $plugin.State, $ec2ConfigSettingsFile) -severity 'INFO'
+    if (Test-Path -Path $ec2ConfigSettingsFile -ErrorAction SilentlyContinue) {
+      $ec2ConfigSettingsFileModified = $false;
+      [xml]$xml = (Get-Content $ec2ConfigSettingsFile)
+      foreach ($plugin in $xml.DocumentElement.Plugins.Plugin) {
+        if ($ec2ConfigSettings.ContainsKey($plugin.Name)) {
+          if ($plugin.State -ne $ec2ConfigSettings[$plugin.Name]) {
+            $plugin.State = $ec2ConfigSettings[$plugin.Name]
+            $ec2ConfigSettingsFileModified = $true
+            Write-Log -message ('{0} :: Ec2Config {1} set to: {2}, in: {3}' -f $($MyInvocation.MyCommand.Name), $plugin.Name, $plugin.State, $ec2ConfigSettingsFile) -severity 'INFO'
+          }
         }
       }
-    }
-    if ($ec2ConfigSettingsFileModified) {
-      try {
-        Start-LoggedProcess -filePath 'takeown' -ArgumentList @('/a', '/f', ('"{0}"' -f $ec2ConfigSettingsFile)) -name 'takeown-ec2config-settings'
-        Start-LoggedProcess -filePath 'icacls' -ArgumentList @(('"{0}"' -f $ec2ConfigSettingsFile), '/grant', 'Administrators:F') -name 'icacls-ec2config-settings-grant-admin'
-        Start-LoggedProcess -filePath 'icacls' -ArgumentList @(('"{0}"' -f $ec2ConfigSettingsFile), '/grant', 'System:F') -name 'icacls-ec2config-settings-grant-system'
-        $xml.Save($ec2ConfigSettingsFile)
-        Write-Log -message ('{0} :: Ec2Config settings file saved at: {1}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile) -severity 'INFO'
+      if ($ec2ConfigSettingsFileModified) {
+        try {
+          Start-LoggedProcess -filePath 'takeown' -ArgumentList @('/a', '/f', ('"{0}"' -f $ec2ConfigSettingsFile)) -name 'takeown-ec2config-settings'
+          Start-LoggedProcess -filePath 'icacls' -ArgumentList @(('"{0}"' -f $ec2ConfigSettingsFile), '/grant', 'Administrators:F') -name 'icacls-ec2config-settings-grant-admin'
+          Start-LoggedProcess -filePath 'icacls' -ArgumentList @(('"{0}"' -f $ec2ConfigSettingsFile), '/grant', 'System:F') -name 'icacls-ec2config-settings-grant-system'
+          $xml.Save($ec2ConfigSettingsFile)
+          Write-Log -message ('{0} :: Ec2Config settings file saved at: {1}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile) -severity 'INFO'
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to save Ec2Config settings file: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile, $_.Exception.Message) -severity 'ERROR'
+        }
       }
-      catch {
-        Write-Log -message ('{0} :: failed to save Ec2Config settings file: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile, $_.Exception.Message) -severity 'ERROR'
-      }
+    } else {
+      Write-Log -message ('{0} :: Ec2Config settings file not found at: {1}' -f $($MyInvocation.MyCommand.Name), $ec2ConfigSettingsFile) -severity 'WARN'
     }
   }
   end {
@@ -1518,29 +1522,24 @@ function Set-ComputerName {
 }
 function Set-DomainName {
   param (
-    [string] $publicKeys = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys'),
-    [string] $workerType = $(if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) { $publicKeys.Replace('0=mozilla-taskcluster-worker-', '') } else { (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType }),
-    [string] $az = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone')
+    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) { 'GCP' } else { 'DataCenter' }),
+    [string] $publicKeys = $(if ($locationType -eq 'AWS') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys') } else { $null }),
+    [string] $workerType = $(if ($locationType -eq 'AWS') { $(if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) { $publicKeys.Replace('0=mozilla-taskcluster-worker-', '') } else { (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType }) } elseif ($locationType -eq 'GCP') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/workerType') } else { $null }),
+    [string] $az = $(if ($locationType -eq 'AWS') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone') } elseif ($locationType -eq 'GCP') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/zone') -replace '.*/' })
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    switch -wildcard ($az) {
-      'eu-central-1*'{
-        $dnsRegion = 'euc1'
+    switch ($locationType) {
+      'EC2'{
+        $dnsRegion = $az.Replace('-', '').Replace('central', 'c').Replace('east', 'e').Replace('west', 'w').SubString(0,4)
       }
-      'us-east-1*'{
-        $dnsRegion = 'use1'
+      'GCP'{
+        $dnsRegion = ($az -replace ".{2}$").Replace('-', '').Replace('asia', 'a').Replace('australia', 'au').Replace('southamerica', 'sa').Replace('northamerica', 'na').Replace('europe', 'eu').Replace('central', 'c').Replace('east', 'e').Replace('west', 'w').Replace('south', 's').Replace('north', 'n')
       }
-      'us-east-2*'{
-        $dnsRegion = 'use2'
-      }
-      'us-west-1*'{
-        $dnsRegion = 'usw1'
-      }
-      'us-west-2*'{
-        $dnsRegion = 'usw2'
+      default {
+        $dnsRegion = $az
       }
     }
     Write-Log -message ('{0} :: availabilityZone: {1}, dnsRegion: {2}.' -f $($MyInvocation.MyCommand.Name), $az, $dnsRegion) -severity 'INFO'
@@ -1649,6 +1648,7 @@ function Invoke-HardwareDiskCleanup {
 }
 function Set-ChainOfTrustKey {
   param (
+    [string] $locationType,
     [string] $workerType,
     [switch] $shutdown
   )
@@ -1774,8 +1774,13 @@ function Set-ChainOfTrustKey {
         }
         if ((Test-Path -Path 'C:\generic-worker\ed25519-private.key' -ErrorAction SilentlyContinue) -and (Test-Path -Path 'C:\generic-worker\openpgp-private.key' -ErrorAction SilentlyContinue)) {
           if ($shutdown) {
-            Write-Log -message ('{0} :: ed25519 and openpgp keys detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-            & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            if ($locationType -eq 'GCP') {
+              Write-Log -message ('{0} :: ed25519 and openpgp keys detected. restarting...' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+              & shutdown @('-r', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            } else {
+              Write-Log -message ('{0} :: ed25519 and openpgp keys detected. shutting down...' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+              & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            }
           } else {
             Write-Log -message ('{0} :: ed25519 and openpgp keys detected' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
           }
@@ -1784,7 +1789,11 @@ function Set-ChainOfTrustKey {
         }
         if ($shutdown) {
           if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
-            & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            if ($locationType -eq 'GCP') {
+              & shutdown @('-r', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            } else {
+              & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            }
           } else {
             Write-Log -message ('{0} :: rdp session detected. awaiting manual shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
           }
@@ -1927,12 +1936,19 @@ function Initialize-Instance {
       Set-DomainName
       # Turn off DNS address registration (EC2 DNS is configured to not allow it)
       Set-DynamicDnsRegistration -enabled:$false
+    } elseif ($locationType -eq 'GCP') {
+      Set-DomainName
+      # todo: figure out if this is needed on gcp
+      # Set-DynamicDnsRegistration -enabled:$false
     }
     if ($rebootReasons.length) {
       # if this is an ami creation instance (not a worker) ...
       if (($locationType -eq 'AWS') -and (((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')).StartsWith('0=mozilla-taskcluster-worker-'))) {
         # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
         Set-Ec2ConfigSettings
+        # ensure that an up to date nxlog configuration is used as early as possible
+        Set-NxlogConfig -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev
+      } elseif ($locationType -eq 'GCP') {
         # ensure that an up to date nxlog configuration is used as early as possible
         Set-NxlogConfig -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev
       }
@@ -1949,7 +1965,7 @@ function Invoke-OpenCloudConfig {
     [string] $sourceOrg = 'mozilla-releng',
     [string] $sourceRepo = 'OpenCloudConfig',
     [string] $sourceRev = 'master',
-    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } else { 'DataCenter' })
+    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) { 'GCP' } else { 'DataCenter' })
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -2022,22 +2038,27 @@ function Invoke-OpenCloudConfig {
       Write-Log -message ('{0} :: workerType: {1}.' -f $($MyInvocation.MyCommand.Name), $workerType) -severity 'INFO'
       Write-Log -message ('{0} :: runDscOnWorker: {1}.' -f $($MyInvocation.MyCommand.Name), $runDscOnWorker) -severity 'DEBUG'
     } else {
-      try {
-        $userdata = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/user-data')
-      } catch {
-        $userdata = $null
-      }
-      $publicKeys = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')
+      if ($locationType -eq 'AWS') {
+        try {
+          $userdata = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/user-data')
+        } catch {
+          $userdata = $null
+        }
+        $publicKeys = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')
 
-      if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) {
-        # ami creation instance
-        $isWorker = $false
-        $workerType = $publicKeys.Replace('0=mozilla-taskcluster-worker-', '')
-        Set-WindowsActivation -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
-      } else {
-        # provisioned worker
+        if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) {
+          # ami creation instance
+          $isWorker = $false
+          $workerType = $publicKeys.Replace('0=mozilla-taskcluster-worker-', '')
+          Set-WindowsActivation -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
+        } else {
+          # provisioned worker
+          $isWorker = $true
+          $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType
+        }
+      } elseif ($locationType -eq 'GCP') {
         $isWorker = $true
-        $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType
+        $workerType = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/workerType')
       }
       Write-Log -message ('{0} :: isWorker: {1}.' -f $($MyInvocation.MyCommand.Name), $isWorker) -severity 'INFO'
       Write-Log -message ('{0} :: workerType: {1}.' -f $($MyInvocation.MyCommand.Name), $workerType) -severity 'INFO'
@@ -2072,9 +2093,22 @@ function Invoke-OpenCloudConfig {
         }
       }
       Write-Log -message ('{0} :: runDscOnWorker: {1}' -f $($MyInvocation.MyCommand.Name), $runDscOnWorker) -severity 'DEBUG'
-      $instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-type'))
-      Write-Log -message ('{0} :: instanceType: {1}.' -f $($MyInvocation.MyCommand.Name), $instanceType) -severity 'INFO'
-      [Environment]::SetEnvironmentVariable("TASKCLUSTER_INSTANCE_TYPE", "$instanceType", "Machine")
+
+      switch ($locationType) {
+        'AWS' {
+          $instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-type'))
+        }
+        'GCP' {
+          $instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/machine-type') -replace '.*\/')
+        }
+        # todo: implement instance type discovery for non AWS/GCP
+      }
+      if ($instanceType) {
+        Write-Log -message ('{0} :: instanceType: {1}' -f $($MyInvocation.MyCommand.Name), $instanceType) -severity 'INFO'
+        [Environment]::SetEnvironmentVariable('TASKCLUSTER_INSTANCE_TYPE', $instanceType, 'Machine')
+      } else {
+        Write-Log -message ('{0} :: failed to determine instanceType' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+      }
 
       # workaround for windows update failures on g3 instances
       # https://support.microsoft.com/en-us/help/10164/fix-windows-update-errors
@@ -2222,7 +2256,7 @@ function Invoke-OpenCloudConfig {
           ($_ -match 'WSManNetworkFailureDetected') -or
           # a service disable attempt through registry settings failed, because another running service interfered with the registry write
           ($_ -match 'Attempted to perform an unauthorized'))}) -contains $true) {
-        if (-not ($isWorker)) {
+        if ((-not ($isWorker)) -and ($locationType -eq 'AWS')) {
           # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
           Set-Ec2ConfigSettings
         }
@@ -2254,7 +2288,7 @@ function Invoke-OpenCloudConfig {
 
       # create a scheduled task to run dsc at startup
       New-PowershellScheduledTask -taskName 'RunDesiredStateConfigurationAtStartup' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/rundsc.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\rundsc.ps1' -sc 'onstart'
-      if (-not ($isWorker)) {
+      if ((-not ($isWorker)) -and ($locationType -eq 'AWS')) {
         # ensure that Ec2HandleUserData is disabled after the RunDesiredStateConfigurationAtStartup scheduled task has been created
         Set-Ec2ConfigSettings
       }
@@ -2275,7 +2309,7 @@ function Invoke-OpenCloudConfig {
     if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
       if ($locationType -ne 'DataCenter') {
-        Set-ChainOfTrustKey -workerType $workerType -shutdown:$true
+        Set-ChainOfTrustKey -locationType $locationType -workerType $workerType -shutdown:$true
       }
     } elseif ($isWorker) {
       if ($locationType -ne 'DataCenter') {
@@ -2284,7 +2318,7 @@ function Invoke-OpenCloudConfig {
         }
       } else {
         # todo: generate config file if it does not exist or is invalid (eg: created for an older version of gw)
-        Set-ChainOfTrustKey -workerType $workerType -shutdown:$false
+        Set-ChainOfTrustKey -locationType $locationType -workerType $workerType -shutdown:$false
       }
       Wait-GenericWorkerStart -locationType $locationType -lock $lock
     }

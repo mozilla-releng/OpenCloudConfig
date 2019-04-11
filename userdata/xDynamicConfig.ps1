@@ -16,6 +16,8 @@ Configuration xDynamicConfig {
 
   if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) {
     $locationType = 'AWS'
+  } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) {
+    $locationType = 'GCP'
   } else {
     $locationType = 'DataCenter'
   }
@@ -52,7 +54,7 @@ Configuration xDynamicConfig {
     DestinationPath = ('{0}\builds' -f $env:SystemDrive)
     Ensure = 'Present'
   }
-  if ($locationType -eq 'AWS') { 
+  if ($locationType -eq 'AWS') {
     Script FirefoxBuildSecrets {
       DependsOn = @('[Script]GpgKeyImport', '[File]BuildsFolder')
       GetScript = "@{ Script = FirefoxBuildSecrets }"
@@ -65,11 +67,18 @@ Configuration xDynamicConfig {
         $files = Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/releng-secrets.json' -f $using:sourceOrg, $using:sourceRepo, $using:sourceRev) -UseBasicParsing | ConvertFrom-Json
         foreach ($file in $files) {
           (New-Object Net.WebClient).DownloadFile(('https://s3.amazonaws.com/windows-opencloudconfig-packages/FirefoxBuildResources/{0}.gpg?raw=true' -f $file), ('{0}\builds\{1}.gpg' -f $env:SystemDrive, $file))
+          if (Test-Path -Path ('{0}\builds\{1}' -f $env:SystemDrive, $file) -ErrorAction 'SilentlyContinue') {
+            Remove-Item -Path ('{0}\builds\{1}' -f $env:SystemDrive, $file) -Force
+          }
           Start-Process $gpg -ArgumentList @('-d', ('{0}\builds\{1}.gpg' -f $env:SystemDrive, $file)) -Wait -NoNewWindow -PassThru -RedirectStandardOutput ('{0}\builds\{1}' -f $env:SystemDrive, $file) -RedirectStandardError ('{0}\log\{1}.gpg-decrypt-{2}.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $file)
           Remove-Item -Path ('{0}\builds\{1}.gpg' -f $env:SystemDrive, $file) -Force
         }
       }
-      TestScript = { if ((Test-Path -Path ('{0}\builds\*.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue) -and (-not (Compare-Object -ReferenceObject (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/releng-secrets.json' -f $using:sourceOrg, $using:sourceRepo, $using:sourceRev) -UseBasicParsing | ConvertFrom-Json) -DifferenceObject (Get-ChildItem -Path ('{0}\builds' -f $env:SystemDrive) | Where-Object { !$_.PSIsContainer } | % { $_.Name })))) { $true } else { $false } }
+      TestScript = {
+        $remoteFileList = (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/releng-secrets.json' -f $using:sourceOrg, $using:sourceRepo, $using:sourceRev) -UseBasicParsing | ConvertFrom-Json)
+        $localFileList = (Get-ChildItem -Path ('{0}\builds' -f $env:SystemDrive) | ? { ((!$_.PSIsContainer) -and ($_.Length -gt 0)) } | % { $_.Name })
+        if ((Test-Path -Path ('{0}\builds\*.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue) -and ($localFileList) -and (-not (Compare-Object -ReferenceObject $remoteFileList -DifferenceObject $localFileList))) { $true } else { $false }
+      }
     }
   }
 
@@ -82,6 +91,11 @@ Configuration xDynamicConfig {
       # provisioned worker
       $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType
     }
+    if ($workerType) {
+      $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/{3}.json?{4}' -f $sourceOrg, $sourceRepo, $sourceRev, $workerType, [Guid]::NewGuid()) -UseBasicParsing).Content.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
+    }
+  } elseif ($locationType -eq 'GCP') {
+    $workerType = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/workerType')
     if ($workerType) {
       $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/{3}.json?{4}' -f $sourceOrg, $sourceRepo, $sourceRev, $workerType, [Guid]::NewGuid()) -UseBasicParsing).Content.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
     }

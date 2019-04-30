@@ -504,22 +504,6 @@
       "sha512": "83ec125f0fa8b8989e28cefa3b35c560556bf518c446f406a6320f758f6aaecac8b9e43a234cb1f2bdeb8d5126d68182aecfb2824b22668f3119812e2f587b25"
     },
     {
-      "ComponentName": "LiveLog_Get",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 60022,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
-      "ComponentName": "LiveLog_Put",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 60023,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
       "ComponentName": "NSSMDownload",
       "ComponentType": "FileDownload",
       "Source": "https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip",

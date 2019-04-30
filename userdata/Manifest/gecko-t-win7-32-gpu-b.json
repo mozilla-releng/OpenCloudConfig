@@ -584,22 +584,6 @@
       "sha512": "83ec125f0fa8b8989e28cefa3b35c560556bf518c446f406a6320f758f6aaecac8b9e43a234cb1f2bdeb8d5126d68182aecfb2824b22668f3119812e2f587b25"
     },
     {
-      "ComponentName": "LiveLog_Get",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 60022,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
-      "ComponentName": "LiveLog_Put",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 60023,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
       "ComponentName": "NSSMDownload",
       "ComponentType": "FileDownload",
       "Source": "https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip",
@@ -1562,10 +1546,7 @@
           "disableReboots": true,
           "downloadsDir": "Z:\\downloads",
           "ed25519SigningKeyLocation": "C:\\generic-worker\\ed25519-private.key",
-          "livelogCertificate": "C:\\generic-worker\\livelog.crt",
           "livelogExecutable": "C:\\generic-worker\\livelog.exe",
-          "livelogGETPort": 60023,
-          "livelogKey": "C:\\generic-worker\\livelog.key",
           "livelogPUTPort": 60022,
           "numberOfTasksToRun": 0,
           "runAfterUserCreation": "C:\\generic-worker\\task-user-init.cmd",
@@ -1573,10 +1554,11 @@
           "sentryProject": "generic-worker",
           "shutdownMachineOnIdle": false,
           "shutdownMachineOnInternalError": true,
-          "subdomain": "taskcluster-worker.net",
           "taskclusterProxyExecutable": "C:\\generic-worker\\taskcluster-proxy.exe",
           "taskclusterProxyPort": 80,
-          "tasksDir": "Z:\\"
+          "tasksDir": "Z:\\",
+          "wstAudience": "taskcluster-net",
+          "wstServerURL": "https://websocktunnel.tasks.build"
         }
       }
     }

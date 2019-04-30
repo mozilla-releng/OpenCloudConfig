@@ -767,22 +767,6 @@
       "Target": "C:\\generic-worker\\livelog.exe"
     },
     {
-      "ComponentName": "LiveLog_Get",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 60022,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
-      "ComponentName": "LiveLog_Put",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 60023,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
       "ComponentName": "GenericWorkerInstall",
       "ComponentType": "CommandRun",
       "Command": "C:\\generic-worker\\generic-worker.exe",

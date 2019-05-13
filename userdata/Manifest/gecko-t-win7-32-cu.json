@@ -332,7 +332,7 @@
       "ComponentName": "Python3",
       "ComponentType": "ExeInstall",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1451107, https://bugzilla.mozilla.org/show_bug.cgi?id=1545339, https://docs.python.org/3/using/windows.html",
-      "Url": "https://www.python.org/ftp/python/3.6.3/python-3.6.3.exe",
+      "Url": "https://www.python.org/ftp/python/3.7.3/python-3.7.3.exe",
       "Arguments": [
         "/quiet",
         "/repair",
@@ -362,7 +362,7 @@
             "Arguments": [
               "--version"
             ],
-            "Match": "Python 3.6.3"
+            "Match": "Python 3.7.3"
           }
         ]
       },
@@ -372,7 +372,7 @@
           "ComponentName": "MozillaBuildSetup"
         }
       ],
-      "sha512": "0aecc2a136909051f4099015b9cc0ac52155160203e1cea2c82f397178818388c43d152b8678b98cd8a8d871626204909b21ba91b0d7aae566642f2f81570ebd"
+      "sha512": "5e9f39b6040e324440644f21f1e8e1dce1329c606c8200a3856e286d115d58b01fbb6cf9be893116f929a75d5fd51cea9177af4e9c882b19e973241017defaa3"
     },
     {
       "ComponentName": "Python3",

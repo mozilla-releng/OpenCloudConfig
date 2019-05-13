@@ -477,8 +477,8 @@
           "ComponentName": "Mercurial"
         },
         {
-          "ComponentType": "CommandRun",
-          "ComponentName": "MovePython3PythonExe"
+          "ComponentType": "ExeInstall",
+          "ComponentName": "Python3"
         }
       ],
       "Name": "PATH",

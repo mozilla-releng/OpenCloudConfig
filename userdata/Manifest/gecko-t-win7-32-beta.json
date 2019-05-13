@@ -337,10 +337,7 @@
         "/quiet",
         "/repair",
         "InstallAllUsers=1",
-        "TargetDir=C:\\mozilla-build\\python3",
-        "&&",
-        "sleep",
-        "120"
+        "TargetDir=C:\\mozilla-build\\python3"
       ],
       "Validate": {
         "PathsExist": [
@@ -363,11 +360,6 @@
           {
             "Command": "C:\\mozilla-build\\python3\\python.exe",
             "Arguments": [
-              "--version",
-              "2>",
-              "nul",
-              "||",
-              "C:\\mozilla-build\\python3\\python3.exe",
               "--version"
             ],
             "Match": "Python 3.6.3"

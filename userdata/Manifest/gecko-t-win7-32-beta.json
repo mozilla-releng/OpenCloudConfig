@@ -331,12 +331,16 @@
     {
       "ComponentName": "Python3",
       "ComponentType": "ExeInstall",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1451107, https://docs.python.org/3/using/windows.html",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1451107, https://bugzilla.mozilla.org/show_bug.cgi?id=1545339, https://docs.python.org/3/using/windows.html",
       "Url": "https://www.python.org/ftp/python/3.6.3/python-3.6.3.exe",
       "Arguments": [
         "/quiet",
+        "/repair",
         "InstallAllUsers=1",
-        "TargetDir=C:\\mozilla-build\\python3"
+        "TargetDir=C:\\mozilla-build\\python3",
+        "&&",
+        "sleep",
+        "120"
       ],
       "Validate": {
         "PathsExist": [

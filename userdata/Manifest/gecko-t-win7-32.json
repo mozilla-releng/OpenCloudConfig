@@ -331,22 +331,40 @@
     {
       "ComponentName": "Python3",
       "ComponentType": "ExeInstall",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1451107, https://docs.python.org/3/using/windows.html",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1451107, https://bugzilla.mozilla.org/show_bug.cgi?id=1545339, https://docs.python.org/3/using/windows.html",
       "Url": "https://www.python.org/ftp/python/3.6.3/python-3.6.3.exe",
       "Arguments": [
         "/quiet",
+        "/repair",
         "InstallAllUsers=1",
-        "TargetDir=C:\\mozilla-build\\python3"
+        "TargetDir=C:\\mozilla-build\\python3",
+        "&&",
+        "sleep",
+        "120"
       ],
       "Validate": {
         "PathsExist": [
-          "C:\\mozilla-build\\python3"
+          "C:\\mozilla-build\\python3\\DLLs",
+          "C:\\mozilla-build\\python3\\Doc",
+          "C:\\mozilla-build\\python3\\include",
+          "C:\\mozilla-build\\python3\\Lib",
+          "C:\\mozilla-build\\python3\\libs",
+          "C:\\mozilla-build\\python3\\python3.dll",
+          "C:\\mozilla-build\\python3\\python36.dll",
+          "C:\\mozilla-build\\python3\\pythonw.exe",
+          "C:\\mozilla-build\\python3\\vcruntime140.dll",
+          "C:\\mozilla-build\\python3\\Scripts\\pip.exe",
+          "C:\\mozilla-build\\python3\\Scripts\\easy-install.exe",
+          "C:\\mozilla-build\\python3\\tcl",
+          "C:\\mozilla-build\\python3\\Tools"
         ],
         "CommandsReturn": [
           {
             "Command": "C:\\mozilla-build\\python3\\python.exe",
             "Arguments": [
               "--version",
+              "2>",
+              "nul",
               "||",
               "C:\\mozilla-build\\python3\\python3.exe",
               "--version"

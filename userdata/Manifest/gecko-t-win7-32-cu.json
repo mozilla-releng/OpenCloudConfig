@@ -349,6 +349,7 @@
           "C:\\mozilla-build\\python3\\include",
           "C:\\mozilla-build\\python3\\Lib",
           "C:\\mozilla-build\\python3\\libs",
+          "C:\\mozilla-build\\python3\\python.exe",
           "C:\\mozilla-build\\python3\\python3.dll",
           "C:\\mozilla-build\\python3\\python36.dll",
           "C:\\mozilla-build\\python3\\pythonw.exe",
@@ -382,30 +383,11 @@
       "sha512": "0aecc2a136909051f4099015b9cc0ac52155160203e1cea2c82f397178818388c43d152b8678b98cd8a8d871626204909b21ba91b0d7aae566642f2f81570ebd"
     },
     {
-      "ComponentName": "MovePython3PythonExe",
-      "ComponentType": "CommandRun",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "Python3"
-        }
-      ],
-      "Command": "cmd.exe",
-      "Arguments": [
-        "/c",
-        "move",
-        "/y",
-        "C:\\mozilla-build\\python3\\python.exe",
-        "C:\\mozilla-build\\python3\\python3.exe"
-      ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\mozilla-build\\python3\\python3.exe"
-        ],
-        "PathsNotExist": [
-          "C:\\mozilla-build\\python3\\python.exe"
-        ]
-      }
+      "ComponentName": "Python3",
+      "ComponentType": "SymbolicLink",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1545339",
+      "Target": "C:\\mozilla-build\\python3\\python.exe",
+      "Link": "C:\\mozilla-build\\python3\\python3.exe"
     },
     {
       "ComponentName": "DeleteMozillaBuildMercurial",

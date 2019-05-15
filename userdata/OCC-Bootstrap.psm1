@@ -385,7 +385,15 @@ function Invoke-RemoteDesiredStateConfig {
     Invoke-Expression "$config -OutputPath $mof"
     Write-Log -message ('{0} :: compiled mof {1}, from {2}.' -f $($MyInvocation.MyCommand.Name), $mof, $config) -severity 'DEBUG'
     try {
+      $errorCount = $error.Count;
       Start-DscConfiguration -Path "$mof" -Wait -Verbose -Force
+      if ($error.Count -gt $errorCount) {
+        $dscErrors = $error[$errorCount..($error.Count - 1)]
+        Write-Log -message ('{0} :: {1} errors encountered during dsc run.' -f $($MyInvocation.MyCommand.Name), $dscErrors.Count) -severity 'ERROR'
+        foreach ($dscError in $dscErrors) {
+          Write-Log -message ('{0} :: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $dscError.FullyQualifiedErrorId, $dscError.Exception.Message) -severity 'ERROR'
+        }
+      }
     }
     catch {
       Write-Log -message ('{0} :: failed to run all or part of dsc configuration: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $mof, $_.Exception.Message) -severity 'ERROR'

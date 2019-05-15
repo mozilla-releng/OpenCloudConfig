@@ -2154,6 +2154,7 @@ function Invoke-OpenCloudConfig {
           #if (-not ($isWorker)) {
           #  Set-DefaultProfileProperties
           #}
+          Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=8192;'MaxTimeoutms'=60000}
         }
         'Microsoft Windows 10*' {
           # set network interface to private (reverted after dsc run) http://www.hurryupandwait.io/blog/fixing-winrm-firewall-exception-rule-not-working-when-internet-connection-type-is-set-to-public
@@ -2167,6 +2168,7 @@ function Invoke-OpenCloudConfig {
           #if (-not ($isWorker)) {
           #  Set-DefaultProfileProperties
           #}
+          Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=32696;'MaxTimeoutms'=180000}
         }
         default {
           try {
@@ -2175,9 +2177,9 @@ function Invoke-OpenCloudConfig {
           } catch {
             Write-Log -message ('{0} :: error enabling powershell remoting. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
           }
+          Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=32696;'MaxTimeoutms'=180000}
         }
       }
-      Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=32696;'MaxTimeoutms'=180000}
       if (Test-Path -Path ('{0}\log\*.dsc-run.log' -f $env:SystemDrive) -ErrorAction SilentlyContinue) {
         try {
           Stop-Transcript

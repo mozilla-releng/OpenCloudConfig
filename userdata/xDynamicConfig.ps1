@@ -325,7 +325,7 @@ Configuration xDynamicConfig {
           SetScript = {
             Invoke-FileDownload -verbose -component $using:item -localPath ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName })) -eventLogSource 'occ-dsc'
           }
-          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $using:item.ComponentName) -ErrorAction SilentlyContinue) }
+          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName })) -ErrorAction SilentlyContinue) }
         }
         Log ('Log_MsuDownload_{0}' -f $item.ComponentName) {
           DependsOn = ('[Script]MsuDownload_{0}' -f $item.ComponentName)

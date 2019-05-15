@@ -1631,6 +1631,13 @@
           "ComponentName": "HostsFile"
         }
       ]
+    },
+    {
+      "ComponentName": "kb4499175",
+      "ComponentType": "MsuInstall",
+      "Id": "kb4499175",
+      "Url": "http://download.windowsupdate.com/d/msdownload/update/software/secu/2019/05/windows6.1-kb4499175-x86_6f1319c32d5bc4caf2058ae8ff40789ab10bf41b.msu",
+      "sha512": "e777e7578fd5e8086e5a62608cfeb08646af74db7d2f7a6457a6958724391a24b8c4014e916fb8c794fea379075479c27e7fd39dc0798d88e87b9bdad289b9b8"
     }
   ],
   "ProvisionerConfiguration": {

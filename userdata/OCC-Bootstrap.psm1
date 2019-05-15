@@ -384,7 +384,12 @@ function Invoke-RemoteDesiredStateConfig {
     Remove-Item $mof -confirm:$false -recurse:$true -force -ErrorAction SilentlyContinue
     Invoke-Expression "$config -OutputPath $mof"
     Write-Log -message ('{0} :: compiled mof {1}, from {2}.' -f $($MyInvocation.MyCommand.Name), $mof, $config) -severity 'DEBUG'
-    Start-DscConfiguration -Path "$mof" -Wait -Verbose -Force
+    try {
+      Start-DscConfiguration -Path "$mof" -Wait -Verbose -Force
+    }
+    catch {
+      Write-Log -message ('{0} :: failed to run all or part of dsc configuration: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $mof, $_.Exception.Message) -severity 'ERROR'
+    }
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

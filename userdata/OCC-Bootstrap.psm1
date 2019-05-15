@@ -481,7 +481,9 @@ function Remove-LegacyStuff {
       ('{0}\Users\Administrator\Desktop\PyYAML-3.11' -f $env:SystemDrive),
       ('{0}\Users\Administrator\Desktop\PyYAML-3.11.zip' -f $env:SystemDrive),
       ('{0}\Users\Public\Desktop\*.lnk' -f $env:SystemDrive),
-      ('{0}\Users\root\Desktop\*.reg' -f $env:SystemDrive)
+      ('{0}\Users\root\Desktop\*.reg' -f $env:SystemDrive),
+      ('{0}\System32\config\systemprofile\AppData\LocalLow\Microsoft\CryptnetUrlCache\Content\*' -f $env:SystemRoot),
+      ('{0}\System32\config\systemprofile\AppData\LocalLow\Microsoft\CryptnetUrlCache\MetaData\*' -f $env:SystemRoot)
     ),
     [string[]] $services = @(
       'puppet',
@@ -505,7 +507,8 @@ function Remove-LegacyStuff {
       '"OneDrive Standalone Update task v2"'
     ),
     [string[]] $registryKeys = @(
-      'HKLM:\SOFTWARE\PuppetLabs'
+      'HKLM:\SOFTWARE\PuppetLabs',
+      'HKLM:\SOFTWARE\Microsoft\SystemCertificates\AuthRoot\Certificates\*'
     ),
     [hashtable] $registryEntries = @{
       # g-w won't set autologin password if these keys pre-exist

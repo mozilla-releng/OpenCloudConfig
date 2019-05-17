@@ -680,6 +680,14 @@
           "C:\\Program Files\\Git\\bin\\git.exe"
         ]
       }
+    },
+    {
+      "ComponentName": "env_TASKCLUSTER_ROOT_URL",
+      "ComponentType": "EnvironmentVariableSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1551789",
+      "Name": "TASKCLUSTER_ROOT_URL",
+      "Value": "https://taskcluster.net",
+      "Target": "Machine"
     }
   ],
   "ProvisionerConfiguration": {

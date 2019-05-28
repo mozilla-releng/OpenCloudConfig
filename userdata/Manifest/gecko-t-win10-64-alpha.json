@@ -1652,6 +1652,15 @@
       "Name": "TASKCLUSTER_ROOT_URL",
       "Value": "https://taskcluster.net",
       "Target": "Machine"
+    },
+    {
+      "ComponentName": "AllowDevelopmentWithoutDevLicense",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1553572",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock",
+      "ValueName": "AllowDevelopmentWithoutDevLicense",
+      "ValueType": "Dword",
+      "ValueData": 1
     }
   ],
   "ProvisionerConfiguration": {

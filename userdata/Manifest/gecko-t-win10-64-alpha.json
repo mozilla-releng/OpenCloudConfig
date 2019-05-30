@@ -1688,6 +1688,15 @@
       "ValueName": "RequireSecurityDevice",
       "ValueType": "Dword",
       "ValueData": 0
+    },
+    {
+      "ComponentName": "PassportForWork_DisablePostLogonProvisioning",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1553572",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\PassportForWork",
+      "ValueName": "DisablePostLogonProvisioning",
+      "ValueType": "Dword",
+      "ValueData": 1
     }
   ],
   "ProvisionerConfiguration": {

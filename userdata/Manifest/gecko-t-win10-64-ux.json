@@ -132,7 +132,7 @@
       "ComponentName": "SublimeText3_PackageControl",
       "ComponentType": "FileDownload",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
-      "Source": "http://sublime.wbond.net/Package%20Control.sublime-package",
+      "Source": "https://packagecontrol.io/Package%20Control.sublime-package",
       "Target": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages\\Package Control.sublime-package",
       "DependsOn": [
         {
@@ -143,7 +143,8 @@
           "ComponentType": "DirectoryCreate",
           "ComponentName": "SublimeText3_PackagesFolder"
         }
-      ]
+      ],
+      "sha512": "6b4c5a0b22857490a3b152a419964d33d24ada0d2007276515d5950ae5793e09f33024b66ee04fadd4c7f1b989e455823306ca62fef177a6f713a1d3f547ff7e"
     },
     {
       "ComponentName": "MozillaMaintenanceDir",

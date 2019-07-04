@@ -1735,6 +1735,15 @@
       "ValueData": 0
     },
     {
+      "ComponentName": "Explorer_DisableSmartScreen",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1553572, https://answers.microsoft.com/en-us/windows/forum/all/how-to-disable-windows-hello/05ab5492-19c7-4d44-b762-d93b44a9cf65#threadSummaryAnswersSection",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+      "ValueName": "SmartScreenEnabled",
+      "ValueType": "String",
+      "ValueData": "Off"
+    },
+    {
       "ComponentName": "InstallJapaneseLanguageSupport",
       "ComponentType": "CommandRun",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1555360",

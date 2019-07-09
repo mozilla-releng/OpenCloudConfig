@@ -626,7 +626,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v14.1.1/generic-worker-nativeEngine-windows-386.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v15.1.0/generic-worker-nativeEngine-windows-386.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
       "sha512": "aac8e02b7aebea15ec6b53546765ea3f72dffc6b5a3194ea32d2e28236b23e4e88c559c539045a64ae06ae38e766a1141b286ce6af6fd727fba2c7de8ae900fc"
     },

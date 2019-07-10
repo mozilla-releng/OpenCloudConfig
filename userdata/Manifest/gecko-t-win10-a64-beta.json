@@ -727,7 +727,7 @@
             "Arguments": [
               "--version"
             ],
-            "Like": "generic-worker 14.1.1 *"
+            "Like": "generic-worker 15.1.0 *"
           }
         ]
       }

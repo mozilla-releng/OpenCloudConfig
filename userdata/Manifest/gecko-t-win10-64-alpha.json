@@ -1173,22 +1173,6 @@
       ]
     },
     {
-      "ComponentName": "KmsIn",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 1688,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
-      "ComponentName": "KmsOut",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 1688,
-      "Direction": "Outbound",
-      "Action": "Allow"
-    },
-    {
       "ComponentName": "nircmd",
       "ComponentType": "FileDownload",
       "Source": "https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmd.exe",
@@ -1406,14 +1390,6 @@
           "C:\\Program Files\\OpenSSH-Win64\\install-sshd.ps1"
         ]
       }
-    },
-    {
-      "ComponentName": "SshIn",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 22,
-      "Direction": "Inbound",
-      "Action": "Allow"
     },
     {
       "ComponentName": "InstallOpenSSH",

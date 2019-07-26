@@ -1160,22 +1160,6 @@
       ]
     },
     {
-      "ComponentName": "KmsIn",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 1688,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
-      "ComponentName": "KmsOut",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 1688,
-      "Direction": "Outbound",
-      "Action": "Allow"
-    },
-    {
       "ComponentName": "DisableFirewall",
       "ComponentType": "CommandRun",
       "Comment": "Bug 1358301 - Disable Windows Firewall",
@@ -1210,14 +1194,6 @@
       "sha512": "e08458ef63a997809bc83074575da20a9a6666c3138ca9f259a08e68234c66355f15bf9e9334015ec335edeab83f40d6d8004c57c829099a915dc08cd3fa6d1b",
       "Name": "UltraVnc",
       "ProductId": "8C5C331A-97D6-46DE-BFF4-8424BD06A888"
-    },
-    {
-      "ComponentName": "Vnc_In",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 5900,
-      "Direction": "Inbound",
-      "Action": "Allow"
     },
     {
       "ComponentName": "reg_DisableNewAppAlert",
@@ -1423,14 +1399,6 @@
           "C:\\Program Files\\OpenSSH-Win64\\install-sshd.ps1"
         ]
       }
-    },
-    {
-      "ComponentName": "SshIn",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 22,
-      "Direction": "Inbound",
-      "Action": "Allow"
     },
     {
       "ComponentName": "InstallOpenSSH",

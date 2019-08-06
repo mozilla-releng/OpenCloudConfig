@@ -60,7 +60,7 @@ echo "$(tput dim)[${script_name} $(date --utc +"%F %T.%3NZ")]$(tput sgr0) provis
 accessTokens=()
 ARRAY+=('foo')
 ARRAY+=('bar')
-for manifest in $(ls $HOME/git/mozilla-releng/OpenCloudConfig/userdata/Manifest/*-gamma.json $HOME/git/mozilla-releng/OpenCloudConfig/userdata/Manifest/*-linux.json); do
+for manifest in $(ls $HOME/git/mozilla-releng/OpenCloudConfig/userdata/Manifest/*-gamma.json $HOME/git/mozilla-releng/OpenCloudConfig/userdata/Manifest/*-linux.json $HOME/git/mozilla-releng/OpenCloudConfig/userdata/Manifest/relops-image-builder.json); do
   workerType=$(basename ${manifest##*/} .json)
   workerImplementation=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.worker_implementation' ${manifest})
   accessTokens+=("access-token-${workerType}=`pass Mozilla/TaskCluster/project/releng/${workerImplementation}/${workerType}/production`")

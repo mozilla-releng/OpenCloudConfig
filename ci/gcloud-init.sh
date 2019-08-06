@@ -56,15 +56,15 @@ if [[ $@ == *"--open-in-browser"* ]] && which xdg-open > /dev/null; then
 fi
 _echo "deployment id: _bold_${deploymentId}_reset_"
 
-# iterate through each worker type containing a "-gamma" or "-linux" suffix in the occ manifest directory
-for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux}.json | shuf); do
+# iterate through each worker type containing a "-gamma", "-linux" or "-builder" suffix in the occ manifest directory
+for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux,builder}.json | shuf); do
   workerType=$(basename ${manifest##*/} .json)
   workerImplementation=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.worker_implementation' ${manifest})
   provisionerId=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.provisioner_id' ${manifest})
   _echo "worker type: _bold_${workerType}_reset_"
 
   # determine the scm level from the worker type name
-  if [[ ${workerType} =~ ^[a-zA-Z]*-([1-3])-.*$ ]]; then
+  if [[ ${workerType} =~ ^gecko-([1-3])-b-.*$ ]]; then
     SCM_LEVEL=${BASH_REMATCH[1]}
   else
     SCM_LEVEL=0
@@ -73,10 +73,14 @@ for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux}.json | sh
   # obtain worker type specific secrets from the local password store when running on a workstation and obtain them from google cloud metadata server when running on provisioners
   if command -v pass > /dev/null; then
     accessToken=`pass Mozilla/TaskCluster/project/releng/${workerImplementation}/${workerType}/production`
-    SCCACHE_GCS_KEY=`pass Mozilla/TaskCluster/gcp-service-account/taskcluster-level-${SCM_LEVEL}-sccache@${project_name}`
+    if [[ "${SCM_LEVEL}" != "0" ]]; then
+      SCCACHE_GCS_KEY=`pass Mozilla/TaskCluster/gcp-service-account/taskcluster-level-${SCM_LEVEL}-sccache@${project_name}`
+    fi
   elif curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes > /dev/null; then
     accessToken=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/access-token-${workerType}")
-    SCCACHE_GCS_KEY=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/SCCACHE_GCS_KEY_${SCM_LEVEL}")
+    if [[ "${SCM_LEVEL}" != "0" ]]; then
+      SCCACHE_GCS_KEY=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/SCCACHE_GCS_KEY_${SCM_LEVEL}")
+    fi
   else
     _echo "failed to determine a source for secrets_reset_"
     exit 1
@@ -271,7 +275,9 @@ for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux}.json | sh
         cpuUsage=$(gcloud compute regions describe ${region} --project ${project_name} --format json | jq '.quotas[] | select(.metric == "CPUS").usage')
       done
       # set sccache configuration
-      SCCACHE_GCS_BUCKET=taskcluster-level-${SCM_LEVEL}-sccache-${region}
+      if [[ "${SCM_LEVEL}" != "0" ]]; then
+        SCCACHE_GCS_BUCKET=taskcluster-level-${SCM_LEVEL}-sccache-${region}
+      fi
       # generate a random instance name which does not pre-exist
       random_name=$(basename $(mktemp ${temp_dir}/XXXXXXXXXXXXXXXXX))
       instance_name=vm-${random_name,,}
@@ -303,6 +309,17 @@ for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux}.json | sh
       #running_instance_count=${#running_instance_uri_list[@]}
       #if [ "${required_instance_count}" -lt "${running_instance_count}" ] && [ "${running_instance_count}" -lt "${capacity_maximum}" ]; then
       if true; then
+        if [[ "${workerType}" =~ ^gecko-[1-3]-b-.*$ ]]; then
+          service_account=taskcluster-level-${SCM_LEVEL}-sccache@${project_name}.iam.gserviceaccount.com
+        elif [[ "${workerType}" =~ ^gecko-t-.*$ ]]; then
+          service_account=gecko-test-worker@${project_name}.iam.gserviceaccount.com
+        else
+          service_account=${workerType}@${project_name}.iam.gserviceaccount.com
+        fi
+        if [[ "${SCM_LEVEL}" != "0" ]]; then
+        else
+          service_account=@${project_name}.iam.gserviceaccount.com
+        fi
         image_project=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.image.project' ${manifest})
         image_family=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.image.family // empty' ${manifest})
         image_version=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.image.version // empty' ${manifest})
@@ -319,7 +336,7 @@ for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux}.json | sh
             --boot-disk-auto-delete \
             --local-ssd interface=${disk_one_interface} \
             --scopes storage-rw \
-            --service-account taskcluster-level-${SCM_LEVEL}-sccache@${project_name}.iam.gserviceaccount.com \
+            --service-account ${service_account} \
             --metadata "${pre_boot_metadata}" \
             --labels "worker-type=${workerType},worker-implementation=${workerImplementation},deployment-id=${deploymentId}" \
             --zone ${zone_name} \
@@ -334,7 +351,7 @@ for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux}.json | sh
             --boot-disk-type ${disk_zero_type} \
             --boot-disk-auto-delete \
             --scopes storage-rw \
-            --service-account taskcluster-level-${SCM_LEVEL}-sccache@${project_name}.iam.gserviceaccount.com \
+            --service-account ${service_account} \
             --metadata "${pre_boot_metadata}" \
             --labels "worker-type=${workerType},worker-implementation=${workerImplementation},deployment-id=${deploymentId}" \
             --zone ${zone_name} \

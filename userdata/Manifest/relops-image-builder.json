@@ -797,6 +797,38 @@
           "tasksDir": "Z:\\"
         }
       }
+    },
+    "releng_gcp_provisioner": {
+      "machine_types": [
+        "n1-standard-32",
+        "n1-highcpu-32"
+      ],
+      "disks": {
+        "boot": {
+          "type": "pd-ssd",
+          "size": 50
+        },
+        "supplementary": [
+          {
+            "type": "pd-ssd",
+            "size": 120
+          }
+        ]
+      },
+      "idle_termination_threshold": {
+        "period": "minutes",
+        "interval": 120
+      },
+      "capacity": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "worker_implementation": "generic-worker",
+      "provisioner_id": "releng-hardware",
+      "image": {
+        "project": "windows-cloud",
+        "family": "windows-2012-r2"
+      }
     }
   }
 }

@@ -1505,9 +1505,6 @@
         "capacity": 1,
         "utility": 0.9,
         "launchSpec": {
-          "IamInstanceProfile": {
-            "Arn": "arn:aws:iam::692406183521:instance-profile/taskcluster-level-1-sccache"
-          },
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/sda1",
@@ -1536,9 +1533,6 @@
         "capacity": 1,
         "utility": 1,
         "launchSpec": {
-          "IamInstanceProfile": {
-            "Arn": "arn:aws:iam::692406183521:instance-profile/taskcluster-level-1-sccache"
-          },
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/sda1",

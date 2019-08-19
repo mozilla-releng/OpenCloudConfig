@@ -230,9 +230,9 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v13.0.2/generic-worker-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v14.1.0/generic-worker-nativeEngine-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "e9cb9b8d69d9800b90733b2ac45d36f714f237d29e58f3eb250084ab09d547027fdc824ce6d2178e1d3269b8e32ab078d7c9c091e90f5ec72a39febe2e566019"
+      "sha512": "a0e5ef03c87b930bab0351f4911f0fbb61465eb0e7fd56170285dc8cc4ebf0bf65f3217a3e8b1dbecbc347954240266521fa41c9feb662ec38781fc5e16fbdee"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -351,7 +351,7 @@
             "Arguments": [
               "--version"
             ],
-            "Like": "generic-worker 13.0.2 *"
+            "Like": "generic-worker 14.1.0 *"
           }
         ]
       }
@@ -776,6 +776,7 @@
         "config": {
           "cachesDir": "Z:\\caches",
           "cleanUpTaskDirs": true,
+          "clientId": "project/releng/generic-worker/relops-image-builder/production",
           "disableReboots": true,
           "downloadsDir": "Z:\\downloads",
           "ed25519SigningKeyLocation": "C:\\generic-worker\\ed25519-private.key",
@@ -785,16 +786,17 @@
           "livelogKey": "C:\\generic-worker\\livelog.key",
           "livelogPUTPort": 60022,
           "numberOfTasksToRun": 0,
-          "openpgpSigningKeyLocation": "C:\\generic-worker\\openpgp-private.key",
+          "rootURL": "https://taskcluster.net",
           "runAfterUserCreation": "C:\\generic-worker\\task-user-init.cmd",
           "runTasksAsCurrentUser": false,
           "sentryProject": "generic-worker",
-          "shutdownMachineOnIdle": false,
+          "shutdownMachineOnIdle": true,
           "shutdownMachineOnInternalError": true,
           "subdomain": "taskcluster-worker.net",
           "taskclusterProxyExecutable": "C:\\generic-worker\\taskcluster-proxy.exe",
           "taskclusterProxyPort": 80,
-          "tasksDir": "Z:\\"
+          "tasksDir": "Z:\\",
+          "workerType": "relops-image-builder"
         }
       }
     },
@@ -824,7 +826,7 @@
         "maximum": 100
       },
       "worker_implementation": "generic-worker",
-      "provisioner_id": "releng-hardware",
+      "provisioner_id": "gcp",
       "image": {
         "project": "windows-cloud",
         "family": "windows-2012-r2"

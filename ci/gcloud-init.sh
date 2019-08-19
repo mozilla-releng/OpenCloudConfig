@@ -56,8 +56,8 @@ if [[ $@ == *"--open-in-browser"* ]] && which xdg-open > /dev/null; then
 fi
 _echo "deployment id: _bold_${deploymentId}_reset_"
 
-# iterate through each worker type containing a "-gamma", "-linux" or "-builder" suffix in the occ manifest directory
-for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux,builder}.json | shuf); do
+# iterate through each worker type containing a "-gamma" or "-builder" suffix in the occ manifest directory
+for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,builder}.json | shuf); do
   workerType=$(basename ${manifest##*/} .json)
   workerImplementation=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.worker_implementation' ${manifest})
   provisionerId=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.provisioner_id' ${manifest})
@@ -302,6 +302,8 @@ for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux,builder}.j
         pre_boot_metadata="^;^windows-startup-script-url=gs://open-cloud-config/gcloud-startup.ps1;workerType=${workerType};sourceOrg=mozilla-releng;sourceRepo=OpenCloudConfig;sourceRevision=gamma;pgpKey=${pgpKey};livelogkey=${livelogkey};livelogcrt=${livelogcrt};relengapiToken=${relengapiToken};occInstallersToken=${occInstallersToken};SCCACHE_GCS_BUCKET=${SCCACHE_GCS_BUCKET};SCCACHE_GCS_KEY=${SCCACHE_GCS_KEY}"
       elif [[ "${workerType}" =~ ^gecko-[1-3]-b-linux.*$ ]]; then
         pre_boot_metadata="^;^statelessHostname=${instance_name};relengApiToken=${relengapiToken};clientId=project/releng/docker-worker/${workerType}/production;accessToken=${accessToken};capacity=1;workerType=${workerType};provisionerId=${provisionerId};rootUrl=https://taskcluster.net;secretsPath=project/taskcluster/docker-worker:secrets"
+      else
+        pre_boot_metadata="^;^windows-startup-script-url=gs://open-cloud-config/gcloud-startup.ps1;workerType=${workerType};sourceOrg=mozilla-releng;sourceRepo=OpenCloudConfig;sourceRevision=gamma;pgpKey=${pgpKey};livelogkey=${livelogkey};livelogcrt=${livelogcrt};relengapiToken=${relengapiToken};occInstallersToken=${occInstallersToken}"
       fi
 
       # we need to check the count of running instances, however this call is rate limited and fails frequently, so we need to think of something smarter here
@@ -315,10 +317,6 @@ for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,linux,builder}.j
           service_account=gecko-test-worker@${project_name}.iam.gserviceaccount.com
         else
           service_account=${workerType}@${project_name}.iam.gserviceaccount.com
-        fi
-        if [[ "${SCM_LEVEL}" != "0" ]]; then
-        else
-          service_account=@${project_name}.iam.gserviceaccount.com
         fi
         image_project=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.image.project' ${manifest})
         image_family=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.image.family // empty' ${manifest})

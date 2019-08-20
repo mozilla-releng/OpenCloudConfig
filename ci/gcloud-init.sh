@@ -56,8 +56,8 @@ if [[ $@ == *"--open-in-browser"* ]] && which xdg-open > /dev/null; then
 fi
 _echo "deployment id: _bold_${deploymentId}_reset_"
 
-# iterate through each worker type containing a "-gamma" or "-builder" suffix in the occ manifest directory
-for manifest in $(ls ${script_dir}/../userdata/Manifest/*{gamma,builder}.json | shuf); do
+# iterate through each worker type containing a "-gamma" suffix in the occ manifest directory
+for manifest in $(ls ${script_dir}/../userdata/Manifest/*-gamma.json | shuf); do
   workerType=$(basename ${manifest##*/} .json)
   workerImplementation=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.worker_implementation' ${manifest})
   provisionerId=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.provisioner_id' ${manifest})

@@ -32,7 +32,7 @@ if [[ "$(gcloud iam service-accounts list --filter name:${provisioner_service_ac
 fi
 
 # create worker service accounts if they don't exist
-for worker_service_account_name in taskcluster-level-1-sccache taskcluster-level-2-sccache taskcluster-level-3-sccache relops-image-builder; do
+for worker_service_account_name in taskcluster-level-1-sccache taskcluster-level-2-sccache taskcluster-level-3-sccache relops-image-builder-gamma; do
   if [[ "$(gcloud iam service-accounts list --filter name:${worker_service_account_name} --format json)" == "[]" ]]; then
     gcloud iam service-accounts create ${worker_service_account_name} --display-name "service account for ${worker_service_account_name} instances"
     _echo "created service account: _bold_${worker_service_account_name}_reset_"
@@ -95,7 +95,7 @@ _echo "provisioner startup script updated in bucket_reset_"
 accessTokens=()
 ARRAY+=('foo')
 ARRAY+=('bar')
-for manifest in $(ls $HOME/git/mozilla-releng/OpenCloudConfig/userdata/Manifest/*-gamma.json $HOME/git/mozilla-releng/OpenCloudConfig/userdata/Manifest/*-linux.json $HOME/git/mozilla-releng/OpenCloudConfig/userdata/Manifest/relops-image-builder.json); do
+for manifest in $(ls $HOME/git/mozilla-releng/OpenCloudConfig/userdata/Manifest/*-gamma.json); do
   workerType=$(basename ${manifest##*/} .json)
   workerImplementation=$(jq -r '.ProvisionerConfiguration.releng_gcp_provisioner.worker_implementation' ${manifest})
   accessTokens+=("access-token-${workerType}=`pass Mozilla/TaskCluster/project/releng/${workerImplementation}/${workerType}/production`")

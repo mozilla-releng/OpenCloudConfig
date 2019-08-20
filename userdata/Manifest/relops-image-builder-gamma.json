@@ -7,12 +7,54 @@
       "Path": "C:\\log"
     },
     {
+      "ComponentName": "dir_Builds",
+      "ComponentType": "DirectoryCreate",
+      "Path": "C:\\builds"
+    },
+    {
+      "ComponentName": "occ_installers_token",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "dir_Builds"
+        }
+      ],
+      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/occInstallersToken",
+      "Target": "C:\\builds\\occ-installers.tok"
+    },
+    {
+      "ComponentName": "StackdriverLogging",
+      "ComponentType": "ExeInstall",
+      "Url": "https://dl.google.com/cloudagents/windows/StackdriverLogging-v1-9.exe",
+      "Arguments": [
+        "/S"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent"
+        ],
+        "ServiceStatus": [
+          {
+            "Name": "StackdriverLogging",
+            "Status": "running"
+          }
+        ]
+      }
+    },
+    {
       "ComponentName": "NxLog",
       "ComponentType": "MsiInstall",
       "Comment": "Maintenance Toolchain - forwards event logs to papertrail",
       "Url": "https://nxlog.co/system/files/products/files/348/nxlog-ce-2.10.2150.msi",
       "Name": "NXLog-CE",
       "ProductId": "D5F06971-73E1-4B19-928F-50707ABCCC6E",
+      "DependsOn": [
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "occ_installers_token"
+        }
+      ],
       "sha512": "41e052f8d08099eeccca9f8a78d72ba2a2ef88c67f2e046b3f33af6809c0271baf82c2819609acc7020dc8420cde337c096f7e12a9b4ae555645dfb5b3c961c5"
     },
     {
@@ -77,17 +119,31 @@
     {
       "ComponentName": "GpgForWin",
       "ComponentType": "ExeInstall",
-      "Comment": "Maintenance Toolchain",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
       "Url": "http://files.gpg4win.org/gpg4win-2.3.0.exe",
       "Arguments": [
         "/S"
       ],
+      "Timeout": 120,
       "Validate": {
         "PathsExist": [
           "C:\\Program Files (x86)\\GNU\\GnuPG\\pub\\gpg.exe",
           "C:\\Program Files (x86)\\GNU\\GnuPG\\pub\\gpg2.exe"
+        ],
+        "ServiceStatus": [
+          {
+            "Name": "dirmngr",
+            "Status": "running"
+          }
         ]
-      }
+      },
+      "DependsOn": [
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "occ_installers_token"
+        }
+      ],
+      "sha512": "b1c48d84d041055db3d3e3cbd22ef2f3300728b06c76660b9b78ececf56b7ccbc80addb39a64c0a4eb68bf3463ceb6d254dedda047049ce680e9d543dd8a9af9"
     },
     {
       "ComponentName": "SevenZip",
@@ -228,6 +284,10 @@
         {
           "ComponentType": "DirectoryCreate",
           "ComponentName": "GenericWorkerDirectory"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "occ_installers_token"
         }
       ],
       "Source": "https://github.com/taskcluster/generic-worker/releases/download/v14.1.0/generic-worker-nativeEngine-windows-amd64.exe",
@@ -241,10 +301,39 @@
         {
           "ComponentType": "DirectoryCreate",
           "ComponentName": "GenericWorkerDirectory"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "occ_installers_token"
         }
       ],
       "Source": "https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe",
-      "Target": "C:\\generic-worker\\livelog.exe"
+      "Target": "C:\\generic-worker\\livelog.exe",
+      "sha512": "80cc08012a766c1f4c9da82b3d82af1612d6994714e775182d6ffa1e2b61d5fac4eefc2b5031f5d5ff28caa35dd9a5c6ada9147dc80289226b6f8722f0234a95"
+    },
+    {
+      "ComponentName": "LiveLogCrtDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/livelogcrt",
+      "Target": "C:\\generic-worker\\livelog.crt"
+    },
+    {
+      "ComponentName": "LiveLogKeyDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/livelogkey",
+      "Target": "C:\\generic-worker\\livelog.key"
     },
     {
       "ComponentName": "TaskClusterProxyDownload",
@@ -253,10 +342,15 @@
         {
           "ComponentType": "DirectoryCreate",
           "ComponentName": "GenericWorkerDirectory"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "occ_installers_token"
         }
       ],
       "Source": "https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-amd64.exe",
-      "Target": "C:\\generic-worker\\taskcluster-proxy.exe"
+      "Target": "C:\\generic-worker\\taskcluster-proxy.exe",
+      "sha512": "66dc995d3950f92e4007e0d021ff66d7ce9e9c45e95dd1295b31dc01362f558df893d5db6cec85b2b3832172be454acc0ca079447e7b99fdddb47a58ea84f2f9"
     },
     {
       "ComponentName": "LiveLog_Get",
@@ -278,7 +372,14 @@
       "ComponentName": "NSSMDownload",
       "ComponentType": "FileDownload",
       "Source": "https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip",
-      "Target": "C:\\Windows\\Temp\\NSSMInstall.zip"
+      "Target": "C:\\Windows\\Temp\\NSSMInstall.zip",
+      "DependsOn": [
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "occ_installers_token"
+        }
+      ],
+      "sha512": "05835a8b28fc3d8573c8fc6b627c885990468e29144d5523ce2c065835ff3f9341ced5e15fa246ab7af36cadfa0e96be854b9fafa24ab47cd11319d8a873681b"
     },
     {
       "ComponentName": "NSSMInstall",
@@ -307,6 +408,39 @@
       }
     },
     {
+      "ComponentName": "GenericWorkerConfig",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/gwConfig",
+      "Target": "C:\\generic-worker\\generic-worker.config"
+    },
+    {
+      "ComponentName": "GenericWorkerEd25519Key",
+      "ComponentType": "CommandRun",
+      "Command": "C:\\generic-worker\\generic-worker.exe",
+      "Arguments": [
+        "new-ed25519-keypair",
+        "--file",
+        "C:\\generic-worker\\ed25519-private.key"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "GenericWorkerDownload"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\generic-worker\\ed25519-private.key"
+        ]
+      }
+    },
+    {
       "ComponentName": "GenericWorkerInstall",
       "ComponentType": "CommandRun",
       "Command": "C:\\generic-worker\\generic-worker.exe",
@@ -322,6 +456,10 @@
         {
           "ComponentType": "ChecksumFileDownload",
           "ComponentName": "GenericWorkerDownload"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "GenericWorkerConfig"
         },
         {
           "ComponentType": "FileDownload",
@@ -365,7 +503,7 @@
           "ComponentName": "GenericWorkerInstall"
         }
       ],
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-and-reboot.bat",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-gcp-generic-worker-and-reboot.bat",
       "Target": "C:\\generic-worker\\run-generic-worker.bat"
     },
     {
@@ -385,9 +523,16 @@
       "ComponentName": "Mercurial",
       "ComponentType": "MsiInstall",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1490703",
-      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-4.7.1-x64.msi",
-      "Name": "Mercurial 4.7.1 (x64)",
-      "ProductId": "68FA175A-0F28-49AF-9E65-30CE6B60AE1C"
+      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-4.9.1-x64.msi",
+      "Name": "Mercurial 4.9.1 (x64)",
+      "ProductId": "131C4241-D3E5-4FF4-80F8-50A779085459",
+      "DependsOn": [
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "occ_installers_token"
+        }
+      ],
+      "sha512": "3375bb4fa2045f4f54482ff208daffd43d0c2fded9e03c1f1f8719b5e8eb229fe2017d88599618de30407b7dbc38061cbbd5aa91b221677ccfbda5da60a03ebe"
     },
     {
       "ComponentName": "CarbonClone",
@@ -659,20 +804,6 @@
       "Target": "C:\\Windows\\System32\\drivers\\etc\\hosts"
     },
     {
-      "ComponentName": "SetHostsFileContent",
-      "ComponentType": "ReplaceInFile",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1497308",
-      "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts",
-      "Match": "127\\.0\\.0\\.1 (hostname|i-[a-f0-9]{17})\\.(workertype|gecko-([1-3]-b-win2012(-alpha|-beta)?|t-win(7-32|10-64)(-gpu(-a|-b)?|-alpha|-beta|-cu)?))\\.(ec2region|(us|eu)[ewc][12])\\.mozilla\\.com",
-      "Replace": "('127.0.0.1 {0}.{1}' -f ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id')), ((Get-ItemProperty -Path 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters' -Name 'NV Domain').'NV Domain').Replace('wintest.releng.', ''))",
-      "DependsOn": [
-        {
-          "ComponentType": "ChecksumFileDownload",
-          "ComponentName": "HostsFile"
-        }
-      ]
-    },
-    {
       "ComponentName": "GitAndUnixToolsOnPath",
       "ComponentType": "RegistryValueSet",
       "Comment": "https://superuser.com/a/966787/5483",
@@ -798,6 +929,38 @@
           "tasksDir": "Z:\\",
           "workerType": "relops-image-builder"
         }
+      }
+    },
+    "releng_gcp_provisioner": {
+      "machine_types": [
+        "n1-standard-32",
+        "n1-highcpu-32"
+      ],
+      "disks": {
+        "boot": {
+          "type": "pd-ssd",
+          "size": 50
+        },
+        "supplementary": [
+          {
+            "type": "pd-ssd",
+            "size": 120
+          }
+        ]
+      },
+      "idle_termination_threshold": {
+        "period": "minutes",
+        "interval": 120
+      },
+      "capacity": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "worker_implementation": "generic-worker",
+      "provisioner_id": "gcp",
+      "image": {
+        "project": "windows-cloud",
+        "family": "windows-2012-r2"
       }
     }
   }

@@ -45,9 +45,16 @@ for worker_service_account_name in taskcluster-level-1-sccache taskcluster-level
   else
     _echo "detected service account: _bold_${worker_service_account_name}_reset_"
   fi
+
   # grant open-cloud-config bucket viewer access to each service account so that workers can read their startup scripts
   gsutil iam ch serviceAccount:${worker_service_account_name}@${project_name}.iam.gserviceaccount.com:objectViewer gs://open-cloud-config/
   _echo "added viewer access for: _bold_${worker_service_account_name}@${project_name}_reset_ to bucket: _bold_gs://open-cloud-config/_reset_"
+
+  if [[ "${worker_service_account_name}" == "relops-image-builder"* ]]; then
+    # grant windows-ami-builder bucket viewer access to relops-image-builder service accounts so that workers can read image builder resources
+    gsutil iam ch serviceAccount:${worker_service_account_name}@${project_name}.iam.gserviceaccount.com:objectViewer gs://windows-ami-builder/
+    _echo "added viewer access for: _bold_${worker_service_account_name}@${project_name}_reset_ to bucket: _bold_gs://windows-ami-builder/_reset_"
+  fi
 
   # grant role allowing assignment of service accounts to provisioned instances
   # note that the user running this script needs the role: roles/iam.serviceAccountUser. eg:

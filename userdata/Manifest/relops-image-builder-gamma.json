@@ -74,7 +74,7 @@
       "ComponentName": "NxLogPaperTrailConfiguration",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "Maintenance Toolchain",
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win2016.conf",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win2012.conf",
       "Target": "C:\\Program Files (x86)\\nxlog\\conf\\nxlog.conf",
       "DependsOn": [
         {
@@ -907,7 +907,7 @@
         "config": {
           "cachesDir": "Z:\\caches",
           "cleanUpTaskDirs": true,
-          "clientId": "project/releng/generic-worker/relops-image-builder/production",
+          "clientId": "project/releng/generic-worker/relops-image-builder-gamma/production",
           "disableReboots": true,
           "downloadsDir": "Z:\\downloads",
           "ed25519SigningKeyLocation": "C:\\generic-worker\\ed25519-private.key",
@@ -927,7 +927,7 @@
           "taskclusterProxyExecutable": "C:\\generic-worker\\taskcluster-proxy.exe",
           "taskclusterProxyPort": 80,
           "tasksDir": "Z:\\",
-          "workerType": "relops-image-builder"
+          "workerType": "relops-image-builder-gamma"
         }
       }
     },

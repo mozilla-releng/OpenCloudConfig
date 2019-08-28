@@ -878,7 +878,7 @@ function Invoke-ZipInstall {
     Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} ({1}) :: begin - {2:o}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, (Get-Date).ToUniversalTime())
   }
   process {
-    if ($overwrite) {
+    if ($overwrite -and (Test-Path -Path $component.Destination -ErrorAction 'SilentlyContinue')) {
       try {
         Remove-Item $component.Destination -Confirm:$false -recurse -force
         Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: deleted directory {2}.' -f  $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.Destination)

@@ -83,7 +83,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
           - aws-provisioner:manage-worker-type:gecko-1-b-win*
@@ -123,7 +122,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -181,7 +179,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -239,7 +236,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -296,7 +292,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -353,7 +348,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -409,7 +403,6 @@ tasks:
           owner: '{{event.head.user.email}}'
           source: '{{event.head.repo.url}}'
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -465,7 +458,6 @@ tasks:
           owner: '{{event.head.user.email}}'
           source: '{{event.head.repo.url}}'
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -522,7 +514,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -578,7 +569,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -635,7 +625,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -692,7 +681,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -748,7 +736,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -804,7 +791,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -860,7 +846,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -917,7 +902,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -974,7 +958,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -1030,7 +1013,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -1087,7 +1069,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -1144,7 +1125,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -1201,7 +1181,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
@@ -1257,7 +1236,6 @@ tasks:
           source: '{{event.head.repo.url}}'
 
     - provisionerId: '{{taskcluster.docker.provisionerId}}'
-      retries: 0
       scopes:
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
           - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype

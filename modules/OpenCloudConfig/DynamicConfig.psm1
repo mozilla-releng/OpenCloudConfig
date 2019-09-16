@@ -180,7 +180,7 @@ function Invoke-LoggedCommandRun {
 
     [int] $timeoutInSeconds = 600,
 
-    [int] $waitInSeconds = 600,
+    [int] $waitInSeconds = 0,
     
     [string] $eventLogName = 'Application',
     [string] $eventLogSource = 'OpenCloudConfig'

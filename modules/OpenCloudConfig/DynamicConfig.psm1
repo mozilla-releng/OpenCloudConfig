@@ -179,6 +179,8 @@ function Invoke-LoggedCommandRun {
     [string[]] $arguments,
 
     [int] $timeoutInSeconds = 600,
+
+    [int] $waitInSeconds = 600,
     
     [string] $eventLogName = 'Application',
     [string] $eventLogSource = 'OpenCloudConfig'
@@ -200,6 +202,12 @@ function Invoke-LoggedCommandRun {
       } else {
         Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: command ({2} {3}) executed.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '))
       }
+      $timer = [Diagnostics.Stopwatch]::StartNew()
+      while ($timer.Elapsed.TotalSeconds -lt $waitInSeconds) {
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: command ({2} {3}) has a wait of {4} seconds configured. {5} seconds elapsed so far.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), $waitInSeconds, $timer.Elapsed.TotalSeconds)
+        Start-Sleep -Seconds 30
+      }
+      $timer.Stop()
     } catch {
       Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: error executing command ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), $_.Exception.Message)
       $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction 'SilentlyContinue')
@@ -941,7 +949,7 @@ function Invoke-DownloadInstall {
       }
     }
     Invoke-FileDownload -verbose:$verbose -eventLogName $eventLogName -eventLogSource $eventLogSource -component $component -localPath $localPath -tooltoolHost $tooltoolHost -tokenPath $tokenPath
-    Invoke-LoggedCommandRun -verbose:$verbose -eventLogName $eventLogName -eventLogSource $eventLogSource -componentName $component.ComponentName -command $command -arguments $arguments -timeoutInSeconds $(if ($component.Timeout) { [int]$component.Timeout } else { 600 })
+    Invoke-LoggedCommandRun -verbose:$verbose -eventLogName $eventLogName -eventLogSource $eventLogSource -componentName $component.ComponentName -command $command -arguments $arguments -timeoutInSeconds $(if ($component.Timeout) { [int]$component.Timeout } else { 600 }) -waitInSeconds $(if ($component.Wait) { [int]$component.Wait } else { 0 })
   }
   end {
     Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} ({1}) :: end - {2:o}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, (Get-Date).ToUniversalTime())

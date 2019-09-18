@@ -1095,9 +1095,9 @@
           "ComponentName": "occ_installers_token"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v14.1.0/generic-worker-nativeEngine-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.0.0/generic-worker-multiuser-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "a0e5ef03c87b930bab0351f4911f0fbb61465eb0e7fd56170285dc8cc4ebf0bf65f3217a3e8b1dbecbc347954240266521fa41c9feb662ec38781fc5e16fbdee"
+      "sha512": "d77349ed01663d70334a2f91aab2eb500b11b2d1f4fdcb6af334993d9d85189fc91edb27a3de251b7e2a84cd0ebfdc31d907de09743b4d3d8e25f39aa65d80d8"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -1117,30 +1117,6 @@
       "sha512": "80cc08012a766c1f4c9da82b3d82af1612d6994714e775182d6ffa1e2b61d5fac4eefc2b5031f5d5ff28caa35dd9a5c6ada9147dc80289226b6f8722f0234a95"
     },
     {
-      "ComponentName": "LiveLogCrtDownload",
-      "ComponentType": "FileDownload",
-      "DependsOn": [
-        {
-          "ComponentType": "DirectoryCreate",
-          "ComponentName": "GenericWorkerDirectory"
-        }
-      ],
-      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/livelogcrt",
-      "Target": "C:\\generic-worker\\livelog.crt"
-    },
-    {
-      "ComponentName": "LiveLogKeyDownload",
-      "ComponentType": "FileDownload",
-      "DependsOn": [
-        {
-          "ComponentType": "DirectoryCreate",
-          "ComponentName": "GenericWorkerDirectory"
-        }
-      ],
-      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/livelogkey",
-      "Target": "C:\\generic-worker\\livelog.key"
-    },
-    {
       "ComponentName": "TaskClusterProxyDownload",
       "ComponentType": "FileDownload",
       "DependsOn": [
@@ -1156,22 +1132,6 @@
       "Source": "https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-amd64.exe",
       "Target": "C:\\generic-worker\\taskcluster-proxy.exe",
       "sha512": "66dc995d3950f92e4007e0d021ff66d7ce9e9c45e95dd1295b31dc01362f558df893d5db6cec85b2b3832172be454acc0ca079447e7b99fdddb47a58ea84f2f9"
-    },
-    {
-      "ComponentName": "LiveLog_Get",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 60022,
-      "Direction": "Inbound",
-      "Action": "Allow"
-    },
-    {
-      "ComponentName": "LiveLog_Put",
-      "ComponentType": "FirewallRule",
-      "Protocol": "TCP",
-      "LocalPort": 60023,
-      "Direction": "Inbound",
-      "Action": "Allow"
     },
     {
       "ComponentName": "NSSMDownload",
@@ -1213,18 +1173,6 @@
       }
     },
     {
-      "ComponentName": "GenericWorkerConfig",
-      "ComponentType": "FileDownload",
-      "DependsOn": [
-        {
-          "ComponentType": "DirectoryCreate",
-          "ComponentName": "GenericWorkerDirectory"
-        }
-      ],
-      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/gwConfig",
-      "Target": "C:\\generic-worker\\generic-worker.config"
-    },
-    {
       "ComponentName": "GenericWorkerEd25519Key",
       "ComponentType": "CommandRun",
       "Command": "C:\\generic-worker\\generic-worker.exe",
@@ -1255,7 +1203,8 @@
         "--nssm",
         "C:\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe",
         "--config",
-        "C:\\generic-worker\\generic-worker.config"
+        "C:\\generic-worker\\generic-worker.config",
+        "--configure-for-gcp"
       ],
       "DependsOn": [
         {
@@ -1294,7 +1243,7 @@
             "Arguments": [
               "--version"
             ],
-            "Like": "generic-worker 14.1.0 *"
+            "Like": "generic-worker 16.0.0 *"
           }
         ]
       }
@@ -1685,44 +1634,11 @@
       "Target": "C:\\builds\\occ-installers.tok"
     },
     {
-      "ComponentName": "SCCACHE_GCS_KEY",
-      "ComponentType": "FileDownload",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1543026",
-      "DependsOn": [
-        {
-          "ComponentType": "DirectoryCreate",
-          "ComponentName": "dir_Builds"
-        }
-      ],
-      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/SCCACHE_GCS_KEY",
-      "Target": "C:\\builds\\sccache-gcs.json"
-    },
-    {
-      "ComponentName": "env_SCCACHE_GCS_KEY_PATH",
+      "ComponentName": "env_TASKCLUSTER_WORKER_LOCATION",
       "ComponentType": "EnvironmentVariableSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1543026",
-      "DependsOn": [
-        {
-          "ComponentType": "FileDownload",
-          "ComponentName": "SCCACHE_GCS_KEY"
-        }
-      ],
-      "Name": "SCCACHE_GCS_KEY_PATH",
-      "Value": "C:\\builds\\sccache-gcs.json",
-      "Target": "Machine"
-    },
-    {
-      "ComponentName": "env_SCCACHE_GCS_RW_MODE",
-      "ComponentType": "EnvironmentVariableSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1543026",
-      "DependsOn": [
-        {
-          "ComponentType": "FileDownload",
-          "ComponentName": "SCCACHE_GCS_KEY"
-        }
-      ],
-      "Name": "SCCACHE_GCS_RW_MODE",
-      "Value": "READ_WRITE",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1572236",
+      "Name": "TASKCLUSTER_WORKER_LOCATION",
+      "Value": "{\"cloud\":\"google\",\"region\":\"GCP_REGION\",\"availabilityZone\":\"GCP_ZONE\"}",
       "Target": "Machine"
     },
     {

@@ -128,6 +128,22 @@ function Install-Dependencies {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
+    if (-not (Get-Command 'Get-Module' -errorAction SilentlyContinue)) {
+      Write-Log -message ('{0} :: missing windows management framework detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+      switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
+        'Microsoft Windows Server 2012*' {
+          (New-Object Net.WebClient).DownloadFile('https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win8.1AndW2K12R2-KB3191564-x64.msu', 'C:\Windows\Temp\Win8.1AndW2K12R2-KB3191564-x64.msu')
+          & ('{0}\system32\wusa.exe' -f $env:WinDir) @('C:\Windows\Temp\Win8.1AndW2K12R2-KB3191564-x64.msu', '/quiet')
+          Write-Log -message ('{0} :: wmf 5.1 install attempted' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        #'Microsoft Windows 7*' {
+        #  (New-Object Net.WebClient).DownloadFile('https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7-KB3191566-x86.zip', 'C:\Windows\Temp\Win7-KB3191566-x86.zip')
+        #}
+        default {
+          Write-Log -message ('{0} :: no configured resolution for missing wmf for os: {1}' -f $($MyInvocation.MyCommand.Name), (Get-WmiObject -class Win32_OperatingSystem).Caption) -severity 'ERROR'
+        }
+      }
+    }
     foreach ($purgeModule in $purgeModules) {
       if ((Get-Module -ListAvailable -Name $purgeModule['ModuleName'] | ? { $_.Version -lt $purgeModule['ModuleVersion'] })) {
         try {

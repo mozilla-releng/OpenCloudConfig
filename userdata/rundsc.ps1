@@ -155,9 +155,9 @@ function Set-OpenCloudConfigSource {
           if (Test-Path -Path ('HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source\{0}' -f $sourceItemName) -ErrorAction SilentlyContinue) {
             Write-Log -message ('{0} :: detected Source/{1} in registry as: {2}' -f $($MyInvocation.MyCommand.Name), $sourceItemName, (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name $sourceItemName)."$sourceItemName") -severity 'DEBUG'
           } else {
-            try {
-              $sourceItemValue = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/source{0}' -f $sourceItemName)
-            } catch {
+            $sourceItemValue = (Invoke-WebRequest -Uri 'http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/taskcluster' -UseBasicParsing | ConvertFrom-Json).workerConfig.openCloudConfig.source."$sourceItemName"
+            if (-not ($sourceItemValue)) {
+              # fall back to these values
               switch ($sourceItemName) {
                 'Organisation' {
                   $sourceItemValue = 'mozilla-releng'

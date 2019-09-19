@@ -1618,7 +1618,7 @@
           "ComponentName": "dir_Builds"
         }
       ],
-      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/relengapiToken",
+      "Source": "http://169.254.169.254/computeMetadata/v1beta1/project/attributes/relengapiToken",
       "Target": "C:\\builds\\relengapi.tok"
     },
     {
@@ -1630,7 +1630,7 @@
           "ComponentName": "dir_Builds"
         }
       ],
-      "Source": "http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/occInstallersToken",
+      "Source": "http://169.254.169.254/computeMetadata/v1beta1/project/attributes/occInstallersToken",
       "Target": "C:\\builds\\occ-installers.tok"
     },
     {

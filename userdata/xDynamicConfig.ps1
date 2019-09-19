@@ -95,7 +95,7 @@ Configuration xDynamicConfig {
       $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/{3}.json?{4}' -f $sourceOrg, $sourceRepo, $sourceRev, $workerType, [Guid]::NewGuid()) -UseBasicParsing).Content.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
     }
   } elseif ($locationType -eq 'GCP') {
-    $workerType = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/workerType')
+    $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/taskcluster' -UseBasicParsing | ConvertFrom-Json).workerConfig.openCloudConfig.workerType
     if ($workerType) {
       $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/{3}.json?{4}' -f $sourceOrg, $sourceRepo, $sourceRev, $workerType, [Guid]::NewGuid()) -UseBasicParsing).Content.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
     }

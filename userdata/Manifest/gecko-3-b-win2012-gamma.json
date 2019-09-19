@@ -1638,14 +1638,6 @@
       "Target": "C:\\builds\\occ-installers.tok"
     },
     {
-      "ComponentName": "env_TASKCLUSTER_WORKER_LOCATION",
-      "ComponentType": "EnvironmentVariableSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1572236",
-      "Name": "TASKCLUSTER_WORKER_LOCATION",
-      "Value": "{\"cloud\":\"google\",\"region\":\"GCP_REGION\",\"availabilityZone\":\"GCP_ZONE\"}",
-      "Target": "Machine"
-    },
-    {
       "ComponentName": "EnablePerformanceCounters",
       "ComponentType": "CommandRun",
       "Command": "diskperf.exe",

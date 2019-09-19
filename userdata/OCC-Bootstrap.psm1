@@ -1536,6 +1536,33 @@ function Set-ComputerName {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
 }
+function Set-TaskclusterWorkerLocation {
+  param (
+    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) { 'GCP' } else { 'DataCenter' }),
+    [string] $az = $(if ($locationType -eq 'AWS') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone') } elseif ($locationType -eq 'GCP') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/zone') -replace '.*/' })
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    switch ($locationType) {
+      'EC2' {
+        $taskclusterWorkerLocation = ('{{"cloud":"aws","region":"{0}","availabilityZone":"{1}"}}' -f $az.SubString(0, ($az.Length - 1)), $az)
+      }
+      'GCP' {
+        $taskclusterWorkerLocation = ('{{"cloud":"google","region":"{0}","availabilityZone":"{1}"}}' -f $az.SubString(0, ($az.Length - 2)), $az)
+      }
+      default {
+        $taskclusterWorkerLocation = ('{{"cloud":"aws","region":"{0}","availabilityZone":"{1}"}}' -f 'us-west-1', 'us-west-1a')
+      }
+    }
+    [Environment]::SetEnvironmentVariable('TASKCLUSTER_WORKER_LOCATION', $taskclusterWorkerLocation, 'Machine')
+    Write-Log -message ('{0} :: TASKCLUSTER_WORKER_LOCATION set to: {1}' -f $($MyInvocation.MyCommand.Name), $taskclusterWorkerLocation) -severity 'INFO'
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
 function Set-DomainName {
   param (
     [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) { 'GCP' } else { 'DataCenter' }),
@@ -1948,11 +1975,13 @@ function Initialize-Instance {
   }
   process {
     if ($locationType -eq 'AWS') {
+      Set-TaskclusterWorkerLocation
       $rebootReasons = (Set-ComputerName)
       Set-DomainName
       # Turn off DNS address registration (EC2 DNS is configured to not allow it)
       Set-DynamicDnsRegistration -enabled:$false
     } elseif ($locationType -eq 'GCP') {
+      Set-TaskclusterWorkerLocation
       Set-DomainName
       # todo: figure out if this is needed on gcp
       # Set-DynamicDnsRegistration -enabled:$false

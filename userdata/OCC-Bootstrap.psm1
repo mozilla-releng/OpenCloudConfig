@@ -128,7 +128,7 @@ function Install-Dependencies {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if (-not (Get-Command 'Get-Module' -errorAction SilentlyContinue)) {
+    if (-not (Get-Command 'Get-PackageProvider' -errorAction SilentlyContinue)) {
       Write-Log -message ('{0} :: missing windows management framework detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
       switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
         'Microsoft Windows Server 2012*' {

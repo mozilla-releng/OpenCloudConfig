@@ -1013,7 +1013,7 @@
       }
     },
     {
-      "ComponentName": "pip3_upgrade_certifi_win32",
+      "ComponentName": "pip3_upgrade_certifi",
       "ComponentType": "CommandRun",
       "DependsOn": [
         {
@@ -1027,22 +1027,8 @@
         "pip",
         "install",
         "--upgrade",
-        "python-certifi-win32==1.2"
-      ],
-      "Validate": {
-        "CommandsReturn": [
-          {
-            "Command": "C:\\mozilla-build\\python3\\python3.exe",
-            "Arguments": [
-              "-m",
-              "pip",
-              "show",
-              "python-certifi-win32"
-            ],
-            "Match": "Version: 1.2"
-          }
-        ]
-      }
+        "certifi"
+      ]
     },
     {
       "ComponentName": "ToolToolInstall",

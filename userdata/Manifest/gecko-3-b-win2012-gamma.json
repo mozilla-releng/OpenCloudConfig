@@ -949,38 +949,6 @@
       }
     },
     {
-      "ComponentName": "pip_upgrade_certifi",
-      "ComponentType": "CommandRun",
-      "DependsOn": [
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "pip_upgrade_pip"
-        }
-      ],
-      "Command": "C:\\mozilla-build\\python\\python.exe",
-      "Arguments": [
-        "-m",
-        "pip",
-        "install",
-        "--upgrade",
-        "certifi==2019.9.11"
-      ],
-      "Validate": {
-        "CommandsReturn": [
-          {
-            "Command": "C:\\mozilla-build\\python\\python.exe",
-            "Arguments": [
-              "-m",
-              "pip",
-              "show",
-              "certifi"
-            ],
-            "Match": "Version: 2019.9.11"
-          }
-        ]
-      }
-    },
-    {
       "ComponentName": "pip3_upgrade_pip",
       "ComponentType": "CommandRun",
       "DependsOn": [
@@ -1013,38 +981,6 @@
       }
     },
     {
-      "ComponentName": "pip3_upgrade_requests",
-      "ComponentType": "CommandRun",
-      "DependsOn": [
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "pip3_upgrade_pip"
-        }
-      ],
-      "Command": "C:\\mozilla-build\\python3\\python3.exe",
-      "Arguments": [
-        "-m",
-        "pip",
-        "install",
-        "--upgrade",
-        "requests==2.22.0"
-      ],
-      "Validate": {
-        "CommandsReturn": [
-          {
-            "Command": "C:\\mozilla-build\\python3\\python3.exe",
-            "Arguments": [
-              "-m",
-              "pip",
-              "show",
-              "requests"
-            ],
-            "Match": "Version: 2.22.0"
-          }
-        ]
-      }
-    },
-    {
       "ComponentName": "pip3_upgrade_zstandard",
       "ComponentType": "CommandRun",
       "DependsOn": [
@@ -1059,7 +995,7 @@
         "pip",
         "install",
         "--upgrade",
-        "zstandard==0.12.0"
+        "zstandard==0.11.1"
       ],
       "Validate": {
         "CommandsReturn": [
@@ -1071,39 +1007,7 @@
               "show",
               "zstandard"
             ],
-            "Match": "Version: 0.12.0"
-          }
-        ]
-      }
-    },
-    {
-      "ComponentName": "pip3_upgrade_certifi",
-      "ComponentType": "CommandRun",
-      "DependsOn": [
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "pip3_upgrade_pip"
-        }
-      ],
-      "Command": "C:\\mozilla-build\\python3\\python3.exe",
-      "Arguments": [
-        "-m",
-        "pip",
-        "install",
-        "--upgrade",
-        "certifi==2019.9.11"
-      ],
-      "Validate": {
-        "CommandsReturn": [
-          {
-            "Command": "C:\\mozilla-build\\python3\\python3.exe",
-            "Arguments": [
-              "-m",
-              "pip",
-              "show",
-              "certifi"
-            ],
-            "Match": "Version: 2019.9.11"
+            "Match": "Version: 0.11.1"
           }
         ]
       }

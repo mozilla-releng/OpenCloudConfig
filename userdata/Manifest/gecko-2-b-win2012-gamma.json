@@ -1009,6 +1009,38 @@
       }
     },
     {
+      "ComponentName": "pip3_upgrade_certifi_win32",
+      "ComponentType": "CommandRun",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "pip3_upgrade_pip"
+        }
+      ],
+      "Command": "C:\\mozilla-build\\python3\\python3.exe",
+      "Arguments": [
+        "-m",
+        "pip",
+        "install",
+        "--upgrade",
+        "python-certifi-win32==1.2"
+      ],
+      "Validate": {
+        "CommandsReturn": [
+          {
+            "Command": "C:\\mozilla-build\\python3\\python3.exe",
+            "Arguments": [
+              "-m",
+              "pip",
+              "show",
+              "python-certifi-win32"
+            ],
+            "Match": "Version: 1.2"
+          }
+        ]
+      }
+    },
+    {
       "ComponentName": "ToolToolInstall",
       "ComponentType": "FileDownload",
       "DependsOn": [

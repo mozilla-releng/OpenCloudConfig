@@ -148,6 +148,21 @@ function Install-Dependencies {
     }
     switch -regex ($osCaption) {
       '^Microsoft Windows Server (Standard|201[69])(.*)?$' {
+        # enable optional features
+        foreach ($optionalFeature in @('Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform', 'Microsoft-Hyper-V-Management-PowerShell')) {
+          try {
+            $featureList = @(Get-WindowsOptionalFeature -Online -FeatureName $optionalFeature)
+            if ((-not ($featureList)) -or ($featureList.Length -lt 1) -or ($featureList[0].State -ne 'Enabled')) {
+              Enable-WindowsOptionalFeature -Online -FeatureName $optionalFeature -NoRestart
+              Write-Log -message ('{0} :: optional feature: {1}, enabled' -f $($MyInvocation.MyCommand.Name), $optionalFeature) -severity 'INFO'
+            } else {
+              Write-Log -message ('{0} :: optional feature: {1}, detected' -f $($MyInvocation.MyCommand.Name), $optionalFeature) -severity 'INFO'
+            }
+          } catch {
+            Write-Log -message ('{0} :: failed to enable optional feature: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $optionalFeature, $_.Exception.Message) -severity 'ERROR'
+          }
+        }
+
         # enable nested virtualisation to support windows subsystem for linux
         # https://github.com/MicrosoftDocs/Virtualization-Documentation/blob/master/hyperv-tools/Nested/Enable-NestedVm.ps1
         try {
@@ -196,21 +211,6 @@ function Install-Dependencies {
           }
         } catch {
           Write-Log -message ('{0} :: failed to configure vm nesting. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
-        }
-
-        # enable optional features
-        foreach ($optionalFeature in @('Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform')) {
-          try {
-            $featureList = @(Get-WindowsOptionalFeature -Online -FeatureName $optionalFeature)
-            if ((-not ($featureList)) -or ($featureList.Length -lt 1) -or ($featureList[0].State -ne 'Enabled')) {
-              Enable-WindowsOptionalFeature -Online -FeatureName $optionalFeature -NoRestart
-              Write-Log -message ('{0} :: optional feature: {1}, enabled' -f $($MyInvocation.MyCommand.Name), $optionalFeature) -severity 'INFO'
-            } else {
-              Write-Log -message ('{0} :: optional feature: {1}, detected' -f $($MyInvocation.MyCommand.Name), $optionalFeature) -severity 'INFO'
-            }
-          } catch {
-            Write-Log -message ('{0} :: failed to enable optional feature: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $optionalFeature, $_.Exception.Message) -severity 'ERROR'
-          }
         }
       }
       default {

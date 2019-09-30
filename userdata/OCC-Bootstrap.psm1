@@ -153,7 +153,7 @@ function Install-Dependencies {
           try {
             $featureList = @(Get-WindowsOptionalFeature -Online -FeatureName $optionalFeature)
             if ((-not ($featureList)) -or ($featureList.Length -lt 1) -or ($featureList[0].State -ne 'Enabled')) {
-              Enable-WindowsOptionalFeature -Online -FeatureName $optionalFeature -NoRestart
+              Enable-WindowsOptionalFeature -Online -FeatureName $optionalFeature -All -NoRestart
               Write-Log -message ('{0} :: optional feature: {1}, enabled' -f $($MyInvocation.MyCommand.Name), $optionalFeature) -severity 'INFO'
             } else {
               Write-Log -message ('{0} :: optional feature: {1}, detected' -f $($MyInvocation.MyCommand.Name), $optionalFeature) -severity 'INFO'

@@ -148,6 +148,12 @@ function Install-Dependencies {
     }
     switch -regex ($osCaption) {
       '^Microsoft Windows Server (Standard|201[69])(.*)?$' {
+
+        # handle missing gce agent
+        if ((-not (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue)) -and (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
+          & ('\GooGet\googet.exe' -f $env:ProgramData) @('-noconfirm', 'install', 'google-compute-engine-windows', 'google-compute-engine-sysprep', 'google-compute-engine-metadata-scripts', 'google-compute-engine-vss', 'google-compute-engine-auto-updater')
+        }
+
         # enable optional features
         foreach ($optionalFeature in @('Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform', 'Microsoft-Hyper-V-Management-PowerShell')) {
           try {

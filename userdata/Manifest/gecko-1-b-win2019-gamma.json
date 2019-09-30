@@ -1769,6 +1769,23 @@
       }
     },
     {
+      "ComponentName": "WSLUbuntuAccessRights",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506",
+      "Command": "icacls.exe",
+      "Arguments": [
+        "C:\\wsl-ubuntu-1804",
+        "/grant",
+        "Everyone:(OI)(CI)F"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "WSLUbuntuExtract"
+        }
+      ]
+    },
+    {
       "ComponentName": "WSLUbuntuInstall",
       "ComponentType": "CommandRun",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506, https://docs.microsoft.com/en-us/windows/wsl/install-on-server",

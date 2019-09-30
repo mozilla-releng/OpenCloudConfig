@@ -155,7 +155,7 @@ function Install-Dependencies {
         }
 
         # enable optional features
-        foreach ($optionalFeature in @('Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform', 'Microsoft-Hyper-V-Management-PowerShell')) {
+        foreach ($optionalFeature in @('Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform', 'Microsoft-Hyper-V-All', 'Microsoft-Hyper-V-Tools-All', 'Microsoft-Hyper-V-Management-PowerShell')) {
           try {
             $featureList = @(Get-WindowsOptionalFeature -Online -FeatureName $optionalFeature)
             if ((-not ($featureList)) -or ($featureList.Length -lt 1) -or ($featureList[0].State -ne 'Enabled')) {

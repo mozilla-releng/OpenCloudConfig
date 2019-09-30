@@ -152,6 +152,7 @@ function Install-Dependencies {
         # https://github.com/MicrosoftDocs/Virtualization-Documentation/blob/master/hyperv-tools/Nested/Enable-NestedVm.ps1
         try {
           $4GB = 4294967296
+          $vmName = 'NestedVmForWsl'
           $vm = Get-VM -Name $vmName
           $vmInfo = New-Object PSObject -Property @{
             ExposeVirtualizationExtensions = (Get-VMProcessor -VM $vm).ExposeVirtualizationExtensions

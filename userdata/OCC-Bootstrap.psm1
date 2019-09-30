@@ -151,7 +151,7 @@ function Install-Dependencies {
 
         # handle missing gce agent
         if ((-not (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue)) -and (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
-          & ('\GooGet\googet.exe' -f $env:ProgramData) @('-noconfirm', 'install', 'google-compute-engine-windows', 'google-compute-engine-sysprep', 'google-compute-engine-metadata-scripts', 'google-compute-engine-vss', 'google-compute-engine-auto-updater')
+          & ('{0}\GooGet\googet.exe' -f $env:ProgramData) @('-noconfirm', 'install', 'google-compute-engine-windows', 'google-compute-engine-sysprep', 'google-compute-engine-metadata-scripts', 'google-compute-engine-vss', 'google-compute-engine-auto-updater')
         }
 
         # enable optional features

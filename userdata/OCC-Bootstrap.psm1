@@ -2056,13 +2056,13 @@ function Initialize-Instance {
   process {
     if ($locationType -eq 'AWS') {
       Set-TaskclusterWorkerLocation
-      $rebootReasons = (Set-ComputerName)
+      $rebootReasons = (Set-ComputerName -locationType $locationType)
       Set-DomainName
       # Turn off DNS address registration (EC2 DNS is configured to not allow it)
       Set-DynamicDnsRegistration -enabled:$false
     } elseif ($locationType -eq 'GCP') {
       Set-TaskclusterWorkerLocation
-      $rebootReasons = (Set-ComputerName)
+      $rebootReasons = (Set-ComputerName -locationType $locationType)
       Set-DomainName
       # todo: figure out if this is needed on gcp
       # Set-DynamicDnsRegistration -enabled:$false

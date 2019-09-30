@@ -1771,7 +1771,7 @@
     {
       "ComponentName": "WSLUbuntuAccessRights",
       "ComponentType": "CommandRun",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506, https://github.com/microsoft/WSL/issues/3304#issuecomment-398489972",
       "Command": "icacls.exe",
       "Arguments": [
         "C:\\wsl-ubuntu-1804",

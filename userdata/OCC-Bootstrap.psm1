@@ -147,7 +147,7 @@ function Install-Dependencies {
       }
     }
     switch -regex ($osCaption) {
-      '^Microsoft Windows Server 201[69](.*)?$' {
+      '^Microsoft Windows Server (Standard|201[69])(.*)?$' {
         # enable nested virtualisation to support windows subsystem for linux
         # https://github.com/MicrosoftDocs/Virtualization-Documentation/blob/master/hyperv-tools/Nested/Enable-NestedVm.ps1
         try {

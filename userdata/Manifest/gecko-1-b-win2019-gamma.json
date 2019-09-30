@@ -1111,6 +1111,10 @@
         {
           "ComponentType": "CommandRun",
           "ComponentName": "DeleteMozillaBuildPython3PythonExe"
+        },
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "WSLUbuntuExtract"
         }
       ],
       "Name": "PATH",
@@ -1125,7 +1129,8 @@
         "C:\\mozilla-build\\nsis-3.01",
         "C:\\mozilla-build\\python",
         "C:\\mozilla-build\\python\\Scripts",
-        "C:\\mozilla-build\\python3"
+        "C:\\mozilla-build\\python3",
+        "C:\\wsl-ubuntu-1804"
       ],
       "Target": "Machine"
     },
@@ -1738,7 +1743,7 @@
       "Target": "C:\\Windows\\Temp\\wsl-ubuntu-1804.zip"
     },
     {
-      "ComponentName": "WSLUbuntuInstall",
+      "ComponentName": "WSLUbuntuExtract",
       "ComponentType": "CommandRun",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506",
       "Command": "C:\\Program Files\\7-Zip\\7z.exe",
@@ -1762,6 +1767,19 @@
           "C:\\wsl-ubuntu-1804\\ubuntu1804.exe"
         ]
       }
+    },
+    {
+      "ComponentName": "WSLUbuntuInstall",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506, https://docs.microsoft.com/en-us/windows/wsl/install-on-server",
+      "Command": "C:\\wsl-ubuntu-1804\\ubuntu1804.exe",
+      "Arguments": [],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "WSLUbuntuExtract"
+        }
+      ]
     },
     {
       "ComponentName": "DefaultToWSL2",

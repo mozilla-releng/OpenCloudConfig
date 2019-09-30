@@ -1611,7 +1611,7 @@ function Set-ComputerName {
 }
 function Set-TaskclusterWorkerLocation {
   param (
-    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) { 'GCP' } else { 'DataCenter' }),
+    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif ((Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) { 'GCP' } else { 'DataCenter' }),
     [string] $az = $(if ($locationType -eq 'AWS') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone') } elseif ($locationType -eq 'GCP') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/zone') -replace '.*/' })
   )
   begin {
@@ -1638,7 +1638,7 @@ function Set-TaskclusterWorkerLocation {
 }
 function Set-DomainName {
   param (
-    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) { 'GCP' } else { 'DataCenter' }),
+    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif ((Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) { 'GCP' } else { 'DataCenter' }),
     [string] $publicKeys = $(if ($locationType -eq 'AWS') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys') } else { $null }),
     [string] $workerType = $(if ($locationType -eq 'AWS') { $(if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) { $publicKeys.Replace('0=mozilla-taskcluster-worker-', '') } else { (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType }) } elseif ($locationType -eq 'GCP') { (Invoke-WebRequest -Uri 'http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/taskcluster' -UseBasicParsing | ConvertFrom-Json).workerConfig.openCloudConfig.workerType } else { $null }),
     [string] $az = $(if ($locationType -eq 'AWS') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone') } elseif ($locationType -eq 'GCP') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/zone') -replace '.*/' })
@@ -2083,7 +2083,7 @@ function Invoke-OpenCloudConfig {
     [string] $sourceOrg = 'mozilla-releng',
     [string] $sourceRepo = 'OpenCloudConfig',
     [string] $sourceRev = 'master',
-    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) { 'GCP' } else { 'DataCenter' })
+    [string] $locationType = $(if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) { 'AWS' } elseif ((Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) { 'GCP' } else { 'DataCenter' })
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

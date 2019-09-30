@@ -72,7 +72,7 @@ function Is-ConditionTrue {
 
 function Is-Terminating {
   param (
-    [string] $locationType = $(if ((Get-Command 'Get-Service' -ErrorAction 'SilentlyContinue') -and ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue))) { 'AWS' } elseif ((Get-Command 'Get-Service' -ErrorAction 'SilentlyContinue') -and (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue)) { 'GCP' } else { 'DataCenter' })
+    [string] $locationType = $(if ((Get-Command 'Get-Service' -ErrorAction 'SilentlyContinue') -and ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue))) { 'AWS' } elseif (((Get-Command 'Get-Service' -ErrorAction 'SilentlyContinue') -and (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue)) -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) { 'GCP' } else { 'DataCenter' })
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -134,7 +134,7 @@ function Is-RdpSessionActive {
 
 function Test-InstanceProductivity {
   param (
-    [string] $locationType = $(if ((Get-Command 'Get-Service' -ErrorAction 'SilentlyContinue') -and ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue))) { 'AWS' } elseif ((Get-Command 'Get-Service' -ErrorAction 'SilentlyContinue') -and (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue)) { 'GCP' } else { 'DataCenter' })
+    [string] $locationType = $(if ((Get-Command 'Get-Service' -ErrorAction 'SilentlyContinue') -and ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue))) { 'AWS' } elseif (((Get-Command 'Get-Service' -ErrorAction 'SilentlyContinue') -and (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue)) -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) { 'GCP' } else { 'DataCenter' })
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

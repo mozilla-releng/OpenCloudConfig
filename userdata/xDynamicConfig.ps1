@@ -16,7 +16,7 @@ Configuration xDynamicConfig {
 
   if ((Get-Service 'Ec2Config' -ErrorAction SilentlyContinue) -or (Get-Service 'AmazonSSMAgent' -ErrorAction SilentlyContinue)) {
     $locationType = 'AWS'
-  } elseif (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) {
+  } elseif ((Get-Service 'GCEAgent' -ErrorAction SilentlyContinue) -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
     $locationType = 'GCP'
   } else {
     $locationType = 'DataCenter'

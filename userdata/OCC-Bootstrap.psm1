@@ -172,6 +172,9 @@ function Install-Dependencies {
         # enable nested virtualisation to support windows subsystem for linux
         # https://github.com/MicrosoftDocs/Virtualization-Documentation/blob/master/hyperv-tools/Nested/Enable-NestedVm.ps1
         try {
+          if (-not (Get-Command 'Get-VM' -errorAction SilentlyContinue)) {
+            Import-Module -Name 'Hyper-V'
+          }
           $4GB = 4294967296
           $vmName = 'NestedVmForWsl'
           $vm = Get-VM -Name $vmName

@@ -209,7 +209,7 @@ function Install-Dependencies {
               Write-Log -message ('{0} :: optional feature: {1}, detected' -f $($MyInvocation.MyCommand.Name), $optionalFeature) -severity 'INFO'
             }
           } catch {
-            Write-Log -message ('{0} :: failed to enable optional feature: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $optionalFeature), $_.Exception.Message) -severity 'ERROR'
+            Write-Log -message ('{0} :: failed to enable optional feature: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $optionalFeature, $_.Exception.Message) -severity 'ERROR'
           }
         }
       }

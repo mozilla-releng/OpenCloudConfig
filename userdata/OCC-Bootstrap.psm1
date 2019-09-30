@@ -1591,7 +1591,8 @@ function Set-ServiceState {
 }
 function Set-ComputerName {
   param (
-    [string] $instanceId = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id')),
+    [string] $locationType,
+    [string] $instanceId = $(if ($locationType -eq 'AWS') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id') } elseif ($locationType -eq 'GCP') { (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/name') }),
     [string] $dnsHostname = [System.Net.Dns]::GetHostName(),
     [string[]] $rebootReasons = @()
   )
@@ -2061,6 +2062,7 @@ function Initialize-Instance {
       Set-DynamicDnsRegistration -enabled:$false
     } elseif ($locationType -eq 'GCP') {
       Set-TaskclusterWorkerLocation
+      $rebootReasons = (Set-ComputerName)
       Set-DomainName
       # todo: figure out if this is needed on gcp
       # Set-DynamicDnsRegistration -enabled:$false

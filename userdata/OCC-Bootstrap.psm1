@@ -122,15 +122,17 @@ function Install-Dependencies {
         'ModuleName' = 'OpenCloudConfig';
         'ModuleVersion' = '0.0.52'
       }
-    )
+    ),
+    [string] $osCaption = ((Get-WmiObject -Class 'Win32_OperatingSystem').Caption)
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
+    # install windows management framework if it isn't installed
     if (-not (Get-Command 'Get-PackageProvider' -errorAction SilentlyContinue)) {
       Write-Log -message ('{0} :: missing windows management framework detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-      switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
+      switch -wildcard ($osCaption) {
         'Microsoft Windows Server 2012*' {
           (New-Object Net.WebClient).DownloadFile('https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win8.1AndW2K12R2-KB3191564-x64.msu', 'C:\Windows\Temp\Win8.1AndW2K12R2-KB3191564-x64.msu')
           & ('{0}\system32\wusa.exe' -f $env:WinDir) @('C:\Windows\Temp\Win8.1AndW2K12R2-KB3191564-x64.msu', '/quiet')
@@ -142,6 +144,76 @@ function Install-Dependencies {
         default {
           Write-Log -message ('{0} :: no configured resolution for missing wmf for os: {1}' -f $($MyInvocation.MyCommand.Name), (Get-WmiObject -class Win32_OperatingSystem).Caption) -severity 'ERROR'
         }
+      }
+    }
+    switch -regex ($osCaption) {
+      '^Microsoft Windows Server 201[69](.*)?$' {
+        # enable nested virtualisation to support windows subsystem for linux
+        # https://github.com/MicrosoftDocs/Virtualization-Documentation/blob/master/hyperv-tools/Nested/Enable-NestedVm.ps1
+        try {
+          $4GB = 4294967296
+          $vm = Get-VM -Name $vmName
+          $vmInfo = New-Object PSObject -Property @{
+            ExposeVirtualizationExtensions = (Get-VMProcessor -VM $vm).ExposeVirtualizationExtensions
+            DynamicMemoryEnabled           = $vm.DynamicMemoryEnabled
+            SnapshotEnabled                = $false
+            State                          = $vm.State
+            MacAddressSpoofing             = ((Get-VmNetworkAdapter -VmName $vmName).MacAddressSpoofing)
+            MemorySize                     = (Get-VMMemory -VmName $vmName).Startup
+          }
+          if (($vmInfo.State -ne 'Off' -or $vmInfo.State -eq 'Saved') -or
+            ($vmInfo.ExposeVirtualizationExtensions -eq $false) -or
+            ($vmInfo.DynamicMemoryEnabled -eq $true) -or
+            ($vmInfo.MacAddressSpoofing -eq 'Off') -or
+            ($vmInfo.MemorySize -lt $4GB)) {
+            if ($vmInfo.State -eq 'Saved') {
+              Remove-VMSavedState -VMName $vmName
+              Write-Log -message ('{0} :: vm-nesting - vm {1} saved state removed' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+            }
+            if ($vmInfo.State -ne 'Off' -or $vmInfo.State -eq 'Saved') {
+              Stop-VM -VMName $vmName
+              Write-Log -message ('{0} :: vm-nesting - vm {1} stopped' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+            }
+            if ($vmInfo.ExposeVirtualizationExtensions -eq $false) {
+              Set-VMProcessor -VMName $vmName -ExposeVirtualizationExtensions $true
+              Write-Log -message ('{0} :: vm-nesting - vm {1} ExposeVirtualizationExtensions set to: true' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+            }
+            if ($vmInfo.DynamicMemoryEnabled -eq $true) {
+              Set-VMMemory -VMName $vmName -DynamicMemoryEnabled $false
+              Write-Log -message ('{0} :: vm-nesting - vm {1} DynamicMemoryEnabled set to: false' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+            }
+            if($vmInfo.MacAddressSpoofing -eq 'Off') {
+              Set-VMNetworkAdapter -VMName $vmName -MacAddressSpoofing on
+              Write-Log -message ('{0} :: vm-nesting - vm {1} MacAddressSpoofing set to: on' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+            }
+            if($vmInfo.MemorySize -lt $4GB) {
+              Set-VMMemory -VMName $vmName -StartupBytes $4GB
+              Write-Log -message ('{0} :: vm-nesting - vm {1} StartupBytes set to: 4gb' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+            }
+          } else {
+            Write-Log -message ('{0} :: vm-nesting - vm {1} previous configuration detected' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+          }
+        } catch {
+          Write-Log -message ('{0} :: failed to configure vm nesting. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+        }
+
+        # enable optional features
+        foreach ($optionalFeature in @('Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform')) {
+          try {
+            $featureList = @(Get-WindowsOptionalFeature -Online -FeatureName $optionalFeature)
+            if ((-not ($featureList)) -or ($featureList.Length -lt 1) -or ($featureList[0].State -ne 'Enabled')) {
+              Enable-WindowsOptionalFeature -Online -FeatureName $optionalFeature -NoRestart
+              Write-Log -message ('{0} :: optional feature: {1}, enabled' -f $($MyInvocation.MyCommand.Name), $optionalFeature) -severity 'INFO'
+            } else {
+              Write-Log -message ('{0} :: optional feature: {1}, detected' -f $($MyInvocation.MyCommand.Name), $optionalFeature) -severity 'INFO'
+            }
+          } catch {
+            Write-Log -message ('{0} :: failed to enable optional feature: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $optionalFeature), $_.Exception.Message) -severity 'ERROR'
+          }
+        }
+      }
+      default {
+        Write-Log -message ('{0} :: no optional features configured for os: {1}' -f $($MyInvocation.MyCommand.Name), $osCaption) -severity 'INFO'
       }
     }
     foreach ($purgeModule in $purgeModules) {

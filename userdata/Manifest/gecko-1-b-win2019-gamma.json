@@ -1730,6 +1730,48 @@
       "Source": "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe",
       "sha512": "58127bae7b27d963cb4ec19779e5ab0938db69190ec66985694320af787e696a8acd490b967255a7fed4c28ec6a2c2bfcd6efbb5b85ec2a950b3e318113d5cde",
       "Target": "C:\\Windows\\System32\\jq.exe"
+    },
+    {
+      "ComponentName": "WSLUbuntuDownload",
+      "ComponentType": "FileDownload",
+      "Source": "https://aka.ms/wsl-ubuntu-1804",
+      "Target": "C:\\Windows\\Temp\\wsl-ubuntu-1804.zip"
+    },
+    {
+      "ComponentName": "WSLUbuntuInstall",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506",
+      "Command": "C:\\Program Files\\7-Zip\\7z.exe",
+      "Arguments": [
+        "x",
+        "-oC:\\wsl-ubuntu-1804",
+        "C:\\Windows\\Temp\\wsl-ubuntu-1804.zip"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "SevenZip"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "WSLUbuntuDownload"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\wsl-ubuntu-1804\\ubuntu1804.exe"
+        ]
+      }
+    },
+    {
+      "ComponentName": "DefaultToWSL2",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506",
+      "Command": "wsl",
+      "Arguments": [
+        "--set-default-version",
+        "2"
+      ]
     }
   ],
   "ProvisionerConfiguration": {

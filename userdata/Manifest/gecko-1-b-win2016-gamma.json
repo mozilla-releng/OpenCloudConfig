@@ -57,7 +57,7 @@
       "ComponentName": "NxLogPaperTrailConfiguration",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win2012.conf",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win2016.conf",
       "Target": "C:\\Program Files (x86)\\nxlog\\conf\\nxlog.conf",
       "DependsOn": [
         {
@@ -1780,7 +1780,7 @@
         "config": {
           "cachesDir": "Z:\\caches",
           "cleanUpTaskDirs": true,
-          "clientId": "project/releng/generic-worker/gecko-1-b-win2012-gamma/production",
+          "clientId": "project/releng/generic-worker/gecko-1-b-win2016-gamma/production",
           "disableReboots": true,
           "downloadsDir": "Z:\\downloads",
           "ed25519SigningKeyLocation": "C:\\generic-worker\\ed25519-private.key",
@@ -1800,7 +1800,7 @@
           "taskclusterProxyExecutable": "C:\\generic-worker\\taskcluster-proxy.exe",
           "taskclusterProxyPort": 80,
           "tasksDir": "Z:\\",
-          "workerType": "gecko-1-b-win2012-gamma"
+          "workerType": "gecko-1-b-win2016-gamma"
         }
       }
     },
@@ -1833,7 +1833,7 @@
       "provisioner_id": "releng-hardware",
       "image": {
         "project": "windows-cloud",
-        "family": "windows-2012-r2"
+        "family": "windows-2016"
       }
     }
   }

@@ -1792,7 +1792,7 @@
       "Command": "C:\\wsl-ubuntu-1804\\ubuntu1804.exe",
       "Arguments": [
         "install",
-        "--root",
+        "--root"
       ],
       "DependsOn": [
         {

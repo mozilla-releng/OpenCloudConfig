@@ -173,7 +173,12 @@ function Install-Dependencies {
         # https://github.com/MicrosoftDocs/Virtualization-Documentation/blob/master/hyperv-tools/Nested/Enable-NestedVm.ps1
         try {
           if (-not (Get-Command 'Get-VM' -errorAction SilentlyContinue)) {
-            Import-Module -Name 'Hyper-V'
+            try {
+              Import-Module -Name 'Hyper-V'
+            } catch {
+              Write-Log -message ('{0} :: failed to import module. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+              & shutdown @('-r', '-t', '0', '-c', 'enable hyper-v module', '-f', '-d', 'p:2:4')
+            }
           }
           $4GB = 4294967296
           $vmName = 'NestedVmForWsl'

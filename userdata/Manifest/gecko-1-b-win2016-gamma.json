@@ -1788,9 +1788,12 @@
     {
       "ComponentName": "WSLUbuntuInstall",
       "ComponentType": "CommandRun",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506, https://docs.microsoft.com/en-us/windows/wsl/install-on-server",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1567506, https://docs.microsoft.com/en-us/windows/wsl/install-on-server, https://github.com/Microsoft/WSL/issues/3369#issuecomment-403528858",
       "Command": "C:\\wsl-ubuntu-1804\\ubuntu1804.exe",
-      "Arguments": [],
+      "Arguments": [
+        "install",
+        "--root",
+      ],
       "DependsOn": [
         {
           "ComponentType": "CommandRun",

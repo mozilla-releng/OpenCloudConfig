@@ -1111,6 +1111,10 @@
         {
           "ComponentType": "CommandRun",
           "ComponentName": "DeleteMozillaBuildPython3PythonExe"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "jqInstall"
         }
       ],
       "Name": "PATH",
@@ -1125,7 +1129,8 @@
         "C:\\mozilla-build\\nsis-3.01",
         "C:\\mozilla-build\\python",
         "C:\\mozilla-build\\python\\Scripts",
-        "C:\\mozilla-build\\python3"
+        "C:\\mozilla-build\\python3",
+        "C:\\jq"
       ],
       "Target": "Machine"
     },
@@ -1724,12 +1729,24 @@
       ]
     },
     {
+      "ComponentName": "JqDir",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1570148#c38",
+      "Path": "C:\\jq"
+    },
+    {
       "ComponentName": "jqInstall",
       "ComponentType": "FileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1570148#c23",
       "Source": "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe",
-      "sha512": "58127bae7b27d963cb4ec19779e5ab0938db69190ec66985694320af787e696a8acd490b967255a7fed4c28ec6a2c2bfcd6efbb5b85ec2a950b3e318113d5cde",
-      "Target": "C:\\Windows\\System32\\jq.exe"
+      "Target": "C:\\jq\\jq.exe",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "JqDir"
+        }
+      ],
+      "sha512": "58127bae7b27d963cb4ec19779e5ab0938db69190ec66985694320af787e696a8acd490b967255a7fed4c28ec6a2c2bfcd6efbb5b85ec2a950b3e318113d5cde"
     }
   ],
   "ProvisionerConfiguration": {

@@ -1199,7 +1199,7 @@ function Set-WindowsActivation {
           $isLicensed = ($licenseStatus[$slp.LicenseStatus] -eq 'Licensed')
         }
         catch {
-          Write-Log -message ('{0} :: failed to activate Windows. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+          Write-Log -message ('{0} :: failed to activate Windows. {1}' -f $($MyInvocation.MyCommand.Name), $(if ($_.Exception.Message) { $_.Exception.Message } elseif ($_.Exception.InnerException.Message) { $_.Exception.InnerException.Message } else { $_.Exception.GetType().Name })) -severity 'ERROR'
           $isLicensed = $false
         }
       }

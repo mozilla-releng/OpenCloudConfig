@@ -1153,7 +1153,7 @@ function New-PowershellScheduledTask {
 function Set-WindowsActivation {
   param (
     [string] $productKeyMapUrl = ('https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/product-key-map.json?{0}' -f [Guid]::NewGuid()),
-    [string] $keyManagementServiceMachine = '10.48.69.100',
+    [string[]] $keyManagementServiceMachines = @('10.48.69.100', '10.22.69.24', 'kms1.ad.mozilla.com', 'kms2.ad.mozilla.com'),
     [int] $keyManagementServicePort = 1688
   )
   begin {
@@ -1168,34 +1168,41 @@ function Set-WindowsActivation {
       Write-Log -message ('{0} :: failed to determine product key with os caption: {1}.' -f $($MyInvocation.MyCommand.Name), $osCaption) -severity 'INFO'
       return
     }
-    try {
-      $sls = (Get-WMIObject SoftwareLicensingService)
-      $sls.SetKeyManagementServiceMachine($keyManagementServiceMachine)
-      Write-Log -message ('{0} :: SoftwareLicensingService.SetKeyManagementServiceMachine: {1}.' -f $($MyInvocation.MyCommand.Name), $keyManagementServiceMachine) -severity 'DEBUG'
-      $sls.SetKeyManagementServicePort($keyManagementServicePort)
-      Write-Log -message ('{0} :: SoftwareLicensingService.SetKeyManagementServicePort: {1}.' -f $($MyInvocation.MyCommand.Name), $keyManagementServicePort) -severity 'DEBUG'
-      $sls.InstallProductKey($productKey)
-      Write-Log -message ('{0} :: SoftwareLicensingService.InstallProductKey: {1}.' -f $($MyInvocation.MyCommand.Name), $productKey) -severity 'DEBUG'
-      $sls.RefreshLicenseStatus()
-      Write-Log -message ('{0} :: SoftwareLicensingService.RefreshLicenseStatus.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+    $isLicensed = $false
+    foreach ($keyManagementServiceMachine in $keyManagementServiceMachines) {
+      if (-not $isLicensed) {
+        try {
+          $sls = (Get-WMIObject SoftwareLicensingService)
+          $sls.SetKeyManagementServiceMachine($keyManagementServiceMachine)
+          Write-Log -message ('{0} :: SoftwareLicensingService.SetKeyManagementServiceMachine: {1}.' -f $($MyInvocation.MyCommand.Name), $keyManagementServiceMachine) -severity 'DEBUG'
+          $sls.SetKeyManagementServicePort($keyManagementServicePort)
+          Write-Log -message ('{0} :: SoftwareLicensingService.SetKeyManagementServicePort: {1}.' -f $($MyInvocation.MyCommand.Name), $keyManagementServicePort) -severity 'DEBUG'
+          $sls.InstallProductKey($productKey)
+          Write-Log -message ('{0} :: SoftwareLicensingService.InstallProductKey: {1}.' -f $($MyInvocation.MyCommand.Name), $productKey) -severity 'DEBUG'
+          $sls.RefreshLicenseStatus()
+          Write-Log -message ('{0} :: SoftwareLicensingService.RefreshLicenseStatus.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-      $slp = (Get-WmiObject SoftwareLicensingProduct | ? { (($_.ApplicationId -eq '55c92734-d682-4d71-983e-d6ec3f16059f') -and ($_.PartialProductKey) -and (-not $_.LicenseIsAddon)) })
-      $slp.SetKeyManagementServiceMachine($keyManagementServiceMachine)
-      Write-Log -message ('{0} :: SoftwareLicensingProduct.SetKeyManagementServiceMachine: {1}.' -f $($MyInvocation.MyCommand.Name), $keyManagementServiceMachine) -severity 'DEBUG'
-      $slp.SetKeyManagementServicePort($keyManagementServicePort)
-      Write-Log -message ('{0} :: SoftwareLicensingProduct.SetKeyManagementServicePort: {1}.' -f $($MyInvocation.MyCommand.Name), $keyManagementServicePort) -severity 'DEBUG'
-      $slp.Activate()
-      Write-Log -message ('{0} :: SoftwareLicensingProduct.Activate.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+          $slp = (Get-WmiObject SoftwareLicensingProduct | ? { (($_.ApplicationId -eq '55c92734-d682-4d71-983e-d6ec3f16059f') -and ($_.PartialProductKey) -and (-not $_.LicenseIsAddon)) })
+          $slp.SetKeyManagementServiceMachine($keyManagementServiceMachine)
+          Write-Log -message ('{0} :: SoftwareLicensingProduct.SetKeyManagementServiceMachine: {1}.' -f $($MyInvocation.MyCommand.Name), $keyManagementServiceMachine) -severity 'DEBUG'
+          $slp.SetKeyManagementServicePort($keyManagementServicePort)
+          Write-Log -message ('{0} :: SoftwareLicensingProduct.SetKeyManagementServicePort: {1}.' -f $($MyInvocation.MyCommand.Name), $keyManagementServicePort) -severity 'DEBUG'
+          $slp.Activate()
+          Write-Log -message ('{0} :: SoftwareLicensingProduct.Activate.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
 
-      $sls.RefreshLicenseStatus()
-      Write-Log -message ('{0} :: SoftwareLicensingService.RefreshLicenseStatus.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-      
-      Write-Log -message ('{0} :: Windows activated with product key: {1} ({2}) against {3}:{4}.' -f $($MyInvocation.MyCommand.Name), $productKey, $osCaption, $keyManagementServiceMachine, $keyManagementServicePort) -severity 'INFO'
-      $licenseStatus = @('Unlicensed', 'Licensed', 'OOB Grace', 'OOT Grace', 'Non-Genuine Grace', 'Notification', 'Extended Grace')
-      Write-Log -message ('{0} :: Windows licensing status. Product: {1}, Status: {2}.' -f $($MyInvocation.MyCommand.Name), $slp.Name, $licenseStatus[$slp.LicenseStatus]) -severity 'INFO'
-    }
-    catch {
-      Write-Log -message ('{0} :: failed to activate Windows. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+          $sls.RefreshLicenseStatus()
+          Write-Log -message ('{0} :: SoftwareLicensingService.RefreshLicenseStatus.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
+          
+          Write-Log -message ('{0} :: Windows activated with product key: {1} ({2}) against {3}:{4}.' -f $($MyInvocation.MyCommand.Name), $productKey, $osCaption, $keyManagementServiceMachine, $keyManagementServicePort) -severity 'INFO'
+          $licenseStatus = @('Unlicensed', 'Licensed', 'OOB Grace', 'OOT Grace', 'Non-Genuine Grace', 'Notification', 'Extended Grace')
+          Write-Log -message ('{0} :: Windows licensing status. Product: {1}, Status: {2}.' -f $($MyInvocation.MyCommand.Name), $slp.Name, $licenseStatus[$slp.LicenseStatus]) -severity 'INFO'
+          $isLicensed = ($licenseStatus[$slp.LicenseStatus] -eq 'Licensed')
+        }
+        catch {
+          Write-Log -message ('{0} :: failed to activate Windows. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+          $isLicensed = $false
+        }
+      }
     }
   }
   end {

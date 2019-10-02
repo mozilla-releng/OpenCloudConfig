@@ -2201,7 +2201,7 @@ function Invoke-OpenCloudConfig {
         $isWorker = $true
         $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/taskcluster' -UseBasicParsing | ConvertFrom-Json).workerConfig.openCloudConfig.workerType
 
-        if ($workerType -eq 'gecko-1-b-win2019-gamma') {
+        if (($workerType -eq 'gecko-1-b-win2019-gamma') -or ($workerType -eq 'gecko-1-b-win2012-gamma')) {
           Set-WindowsActivation -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
         }
       }

@@ -153,6 +153,8 @@ function Install-Dependencies {
         if ((-not (Get-Service 'GCEAgent' -ErrorAction SilentlyContinue)) -and (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
           Start-LoggedProcess -filePath ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ArgumentList @('-noconfirm', 'install', 'google-compute-engine-windows', 'google-compute-engine-sysprep', 'google-compute-engine-metadata-scripts', 'google-compute-engine-vss', 'google-compute-engine-auto-updater') -name 'googet-install-services'
         }
+        # ensure rdp is enabled in firewall
+        Start-LoggedProcess -filePath 'netsh.exe' -ArgumentList @('advfirewall', 'firewall', 'set', 'rule', 'group="remote desktop"', 'new', 'enable=yes') -name 'firewall-enable-rdp'
 
         # enable optional features
         foreach ($optionalFeature in @('Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform', 'Microsoft-Hyper-V-All', 'Microsoft-Hyper-V-Tools-All', 'Microsoft-Hyper-V-Management-PowerShell')) {

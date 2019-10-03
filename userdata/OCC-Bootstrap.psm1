@@ -182,49 +182,53 @@ function Install-Dependencies {
           }
           $4GB = 4294967296
           $vmName = 'NestedVmForWsl'
-          $vm = Get-VM -Name $vmName
-          $vmInfo = New-Object PSObject -Property @{
-            ExposeVirtualizationExtensions = (Get-VMProcessor -VM $vm).ExposeVirtualizationExtensions
-            DynamicMemoryEnabled           = $vm.DynamicMemoryEnabled
-            SnapshotEnabled                = $false
-            State                          = $vm.State
-            MacAddressSpoofing             = ((Get-VmNetworkAdapter -VmName $vmName).MacAddressSpoofing)
-            MemorySize                     = (Get-VMMemory -VmName $vmName).Startup
-          }
-          if (($vmInfo.State -ne 'Off' -or $vmInfo.State -eq 'Saved') -or
-            ($vmInfo.ExposeVirtualizationExtensions -eq $false) -or
-            ($vmInfo.DynamicMemoryEnabled -eq $true) -or
-            ($vmInfo.MacAddressSpoofing -eq 'Off') -or
-            ($vmInfo.MemorySize -lt $4GB)) {
-            if ($vmInfo.State -eq 'Saved') {
-              Remove-VMSavedState -VMName $vmName
-              Write-Log -message ('{0} :: vm-nesting - vm {1} saved state removed' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+          $vm = (Get-VM -Name $vmName -ErrorAction SilentlyContinue)
+          if ($vm) {
+            $vmInfo = New-Object PSObject -Property @{
+              ExposeVirtualizationExtensions = (Get-VMProcessor -VM $vm).ExposeVirtualizationExtensions
+              DynamicMemoryEnabled           = $vm.DynamicMemoryEnabled
+              SnapshotEnabled                = $false
+              State                          = $vm.State
+              MacAddressSpoofing             = ((Get-VmNetworkAdapter -VmName $vmName).MacAddressSpoofing)
+              MemorySize                     = (Get-VMMemory -VmName $vmName).Startup
             }
-            if ($vmInfo.State -ne 'Off' -or $vmInfo.State -eq 'Saved') {
-              Stop-VM -VMName $vmName
-              Write-Log -message ('{0} :: vm-nesting - vm {1} stopped' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
-            }
-            if ($vmInfo.ExposeVirtualizationExtensions -eq $false) {
-              Set-VMProcessor -VMName $vmName -ExposeVirtualizationExtensions $true
-              Write-Log -message ('{0} :: vm-nesting - vm {1} ExposeVirtualizationExtensions set to: true' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
-            }
-            if ($vmInfo.DynamicMemoryEnabled -eq $true) {
-              Set-VMMemory -VMName $vmName -DynamicMemoryEnabled $false
-              Write-Log -message ('{0} :: vm-nesting - vm {1} DynamicMemoryEnabled set to: false' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
-            }
-            if($vmInfo.MacAddressSpoofing -eq 'Off') {
-              Set-VMNetworkAdapter -VMName $vmName -MacAddressSpoofing on
-              Write-Log -message ('{0} :: vm-nesting - vm {1} MacAddressSpoofing set to: on' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
-            }
-            if($vmInfo.MemorySize -lt $4GB) {
-              Set-VMMemory -VMName $vmName -StartupBytes $4GB
-              Write-Log -message ('{0} :: vm-nesting - vm {1} StartupBytes set to: 4gb' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+            if (($vmInfo.State -ne 'Off' -or $vmInfo.State -eq 'Saved') -or
+              ($vmInfo.ExposeVirtualizationExtensions -eq $false) -or
+              ($vmInfo.DynamicMemoryEnabled -eq $true) -or
+              ($vmInfo.MacAddressSpoofing -eq 'Off') -or
+              ($vmInfo.MemorySize -lt $4GB)) {
+              if ($vmInfo.State -eq 'Saved') {
+                Remove-VMSavedState -VMName $vmName
+                Write-Log -message ('{0} :: vm-nesting - vm {1} saved state removed' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+              }
+              if ($vmInfo.State -ne 'Off' -or $vmInfo.State -eq 'Saved') {
+                Stop-VM -VMName $vmName
+                Write-Log -message ('{0} :: vm-nesting - vm {1} stopped' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+              }
+              if ($vmInfo.ExposeVirtualizationExtensions -eq $false) {
+                Set-VMProcessor -VMName $vmName -ExposeVirtualizationExtensions $true
+                Write-Log -message ('{0} :: vm-nesting - vm {1} ExposeVirtualizationExtensions set to: true' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+              }
+              if ($vmInfo.DynamicMemoryEnabled -eq $true) {
+                Set-VMMemory -VMName $vmName -DynamicMemoryEnabled $false
+                Write-Log -message ('{0} :: vm-nesting - vm {1} DynamicMemoryEnabled set to: false' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+              }
+              if($vmInfo.MacAddressSpoofing -eq 'Off') {
+                Set-VMNetworkAdapter -VMName $vmName -MacAddressSpoofing on
+                Write-Log -message ('{0} :: vm-nesting - vm {1} MacAddressSpoofing set to: on' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+              }
+              if($vmInfo.MemorySize -lt $4GB) {
+                Set-VMMemory -VMName $vmName -StartupBytes $4GB
+                Write-Log -message ('{0} :: vm-nesting - vm {1} StartupBytes set to: 4gb' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+              }
+            } else {
+              Write-Log -message ('{0} :: vm-nesting - vm {1} previous configuration detected' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
             }
           } else {
-            Write-Log -message ('{0} :: vm-nesting - vm {1} previous configuration detected' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'INFO'
+            Write-Log -message ('{0} :: failed to configure vm nesting. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
           }
         } catch {
-          Write-Log -message ('{0} :: failed to configure vm nesting. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+          Write-Log -message ('{0} :: failed to configure vm nesting. no vm found matching name: {1}' -f $($MyInvocation.MyCommand.Name), $vmName) -severity 'ERROR'
         }
       }
       default {

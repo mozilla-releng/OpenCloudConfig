@@ -1,6 +1,8 @@
 # This software may be used and distributed according to the terms of the
 # GNU General Public License version 2 or any later version.
 
+# vendored from: https://hg.mozilla.org/hgcustom/version-control-tools/file/c308e12/hgext/robustcheckout/__init__.py
+
 """Robustly perform a checkout.
 
 This extension provides the ``hg robustcheckout`` command for
@@ -50,7 +52,7 @@ except ImportError:
 # Causes worker to purge caches on process exit and for task to retry.
 EXIT_PURGE_CACHE = 72
 
-testedwith = '4.3 4.4 4.5 4.6 4.7 4.8 4.9'
+testedwith = '4.3 4.4 4.5 4.6 4.7 4.8 4.9 5.0 5.1'
 minimumhgversion = '4.3'
 
 cmdtable = {}
@@ -717,7 +719,12 @@ def _docheckout(ui, url, dest, upstream, revision, branch, purge, sharebase,
             old_sparse_fn = getattr(repo.dirstate, '_sparsematchfn', None)
             if old_sparse_fn is not None:
                 assert supported_hg(), 'Mercurial version not supported (must be 4.3+)'
-                repo.dirstate._sparsematchfn = lambda: matchmod.always(repo.root, '')
+                # TRACKING hg50
+                # Arguments passed to `matchmod.always` were unused and have been removed
+                if util.versiontuple(n=2) >= (5, 0):
+                    repo.dirstate._sparsematchfn = lambda: matchmod.always()
+                else:
+                    repo.dirstate._sparsematchfn = lambda: matchmod.always(repo.root, '')
 
             with timeit('purge', 'purge'):
                 if purgeext.purge(ui, repo, all=True, abort_on_err=True,
@@ -734,7 +741,7 @@ def _docheckout(ui, url, dest, upstream, revision, branch, purge, sharebase,
 
     # Update the working directory.
 
-    if repo['.'].node() == nullid:
+    if repo[b'.'].node() == nullid:
         behaviors.add('empty-wdir')
     else:
         behaviors.add('populated-wdir')

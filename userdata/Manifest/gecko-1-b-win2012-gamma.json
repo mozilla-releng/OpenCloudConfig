@@ -15,7 +15,7 @@
       ],
       "Validate": {
         "PathsExist": [
-          "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent"
+          "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d"
         ],
         "ServiceStatus": [
           {
@@ -24,6 +24,58 @@
           }
         ]
       }
+    },
+    {
+      "ComponentName": "fluentd_genericworker",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/generic-worker.conf",
+      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\generic-worker.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "StackdriverLogging"
+        }
+      ]
+    },
+    {
+      "ComponentName": "fluentd_genericworkerservice",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/generic-worker-service.conf",
+      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\generic-worker-service.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "StackdriverLogging"
+        }
+      ]
+    },
+    {
+      "ComponentName": "fluentd_genericworkerwrapper",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/generic-worker-wrapper.conf",
+      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\generic-worker-wrapper.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "StackdriverLogging"
+        }
+      ]
+    },
+    {
+      "ComponentName": "fluentd_occ",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain - not essential for building firefox",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/occ.conf",
+      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\occ.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "StackdriverLogging"
+        }
+      ]
     },
     {
       "ComponentName": "NxLog",
@@ -1182,9 +1234,9 @@
           "ComponentName": "occ_installers_token"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.0.0/generic-worker-multiuser-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.3.0/generic-worker-multiuser-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "0bdd3202891cc34bd65ecd3940e0777a7f7f6280ac8f1f11b3f9a770673135861137e521815216ffd0dae0690b23bdf3da846c9bac0050bf480a637e3fc6898a"
+      "sha512": "373bc14f9945ff1590b7e5650ad5c5b71bf40759dbe02f22950c86a8dae029273431bfda49f2dffe4a16e6f2edfff3652c4cc3918cf79cd50d1096bab03af5fa"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -1330,7 +1382,7 @@
             "Arguments": [
               "--version"
             ],
-            "Like": "generic-worker 16.0.0 *"
+            "Like": "generic-worker 16.3.0 *"
           }
         ]
       }

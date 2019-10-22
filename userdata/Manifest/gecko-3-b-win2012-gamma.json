@@ -1233,9 +1233,9 @@
           "ComponentName": "occ_installers_token"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.3.0/generic-worker-multiuser-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.4.0/generic-worker-multiuser-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "373bc14f9945ff1590b7e5650ad5c5b71bf40759dbe02f22950c86a8dae029273431bfda49f2dffe4a16e6f2edfff3652c4cc3918cf79cd50d1096bab03af5fa"
+      "sha512": "450ac98c6238bccf7b6df91a999b874601ee7f4d1d50d9d828d858845cacca27ea06856b087076cf218b088308b6e0f53a59f8a2fb0275841ba43233627b6261"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -1381,7 +1381,7 @@
             "Arguments": [
               "--version"
             ],
-            "Like": "generic-worker 16.3.0 *"
+            "Like": "generic-worker 16.4.0 *"
           }
         ]
       }

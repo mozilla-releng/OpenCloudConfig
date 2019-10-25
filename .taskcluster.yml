@@ -198,7 +198,6 @@ tasks:
                   - push
               branches:
                 - master
-                - beta
           data:
               head:
                   sha: '{{event.head.sha}}'
@@ -1145,7 +1144,6 @@ tasks:
                   - push
               branches:
                 - master
-                - beta
           data:
               head:
                   sha: '{{event.head.sha}}'

@@ -1731,14 +1731,6 @@
       "ValueData": 1
     },
     {
-      "ComponentName": "env_TASKCLUSTER_ROOT_URL",
-      "ComponentType": "EnvironmentVariableSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1551789",
-      "Name": "TASKCLUSTER_ROOT_URL",
-      "Value": "https://taskcluster.net",
-      "Target": "Machine"
-    },
-    {
       "ComponentName": "hw-startup-check_ps1",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "Maintenance Toolchain - not essential for building firefox",

@@ -1654,14 +1654,6 @@
       ]
     },
     {
-      "ComponentName": "env_TASKCLUSTER_ROOT_URL",
-      "ComponentType": "EnvironmentVariableSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1551789",
-      "Name": "TASKCLUSTER_ROOT_URL",
-      "Value": "https://taskcluster.net",
-      "Target": "Machine"
-    },
-    {
       "ComponentName": "GitAndUnixToolsOnPath",
       "ComponentType": "RegistryValueSet",
       "Comment": "https://superuser.com/a/966787/5483",

@@ -1829,7 +1829,6 @@
           "livelogKey": "C:\\generic-worker\\livelog.key",
           "livelogPUTPort": 60022,
           "numberOfTasksToRun": 0,
-          "rootURL": "https://taskcluster.net",
           "runAfterUserCreation": "C:\\generic-worker\\task-user-init.cmd",
           "runTasksAsCurrentUser": false,
           "sentryProject": "generic-worker",

@@ -1,0 +1,21 @@
+{
+  "files": {
+    "main.css": "/github.io/OpenCloudConfig/static/css/main.b100e6da.chunk.css",
+    "main.js": "/github.io/OpenCloudConfig/static/js/main.6abb60e8.chunk.js",
+    "main.js.map": "/github.io/OpenCloudConfig/static/js/main.6abb60e8.chunk.js.map",
+    "runtime-main.js": "/github.io/OpenCloudConfig/static/js/runtime-main.350be4ae.js",
+    "runtime-main.js.map": "/github.io/OpenCloudConfig/static/js/runtime-main.350be4ae.js.map",
+    "static/js/2.21f0d059.chunk.js": "/github.io/OpenCloudConfig/static/js/2.21f0d059.chunk.js",
+    "static/js/2.21f0d059.chunk.js.map": "/github.io/OpenCloudConfig/static/js/2.21f0d059.chunk.js.map",
+    "index.html": "/github.io/OpenCloudConfig/index.html",
+    "precache-manifest.f2984268bd08a5adaf2d58aaf1dac1f4.js": "/github.io/OpenCloudConfig/precache-manifest.f2984268bd08a5adaf2d58aaf1dac1f4.js",
+    "service-worker.js": "/github.io/OpenCloudConfig/service-worker.js",
+    "static/css/main.b100e6da.chunk.css.map": "/github.io/OpenCloudConfig/static/css/main.b100e6da.chunk.css.map"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.350be4ae.js",
+    "static/js/2.21f0d059.chunk.js",
+    "static/css/main.b100e6da.chunk.css",
+    "static/js/main.6abb60e8.chunk.js"
+  ]
+}

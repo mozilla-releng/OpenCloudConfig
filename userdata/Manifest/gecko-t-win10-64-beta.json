@@ -599,7 +599,7 @@
     },
     {
       "ComponentName": "GenericWorkerDownload",
-      "ComponentType": "ChecksumFileDownload",
+      "ComponentType": "FileDownload",
       "DependsOn": [
         {
           "ComponentType": "DirectoryCreate",
@@ -607,8 +607,7 @@
         }
       ],
       "Source": "https://queue.taskcluster.net/v1/task/CtvqgO1BT46Mh4iFTZ55Hg/runs/0/artifacts/public/build/generic-worker-windows-amd64.exe",
-      "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "1086b54806b91fe56507085c7d13a50161ae11ad2ba7fb3e888824c8c2f49b31be2f1ac4fc92c02308761790fd906c8054beef0835e5b4a6c3d25166b6764634"
+      "Target": "C:\\generic-worker\\generic-worker.exe"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -698,7 +697,7 @@
       ],
       "DependsOn": [
         {
-          "ComponentType": "ChecksumFileDownload",
+          "ComponentType": "FileDownload",
           "ComponentName": "GenericWorkerDownload"
         },
         {

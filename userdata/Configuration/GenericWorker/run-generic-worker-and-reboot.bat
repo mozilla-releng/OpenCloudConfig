@@ -21,7 +21,7 @@ echo Deleting C:\dsc\task-claim-state.valid file >> C:\generic-worker\generic-wo
 del /Q /F C:\dsc\task-claim-state.valid >> C:\generic-worker\generic-worker-wrapper.log 2>&1
 pushd %~dp0
 set errorlevel=
-.\generic-worker.exe run --configure-for-aws >> .\generic-worker.log 2>&1
+.\generic-worker.exe run --config-defaults generic-worker-local.config --configure-for-aws >> .\generic-worker.log 2>&1
 set gw_exit_code=%errorlevel%
 
 rem exit code 67 means generic worker has created a task user and wants to reboot into it

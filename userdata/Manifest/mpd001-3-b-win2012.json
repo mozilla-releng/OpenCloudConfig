@@ -1256,6 +1256,18 @@
       }
     },
     {
+      "ComponentName": "GenericWorkerConfigDownload",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/aws-provider-config.json",
+      "Target": "C:\\generic-worker\\generic-worker-local.config"
+    },
+    {
       "ComponentName": "GenericWorkerInstall",
       "ComponentType": "CommandRun",
       "Command": "C:\\generic-worker\\generic-worker.exe",
@@ -1274,6 +1286,10 @@
         {
           "ComponentType": "ChecksumFileDownload",
           "ComponentName": "GenericWorkerDownload"
+        },
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "GenericWorkerConfigDownload"
         },
         {
           "ComponentType": "ChecksumFileDownload",

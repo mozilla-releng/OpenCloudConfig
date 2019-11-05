@@ -1189,7 +1189,7 @@
     },
     {
       "ComponentName": "LiveLogDownload",
-      "ComponentType": "FileDownload",
+      "ComponentType": "ChecksumFileDownload",
       "DependsOn": [
         {
           "ComponentType": "DirectoryCreate",
@@ -1304,7 +1304,7 @@
           "ComponentName": "GenericWorkerConfig"
         },
         {
-          "ComponentType": "FileDownload",
+          "ComponentType": "ChecksumFileDownload",
           "ComponentName": "LiveLogDownload"
         },
         {

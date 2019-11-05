@@ -947,6 +947,8 @@
         "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
         "--config",
         "C:\\generic-worker\\generic-worker.config",
+        "--config-defaults",
+        "c:\\generic-worker\\generic-worker-local.config",
         "--configure-for-aws"
       ],
       "DependsOn": [

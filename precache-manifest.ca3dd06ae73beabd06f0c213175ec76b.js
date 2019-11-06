@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "5a611b3fcfa9a2ddc9002f2f061416d9",
+    "revision": "433bb85703f8a6849b2b8dff383abca8",
     "url": "/OpenCloudConfig/index.html"
   },
   {

@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/OpenCloudConfig/static/css/main.b100e6da.chunk.css",
-    "main.js": "/OpenCloudConfig/static/js/main.0800a7b4.chunk.js",
-    "main.js.map": "/OpenCloudConfig/static/js/main.0800a7b4.chunk.js.map",
+    "main.js": "/OpenCloudConfig/static/js/main.ab0568ad.chunk.js",
+    "main.js.map": "/OpenCloudConfig/static/js/main.ab0568ad.chunk.js.map",
     "runtime-main.js": "/OpenCloudConfig/static/js/runtime-main.1bdd2577.js",
     "runtime-main.js.map": "/OpenCloudConfig/static/js/runtime-main.1bdd2577.js.map",
     "static/css/2.c297138a.chunk.css": "/OpenCloudConfig/static/css/2.c297138a.chunk.css",
     "static/js/2.d53d58e0.chunk.js": "/OpenCloudConfig/static/js/2.d53d58e0.chunk.js",
     "static/js/2.d53d58e0.chunk.js.map": "/OpenCloudConfig/static/js/2.d53d58e0.chunk.js.map",
     "index.html": "/OpenCloudConfig/index.html",
-    "precache-manifest.0234d441d2d8692a7f4b8ab16ccba6d5.js": "/OpenCloudConfig/precache-manifest.0234d441d2d8692a7f4b8ab16ccba6d5.js",
+    "precache-manifest.bc2517747e29e2771dfa2057615a8c50.js": "/OpenCloudConfig/precache-manifest.bc2517747e29e2771dfa2057615a8c50.js",
     "service-worker.js": "/OpenCloudConfig/service-worker.js",
     "static/css/2.c297138a.chunk.css.map": "/OpenCloudConfig/static/css/2.c297138a.chunk.css.map",
     "static/css/main.b100e6da.chunk.css.map": "/OpenCloudConfig/static/css/main.b100e6da.chunk.css.map"
@@ -19,6 +19,6 @@
     "static/css/2.c297138a.chunk.css",
     "static/js/2.d53d58e0.chunk.js",
     "static/css/main.b100e6da.chunk.css",
-    "static/js/main.0800a7b4.chunk.js"
+    "static/js/main.ab0568ad.chunk.js"
   ]
 }

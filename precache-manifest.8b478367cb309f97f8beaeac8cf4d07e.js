@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "4cce47c0c5839d3735a9e3cd8a84806d",
+    "revision": "83e2f8f4898a6e43a8144000d3ff4fb0",
     "url": "/OpenCloudConfig/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/OpenCloudConfig/static/css/2.c297138a.chunk.css"
   },
   {
-    "revision": "5da07c2678cb40894f4c",
+    "revision": "3fe265105554504b9f52",
     "url": "/OpenCloudConfig/static/css/main.b100e6da.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/OpenCloudConfig/static/js/2.d53d58e0.chunk.js"
   },
   {
-    "revision": "5da07c2678cb40894f4c",
-    "url": "/OpenCloudConfig/static/js/main.4029f1b1.chunk.js"
+    "revision": "3fe265105554504b9f52",
+    "url": "/OpenCloudConfig/static/js/main.b6272b21.chunk.js"
   },
   {
     "revision": "a98bbe0219972e04d717",

@@ -49,10 +49,227 @@ function Run-MaintainSystem {
   process {
     Remove-OldTaskDirectories
     Disable-DesiredStateConfig
-    if (${env:PROCESSOR_ARCHITEW6432} -eq 'ARM64') {
-      Invoke-OccReset -sourceOrg 'mozilla-releng' -sourceRepo 'OpenCloudConfig' -sourceRev 'master'
+    Invoke-OccReset
+
+    $fingerprint = (Get-GpgKeyFingerprint)
+    $gpgPublicKeyPath = ('{0}\Mozilla\OpenCloudConfig\occ-public.key' -f $env:ProgramData)
+    if (-not ($fingerprint)) {
+      New-GpgKey -gpgPublicKeyPath $gpgPublicKeyPath
     } else {
-      Invoke-OccReset
+      if (Test-Path -Path $gpgPublicKeyPath -ErrorAction SilentlyContinue) {
+        Write-Log -message ('{0} :: {1}' -f $($MyInvocation.MyCommand.Name), (Get-Content -Path $gpgPublicKeyPath -Raw)) -severity 'DEBUG'
+      } else {
+        Write-Log -message ('{0} :: error: {1} not found' -f $($MyInvocation.MyCommand.Name), $gpgPublicKeyPath) -severity 'ERROR'
+      }
+    }
+    if (-not (Confirm-GenericWorkerConfig)) {
+      Get-GenericWorkerConfig
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Get-GpgKeyFingerprint {
+  param (
+    [string] $id = ('{0}@{1}' -f $env:USERNAME, [System.Net.Dns]::GetHostName()),
+    [string] $gpgExePath = ('{0}\GNU\GnuPG\pub\gpg.exe' -f $(if ("${env:ProgramFiles(x86)}") { ${env:ProgramFiles(x86)} } else { $env:ProgramFiles }))
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (Test-Path -Path $gpgExePath -ErrorAction SilentlyContinue) {
+      try {
+        $fingerprint = @(($(& $gpgExePath @('--fingerprint', $id)) | ? { $_.Contains('Key fingerprint') }) | % { $_.Split('=')[1].Replace(' ', '')  })[0]
+        if ([string]::IsNullOrWhitespace($fingerprint)) {
+          $fingerprint = $null
+          Write-Log -message ('{0} :: failed to determine fingerprint for id: {1}' -f $($MyInvocation.MyCommand.Name), $id) -severity 'WARN'
+        } else {
+          Write-Log -message ('{0} :: fingerprint: {1} determined for id: {2}' -f $($MyInvocation.MyCommand.Name), $fingerprint, $id) -severity 'INFO'
+        }
+      } catch {
+        $fingerprint = $null
+        Write-Log -message ('{0} :: failed to determine fingerprint for id: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $id, $_.Exception.Message) -severity 'ERROR'
+      }
+    } else {
+      $fingerprint = $null
+      Write-Log -message ('{0} :: failed to determine fingerprint for id: {1}. {2} not found' -f $($MyInvocation.MyCommand.Name), $id, $gpgExePath) -severity 'WARN'
+    }
+    return $fingerprint
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function New-GpgKey {
+  param (
+    [string] $id = ('{0}@{1}' -f $env:USERNAME, [System.Net.Dns]::GetHostName()),
+    [string] $gpgExePath = ('{0}\GNU\GnuPG\pub\gpg.exe' -f $(if ("${env:ProgramFiles(x86)}") { ${env:ProgramFiles(x86)} } else { $env:ProgramFiles })),
+    [string] $gpgKeyGenConfigPath = ('{0}\Mozilla\OpenCloudConfig\gpg-keygen-config.txt' -f $env:ProgramData),
+    [string] $gpgPublicKeyPath = ('{0}\Mozilla\OpenCloudConfig\occ-public.key' -f $env:ProgramData),
+    [string] $gpgBatchGenerateKeyStdOutPath = ('{0}\log\{1}.gpg-batch-generate-key.stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss")),
+    [string] $gpgBatchGenerateKeyStdErrPath = ('{0}\log\{1}.gpg-batch-generate-key.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (Test-Path -Path $gpgExePath -ErrorAction SilentlyContinue) {
+      if (-not (Test-Path -Path $gpgPublicKeyPath -ErrorAction SilentlyContinue)) {
+        try {
+          New-Item -Path ([System.IO.Path]::GetDirectoryName($gpgKeyGenConfigPath)) -ItemType Directory -ErrorAction SilentlyContinue
+          [IO.File]::WriteAllLines($gpgKeyGenConfigPath, @(
+            'Key-Type: RSA',
+            'Key-Length: 4096',
+            'Subkey-Type: RSA',
+            'Subkey-Length: 4096',
+            'Expire-Date: 0',
+            ('Name-Real: {0} {1}' -f $env:USERNAME, [System.Net.Dns]::GetHostName()),
+            ('Name-Email: {0}@{1}' -f $env:USERNAME, [System.Net.Dns]::GetHostName()),
+            '%no-protection',
+            '%commit',
+            '%echo done'
+          ), (New-Object -TypeName 'System.Text.UTF8Encoding' -ArgumentList $false))
+          if (Test-Path -Path $gpgKeyGenConfigPath -ErrorAction SilentlyContinue) {
+            Write-Log -message ('{0} :: {1} created' -f $($MyInvocation.MyCommand.Name), $gpgKeyGenConfigPath) -severity 'DEBUG'
+            Write-Log -message ('{0} :: {1}' -f $($MyInvocation.MyCommand.Name), (Get-Content -Path $gpgKeyGenConfigPath -Raw)) -severity 'DEBUG'
+            Start-Process $gpgExePath -ArgumentList @('--batch', '--gen-key', $gpgKeyGenConfigPath) -Wait -NoNewWindow -PassThru -RedirectStandardOutput $gpgBatchGenerateKeyStdOutPath -RedirectStandardError $gpgBatchGenerateKeyStdErrPath
+            if ((Get-Item -Path $gpgBatchGenerateKeyStdErrPath).Length -gt 0kb) {
+              Write-Log -message ('{0} :: gpg --gen-key stderr: {1}' -f $($MyInvocation.MyCommand.Name), (Get-Content -Path $gpgBatchGenerateKeyStdErrPath -Raw)) -severity 'ERROR'
+            }
+            if ((Get-Item -Path $gpgBatchGenerateKeyStdOutPath).Length -gt 0kb) {
+              Write-Log -message ('{0} :: gpg --gen-key stdout: {1}' -f $($MyInvocation.MyCommand.Name), (Get-Content -Path $gpgBatchGenerateKeyStdOutPath -Raw)) -severity 'INFO'
+            }
+            $fingerprint = (Get-GpgKeyFingerprint -id $id -gpgExePath $gpgExePath)
+            if ($fingerprint) {
+              & $gpgExePath @('--batch', '--export', '--output', $gpgPublicKeyPath, '--armor', $fingerprint)
+              if (Test-Path -Path $gpgPublicKeyPath -ErrorAction SilentlyContinue) {
+                Write-Log -message ('{0} :: {1}' -f $($MyInvocation.MyCommand.Name), (Get-Content -Path $gpgPublicKeyPath -Raw)) -severity 'DEBUG'
+              } else {
+                Write-Log -message ('{0} :: error: {1} not created' -f $($MyInvocation.MyCommand.Name), $gpgPublicKeyPath) -severity 'ERROR'
+              }
+            }
+          } else {
+            Write-Log -message ('{0} :: error: {1} not created' -f $($MyInvocation.MyCommand.Name), $gpgKeyGenConfigPath) -severity 'ERROR'
+          }
+        } catch {
+          Write-Log -message ('{0} :: failed to create gpg key for id: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $id, $_.Exception.Message) -severity 'ERROR'
+        }
+      } else {
+        Write-Log -message ('{0} :: gpg public key detected at {1}' -f $($MyInvocation.MyCommand.Name), $gpgPublicKeyPath) -severity 'INFO'
+      }
+    } else {
+      Write-Log -message ('{0} :: failed to create gpg key for id: {1}. {2} not found' -f $($MyInvocation.MyCommand.Name), $id, $gpgExePath) -severity 'WARN'
+    }
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Confirm-GenericWorkerConfig {
+  param (
+    [string] $locationType = $(
+      if ((Get-Service -Name 'Ec2Config' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'AmazonSSMAgent' -ErrorAction 'SilentlyContinue')) {
+        'AWS'
+      } elseif ((Get-Service -Name 'GCEAgent' -ErrorAction 'SilentlyContinue') -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
+        'GCP'
+      } elseif ((Get-Service -Name 'WindowsAzureGuestAgent' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'WindowsAzureNetAgentSvc' -ErrorAction 'SilentlyContinue')) {
+        'Azure'
+      } else {
+        'DataCenter'
+      }
+    ),
+    [string] $workerType = $(
+      switch ($locationType) {
+        'AWS' {
+          $(if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) { $publicKeys.Replace('0=mozilla-taskcluster-worker-', '') } else { (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType })
+        }
+        'GCP' {
+          (Invoke-WebRequest -Uri 'http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/taskcluster' -UseBasicParsing | ConvertFrom-Json).workerConfig.openCloudConfig.workerType
+        }
+        'Azure' {
+          (@(((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq 'workerType' })[0].value
+        }
+        default {
+          $null
+        }
+      }
+    ),
+    [string] $path = $(if (${env:PROCESSOR_ARCHITEW6432} -eq 'ARM64') { 'C:\generic-worker\gw.config' } else { 'C:\generic-worker\generic-worker.config' }),
+    [hashtable] $equal = @{
+      'rootUrl' = 'https://firefox-ci-tc.services.mozilla.com';
+      'workerType' = $workerType;
+      'wstAudience' = 'firefoxcitc';
+      'clientId' = $(if (${env:PROCESSOR_ARCHITEW6432} -eq 'ARM64') { 'project/releng/generic-worker/bitbar-gecko-t-win10-aarch64' } else { ('project/releng/generic-worker/azure-{0}' -f $workerType.Replace('-az', '')) })
+    },
+    [hashtable] $in = @{
+      'publicIP' = @(Get-NetIPConfiguration | ? { $_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne 'Disconnected' } | % { $_.IPv4Address.IPAddress })
+    }
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    $gwConfig=(Get-Content -Raw -Path $path | ConvertFrom-Json)
+    if ((@($equal.Keys | ? { ($equal[$_] -ne $gwConfig."$_") }).Length -gt 0) -or (@($in.Keys | ? { (-not $in[$_].Contains($gwConfig."$_")) }).Length -gt 0)) {
+      Write-Log -message ('{0} :: invalid config detected at {1}' -f $($MyInvocation.MyCommand.Name), $path) -severity 'INFO'
+      foreach ($key in $equal.Keys) {
+        Write-Log -message ('{0} :: {1} {2}: {3}' -f $($MyInvocation.MyCommand.Name), $(if ($equal[$_] -ne $gwConfig."$_") { 'invalid' } else { 'valid' }), $key, $gwConfig."$key") -severity 'INFO'
+      }
+      foreach ($key in $in.Keys) {
+        Write-Log -message ('{0} :: {1} {2}: {3}' -f $($MyInvocation.MyCommand.Name), $(if (-not $in[$_].Contains($gwConfig."$_")) { 'invalid' } else { 'valid' }), $key, $gwConfig."$key") -severity 'INFO'
+      }
+      return $false
+    }
+    foreach ($key in $equal.Keys) {
+      Write-Log -message ('{0} :: {1} {2}: {3}' -f $($MyInvocation.MyCommand.Name), $(if ($equal[$_] -ne $gwConfig."$_") { 'invalid' } else { 'valid' }), $key, $gwConfig."$key") -severity 'DEBUG'
+    }
+    foreach ($key in $in.Keys) {
+      Write-Log -message ('{0} :: {1} {2}: {3}' -f $($MyInvocation.MyCommand.Name), $(if (-not $in[$_].Contains($gwConfig."$_")) { 'invalid' } else { 'valid' }), $key, $gwConfig."$key") -severity 'DEBUG'
+    }
+    return $true
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Get-GenericWorkerConfig {
+  param (
+    [string] $path = $(if (${env:PROCESSOR_ARCHITEW6432} -eq 'ARM64') { 'C:\generic-worker\gw.config' } else { 'C:\generic-worker\generic-worker.config' }),
+    [string] $gpgExePath = ('{0}\GNU\GnuPG\pub\gpg.exe' -f $(if ("${env:ProgramFiles(x86)}") { ${env:ProgramFiles(x86)} } else { $env:ProgramFiles })),
+    [string] $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation').Organisation } else { 'mozilla-releng' }),
+    [string] $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository').Repository } else { 'OpenCloudConfig' }),
+    [string] $sourceRev = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Revision' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Revision').Revision } else { 'master' })
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (Test-Path -Path ('{0}.gpg' -f $path) -ErrorAction SilentlyContinue) {
+      Remove-Item -Path ('{0}.gpg' -f $path) -Force -ErrorAction SilentlyContinue
+      Write-Log -message ('{0} :: deleted: {1}' -f $($MyInvocation.MyCommand.Name), ('{0}.gpg' -f $path)) -severity 'DEBUG'
+    }
+    try {
+      $url = ('https://github.com/{0}/{1}/raw/{2}/cfg/generic-worker/{3}.json.gpg' -f $sourceOrg, $sourceRepo, $sourceRev, $(if ([System.Net.Dns]::GetHostName().ToLower().StartsWith('yoga-')) { 't-lenovoyogac630-{0}' -f [System.Net.Dns]::GetHostName().Split('-')[1] } else { [System.Net.Dns]::GetHostName().ToLower() }))
+      (New-Object Net.WebClient).DownloadFile($url, ('{0}.gpg' -f $path))
+      Write-Log -message ('{0} :: downloaded: {1}' -f $($MyInvocation.MyCommand.Name), ('{0}.gpg' -f $path)) -severity 'DEBUG'
+      try {
+        if (Test-Path -Path $path -ErrorAction SilentlyContinue) {
+          Remove-Item -Path $path -Force -ErrorAction SilentlyContinue
+          Write-Log -message ('{0} :: deleted: {1}' -f $($MyInvocation.MyCommand.Name), $path) -severity 'DEBUG'
+        }
+        Start-Process $gpgExePath -ArgumentList @('-d', ('{0}.gpg' -f $path)) -Wait -NoNewWindow -PassThru -RedirectStandardOutput $path -RedirectStandardError ('{0}\log\{1}.gpg-decrypt-{2}.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), [IO.Path]::GetFileNameWithoutExtension($path))
+        if (Test-Path -Path $path -ErrorAction SilentlyContinue) {
+          Write-Log -message ('{0} :: decrypted {1} to {2}' -f $($MyInvocation.MyCommand.Name), ('{0}.gpg' -f $path), $path) -severity 'INFO'
+        }
+        Remove-Item -Path ('{0}.gpg' -f $path) -Force -ErrorAction SilentlyContinue
+        Write-Log -message ('{0} :: deleted {1}' -f $($MyInvocation.MyCommand.Name), ('{0}.gpg' -f $path))
+      } catch {
+        Write-Log -message ('{0} :: decryption of {1} to {2} failed. {3}' -f $($MyInvocation.MyCommand.Name), ('{0}.gpg' -f $path), $path, $_.Exception.Message) -severity 'ERROR'
+      }
+    } catch {
+      Write-Log -message ('{0} :: download of {1} to {2} failed. {3}' -f $($MyInvocation.MyCommand.Name), $url, ('{0}.gpg' -f $path), $_.Exception.Message) -severity 'ERROR'
     }
   }
   end {

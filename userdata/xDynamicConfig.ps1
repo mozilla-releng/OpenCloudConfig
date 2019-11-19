@@ -14,12 +14,16 @@ Configuration xDynamicConfig {
     ConfigurationMode = 'ApplyOnly'
   }
 
-  $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation').Organisation } else { 'mozilla-releng' })
-  $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository').Repository } else { 'OpenCloudConfig' })
-  $sourceRev = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction SilentlyContinue) -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Revision' -ErrorAction SilentlyContinue)) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Revision').Revision } else { 'master' })
+  $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction 'SilentlyContinue') -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation' -ErrorAction 'SilentlyContinue')) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation').Organisation } else { 'mozilla-releng' })
+  $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction 'SilentlyContinue') -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository' -ErrorAction 'SilentlyContinue')) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository').Repository } else { 'OpenCloudConfig' })
+  $sourceRev = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction 'SilentlyContinue') -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Revision' -ErrorAction 'SilentlyContinue')) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Revision').Revision } else { 'master' })
 
   if (Get-Service @('Ec2Config', 'AmazonSSMAgent', 'AWSLiteAgent') -ErrorAction SilentlyContinue) {
     $locationType = 'AWS'
+  } elseif ((Get-Service -Name 'GCEAgent' -ErrorAction 'SilentlyContinue') -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
+    $locationType = 'GCP'
+  } elseif (Get-Service -Name @('WindowsAzureGuestAgent', 'WindowsAzureNetAgentSvc') -ErrorAction 'SilentlyContinue') {
+    $locationType = 'Azure'
   } else {
     $locationType = 'DataCenter'
   }
@@ -27,7 +31,7 @@ Configuration xDynamicConfig {
   if ($locationType -eq 'AWS') {
     Script GpgKeyImport {
       DependsOn = @('[Script]ExeInstall_GpgForWin')
-      GetScript = { @{ Result = (((Test-Path -Path ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb)) -or ((Test-Path -Path ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb))) } }
+      GetScript = { @{ Result = (((Test-Path -Path ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction 'SilentlyContinue') -and ((Get-Item ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb)) -or ((Test-Path -Path ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction 'SilentlyContinue') -and ((Get-Item ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb))) } }
       SetScript = {
         if ("${env:ProgramFiles(x86)}") {
           $gpg = ('{0}\GNU\GnuPG\pub\gpg.exe' -f ${env:ProgramFiles(x86)})
@@ -47,20 +51,20 @@ Configuration xDynamicConfig {
           Remove-Item -Path ('{0}\Temp\private.key' -f $env:SystemRoot) -Force
         }
       }
-      TestScript = { if (((Test-Path -Path ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb)) -or ((Test-Path -Path ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb)))  { $true } else { $false } }
+      TestScript = { if (((Test-Path -Path ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction 'SilentlyContinue') -and ((Get-Item ('{0}\SysWOW64\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb)) -or ((Test-Path -Path ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot) -ErrorAction 'SilentlyContinue') -and ((Get-Item ('{0}\System32\config\systemprofile\AppData\Roaming\gnupg\secring.gpg' -f $env:SystemRoot)).length -gt 0kb)))  { $true } else { $false } }
     }
-  } elseif ((Test-Path -Path ('{0}\Mozilla\OpenCloudConfig\OpenCloudConfig.private.key' -f $env:ProgramData) -ErrorAction SilentlyContinue) -and (Test-Path -Path ('{0}\GNU\GnuPG\pub\gpg.exe' -f ${env:ProgramFiles(x86)}) -ErrorAction SilentlyContinue) -and (-not ((Test-Path -Path ('{0}\gnupg\secring.gpg' -f $env:AppData) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\gnupg\secring.gpg' -f $env:AppData)).length -gt 0kb)))) {
+  } elseif ((Test-Path -Path ('{0}\Mozilla\OpenCloudConfig\OpenCloudConfig.private.key' -f $env:ProgramData) -ErrorAction 'SilentlyContinue') -and (Test-Path -Path ('{0}\GNU\GnuPG\pub\gpg.exe' -f ${env:ProgramFiles(x86)}) -ErrorAction 'SilentlyContinue') -and (-not ((Test-Path -Path ('{0}\gnupg\secring.gpg' -f $env:AppData) -ErrorAction 'SilentlyContinue') -and ((Get-Item ('{0}\gnupg\secring.gpg' -f $env:AppData)).length -gt 0kb)))) {
     Script GpgKeyImport {
       DependsOn = @('[Script]ExeInstall_GpgForWin')
-      GetScript = { @{ Result = ((Test-Path -Path ('{0}\gnupg\secring.gpg' -f $env:AppData) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\gnupg\secring.gpg' -f $env:AppData)).length -gt 0kb)) } }
+      GetScript = { @{ Result = ((Test-Path -Path ('{0}\gnupg\secring.gpg' -f $env:AppData) -ErrorAction 'SilentlyContinue') -and ((Get-Item ('{0}\gnupg\secring.gpg' -f $env:AppData)).length -gt 0kb)) } }
       SetScript = {
         $gpg = ('{0}\GNU\GnuPG\pub\gpg.exe' -f ${env:ProgramFiles(x86)})
-        if ((Test-Path -Path ('{0}\Mozilla\OpenCloudConfig\OpenCloudConfig.private.key' -f $env:ProgramData) -ErrorAction SilentlyContinue) -and (-not ((Test-Path -Path ('{0}\gnupg\secring.gpg' -f $env:AppData) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\gnupg\secring.gpg' -f $env:AppData)).length -gt 0kb)))) {
+        if ((Test-Path -Path ('{0}\Mozilla\OpenCloudConfig\OpenCloudConfig.private.key' -f $env:ProgramData) -ErrorAction 'SilentlyContinue') -and (-not ((Test-Path -Path ('{0}\gnupg\secring.gpg' -f $env:AppData) -ErrorAction 'SilentlyContinue') -and ((Get-Item ('{0}\gnupg\secring.gpg' -f $env:AppData)).length -gt 0kb)))) {
           Start-Process ('{0}\System32\diskperf.exe' -f $env:SystemRoot) -ArgumentList '-y' -Wait -NoNewWindow -PassThru -RedirectStandardOutput ('{0}\log\{1}.diskperf.stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss")) -RedirectStandardError ('{0}\log\{1}.diskperf.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
           Start-Process $gpg -ArgumentList @('--allow-secret-key-import', '--import', ('{0}\Mozilla\OpenCloudConfig\OpenCloudConfig.private.key' -f $env:ProgramData)) -Wait -NoNewWindow -PassThru -RedirectStandardOutput ('{0}\log\{1}.gpg-import-key.stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss")) -RedirectStandardError ('{0}\log\{1}.gpg-import-key.stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
         }
       }
-      TestScript = { if ((Test-Path -Path ('{0}\gnupg\secring.gpg' -f $env:AppData) -ErrorAction SilentlyContinue) -and ((Get-Item ('{0}\gnupg\secring.gpg' -f $env:AppData)).length -gt 0kb))  { $true } else { $false } }
+      TestScript = { if ((Test-Path -Path ('{0}\gnupg\secring.gpg' -f $env:AppData) -ErrorAction 'SilentlyContinue') -and ((Get-Item ('{0}\gnupg\secring.gpg' -f $env:AppData)).length -gt 0kb))  { $true } else { $false } }
     }
   }
   File BuildsFolder {
@@ -68,7 +72,7 @@ Configuration xDynamicConfig {
     DestinationPath = ('{0}\builds' -f $env:SystemDrive)
     Ensure = 'Present'
   }
-  if ($locationType -eq 'AWS') { 
+  if ($locationType -eq 'AWS') {
     Script FirefoxBuildSecrets {
       DependsOn = @('[Script]GpgKeyImport', '[File]BuildsFolder')
       GetScript = "@{ Script = FirefoxBuildSecrets }"
@@ -85,7 +89,7 @@ Configuration xDynamicConfig {
           Remove-Item -Path ('{0}\builds\{1}.gpg' -f $env:SystemDrive, $file) -Force
         }
       }
-      TestScript = { if ((Test-Path -Path ('{0}\builds\*.tok' -f $env:SystemDrive) -ErrorAction SilentlyContinue) -and (-not (Compare-Object -ReferenceObject (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/releng-secrets.json' -f $using:sourceOrg, $using:sourceRepo, $using:sourceRev) -UseBasicParsing | ConvertFrom-Json) -DifferenceObject (Get-ChildItem -Path ('{0}\builds' -f $env:SystemDrive) | Where-Object { !$_.PSIsContainer } | % { $_.Name })))) { $true } else { $false } }
+      TestScript = { if ((Test-Path -Path ('{0}\builds\*.tok' -f $env:SystemDrive) -ErrorAction 'SilentlyContinue') -and (-not (Compare-Object -ReferenceObject (Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/releng-secrets.json' -f $using:sourceOrg, $using:sourceRepo, $using:sourceRev) -UseBasicParsing | ConvertFrom-Json) -DifferenceObject (Get-ChildItem -Path ('{0}\builds' -f $env:SystemDrive) | Where-Object { !$_.PSIsContainer } | % { $_.Name })))) { $true } else { $false } }
     }
   }
 
@@ -106,6 +110,20 @@ Configuration xDynamicConfig {
     if ($workerType) {
       $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/{3}.json?{4}' -f $sourceOrg, $sourceRepo, $sourceRev, $workerType, [Guid]::NewGuid()) -UseBasicParsing).Content.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
     }
+  } elseif ($locationType -eq 'GCP') {
+    $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/taskcluster' -UseBasicParsing | ConvertFrom-Json).workerConfig.openCloudConfig.workerType
+    if ($workerType) {
+      $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/{3}.json?{4}' -f $sourceOrg, $sourceRepo, $sourceRev, $workerType, [Guid]::NewGuid()) -UseBasicParsing).Content.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
+    }
+  } elseif ($locationType -eq 'Azure') {
+    try {
+      $workerType = (@(((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq 'workerType' })[0].value
+    } catch {
+      $workerType = $false
+    }
+    if ($workerType) {
+      $manifest = ((Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Manifest/{3}.json?{4}' -f $sourceOrg, $sourceRepo, $sourceRev, $workerType, [Guid]::NewGuid()) -UseBasicParsing).Content.Replace('mozilla-releng/OpenCloudConfig/master', ('{0}/{1}/{2}' -f $sourceOrg, $sourceRepo, $sourceRev)) | ConvertFrom-Json)
+    }
   } else {
     switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
       'Microsoft Windows 7*' {
@@ -114,7 +132,7 @@ Configuration xDynamicConfig {
       'Microsoft Windows 10*' {
         if (${env:PROCESSOR_ARCHITEW6432} -eq 'ARM64') {
           $workerType = 'gecko-t-win10-a64-beta'
-        } elseif (Test-Path -Path 'C:\dsc\GW10UX.semaphore' -ErrorAction SilentlyContinue) {
+        } elseif (Test-Path -Path 'C:\dsc\GW10UX.semaphore' -ErrorAction 'SilentlyContinue') {
           $workerType = 'gecko-t-win10-64-ux'
         } else {
           $workerType = 'gecko-t-win10-64-hw'
@@ -273,7 +291,7 @@ Configuration xDynamicConfig {
             Invoke-SymbolicLink -verbose -component $using:item -eventLogSource 'occ-dsc'
           }
           TestScript = {
-            return Confirm-LogValidation -source 'occ-dsc' -satisfied ((Test-Path -Path $using:item.Link -ErrorAction SilentlyContinue) -and ((Get-Item $using:item.Link).Attributes.ToString() -match "ReparsePoint")) -verbose
+            return Confirm-LogValidation -source 'occ-dsc' -satisfied ((Test-Path -Path $using:item.Link -ErrorAction 'SilentlyContinue') -and ((Get-Item $using:item.Link).Attributes.ToString() -match "ReparsePoint")) -verbose
           }
         }
         Log ('Log_SymbolicLink_{0}' -f $item.ComponentName) {
@@ -290,7 +308,7 @@ Configuration xDynamicConfig {
           }
           TestScript = {
             $tempFile = ('{0}\Temp\{1}.exe' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName }))
-            return (Test-Path -Path $tempFile -ErrorAction SilentlyContinue)
+            return (Test-Path -Path $tempFile -ErrorAction 'SilentlyContinue')
           }
         }
         Log ('Log_ExeDownload_{0}' -f $item.ComponentName) {
@@ -319,7 +337,7 @@ Configuration xDynamicConfig {
           SetScript = {
             Invoke-FileDownload -verbose -component $using:item -localPath ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId) -eventLogSource 'occ-dsc'
           }
-          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId) -ErrorAction SilentlyContinue) }
+          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}_{2}.msi' -f $env:SystemRoot, $using:item.ComponentName, $using:item.ProductId) -ErrorAction 'SilentlyContinue') }
         }
         Log ('Log_MsiDownload_{0}' -f $item.ComponentName) {
           DependsOn = ('[Script]MsiDownload_{0}' -f $item.ComponentName)
@@ -346,7 +364,7 @@ Configuration xDynamicConfig {
           SetScript = {
             Invoke-FileDownload -verbose -component $using:item -localPath ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName })) -eventLogSource 'occ-dsc'
           }
-          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName })) -ErrorAction SilentlyContinue) }
+          TestScript = { return (Test-Path -Path ('{0}\Temp\{1}.msu' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName })) -ErrorAction 'SilentlyContinue') }
         }
         Log ('Log_MsuDownload_{0}' -f $item.ComponentName) {
           DependsOn = ('[Script]MsuDownload_{0}' -f $item.ComponentName)
@@ -383,7 +401,7 @@ Configuration xDynamicConfig {
           }
           TestScript = {
             $tempFile = ('{0}\Temp\{1}.zip' -f $env:SystemRoot, $(if ($using:item.sha512) { $using:item.sha512 } else { $using:item.ComponentName }))
-            return (Test-Path -Path $tempFile -ErrorAction SilentlyContinue)
+            return (Test-Path -Path $tempFile -ErrorAction 'SilentlyContinue')
           }
         }
         Log ('Log_ZipDownload_{0}' -f $item.ComponentName) {
@@ -538,32 +556,6 @@ Configuration xDynamicConfig {
           Message = ('{0}: {1}, completed' -f $item.ComponentType, $item.ComponentName)
         }
       }
-    }
-  }
-  if (($locationType -eq 'AWS') -and ($workerType)) {
-    Script CotGpgKeyImport {
-      DependsOn = @('[Script]ExeInstall_GpgForWin', '[File]DirectoryCreate_GenericWorkerDirectory')
-      GetScript = "@{ Script = CotGpgKeyImport }"
-      SetScript = {
-        if ("${env:ProgramFiles(x86)}") {
-          $gpg = ('{0}\GNU\GnuPG\pub\gpg.exe' -f ${env:ProgramFiles(x86)})
-        } else {
-          $gpg = ('{0}\GNU\GnuPG\pub\gpg.exe' -f $env:ProgramFiles)
-        }
-        try {
-          $userdata = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/user-data')
-          $cotKey = [regex]::matches($userdata, '<cotGpgKey>((.|\n)*)<\/cotGpgKey>')[0].Groups[1].Value.Trim()
-          if ((-not ($cotKey.Contains('-----BEGIN PGP PRIVATE KEY BLOCK-----'))) -or (-not ($cotKey.Contains('-----END PGP PRIVATE KEY BLOCK-----')))) {
-            $cotKey = $false
-          }
-        } catch {
-          $cotKey = $false
-        }
-        if ($cotKey) {
-          [IO.File]::WriteAllLines(('{0}\generic-worker\cot.key' -f $env:SystemDrive), $cotKey)
-        }
-      }
-      TestScript = { if ((Test-Path -Path ('{0}\generic-worker\cot.key' -f $env:SystemDrive) -ErrorAction SilentlyContinue))  { $true } else { $false } }
     }
   }
 }

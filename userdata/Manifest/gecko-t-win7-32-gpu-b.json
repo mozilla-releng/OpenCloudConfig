@@ -839,7 +839,7 @@
           "ComponentName": "MozillaBuildSetup"
         }
       ],
-      "Source": "https://raw.githubusercontent.com/mozilla/release-services/2959e48/src/tooltool/client/tooltool.py",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/tooltool/master/client/tooltool.py",
       "Target": "C:\\mozilla-build\\tooltool.py"
     },
     {

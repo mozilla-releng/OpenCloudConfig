@@ -1,0 +1,760 @@
+{
+  "Components": [
+    {
+      "ComponentName": "LogDirectory",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "Required by OpenCloudConfig for DSC logging",
+      "Path": "C:\\log"
+    },
+    {
+      "ComponentName": "NxLog",
+      "ComponentType": "MsiInstall",
+      "Comment": "Maintenance Toolchain - forwards event logs to papertrail",
+      "Url": "https://nxlog.co/system/files/products/files/348/nxlog-ce-2.10.2150.msi",
+      "Name": "NXLog-CE",
+      "ProductId": "D5F06971-73E1-4B19-928F-50707ABCCC6E",
+      "sha512": "41e052f8d08099eeccca9f8a78d72ba2a2ef88c67f2e046b3f33af6809c0271baf82c2819609acc7020dc8420cde337c096f7e12a9b4ae555645dfb5b3c961c5"
+    },
+    {
+      "ComponentName": "PaperTrailEncryptionCertificate",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/papertrail-bundle.pem",
+      "Target": "C:\\Program Files (x86)\\nxlog\\cert\\papertrail-bundle.pem",
+      "DependsOn": [
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "NxLog"
+        }
+      ]
+    },
+    {
+      "ComponentName": "NxLogPaperTrailConfiguration",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Maintenance Toolchain",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win2016.conf",
+      "Target": "C:\\Program Files (x86)\\nxlog\\conf\\nxlog.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "PaperTrailEncryptionCertificate"
+        }
+      ]
+    },
+    {
+      "ComponentName": "Start_nxlog",
+      "ComponentType": "ServiceControl",
+      "Comment": "Maintenance Toolchain",
+      "Name": "nxlog",
+      "StartupType": "Automatic",
+      "State": "Running",
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "NxLogPaperTrailConfiguration"
+        }
+      ]
+    },
+    {
+      "ComponentName": "DisableIndexing",
+      "ComponentType": "DisableIndexing",
+      "Comment": "Disable indexing on all disk volumes (for performance)"
+    },
+    {
+      "ComponentName": "ProcessExplorer",
+      "ComponentType": "ZipInstall",
+      "Comment": "Maintenance Toolchain",
+      "Url": "https://s3.amazonaws.com/windows-opencloudconfig-packages/ProcessExplorer/ProcessExplorer.zip",
+      "Destination": "C:\\ProcessExplorer"
+    },
+    {
+      "ComponentName": "ProcessMonitor",
+      "ComponentType": "ZipInstall",
+      "Comment": "Maintenance Toolchain",
+      "Url": "https://s3.amazonaws.com/windows-opencloudconfig-packages/ProcessMonitor/ProcessMonitor.zip",
+      "Destination": "C:\\ProcessMonitor"
+    },
+    {
+      "ComponentName": "GpgForWin",
+      "ComponentType": "ExeInstall",
+      "Comment": "Maintenance Toolchain",
+      "Url": "http://files.gpg4win.org/gpg4win-2.3.0.exe",
+      "Arguments": [
+        "/S"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files (x86)\\GNU\\GnuPG\\pub\\gpg.exe",
+          "C:\\Program Files (x86)\\GNU\\GnuPG\\pub\\gpg2.exe"
+        ]
+      }
+    },
+    {
+      "ComponentName": "SevenZip",
+      "ComponentType": "ExeInstall",
+      "Comment": "Maintenance Toolchain",
+      "Url": "http://7-zip.org/a/7z1514-x64.exe",
+      "Arguments": [
+        "/S"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\7-Zip\\7z.exe",
+          "C:\\Program Files\\7-Zip\\7z.dll"
+        ]
+      }
+    },
+    {
+      "ComponentName": "SublimeText3",
+      "ComponentType": "ExeInstall",
+      "Comment": "Maintenance Toolchain",
+      "Url": "https://download.sublimetext.com/Sublime%20Text%20Build%203114%20x64%20Setup.exe",
+      "Arguments": [
+        "/VERYSILENT",
+        "/NORESTART",
+        "/TASKS=\"contextentry\""
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\Sublime Text 3\\subl.exe",
+          "C:\\Program Files\\Sublime Text 3\\sublime_text.exe"
+        ]
+      }
+    },
+    {
+      "ComponentName": "SublimeText3_PackagesFolder",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "Maintenance Toolchain",
+      "Path": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages"
+    },
+    {
+      "ComponentName": "SublimeText3_PackageControl",
+      "ComponentType": "FileDownload",
+      "Comment": "Maintenance Toolchain",
+      "Source": "http://sublime.wbond.net/Package%20Control.sublime-package",
+      "Target": "C:\\Users\\Administrator\\AppData\\Roaming\\Sublime Text 3\\Packages\\Package Control.sublime-package",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "SublimeText3"
+        },
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "SublimeText3_PackagesFolder"
+        }
+      ]
+    },
+    {
+      "ComponentName": "SystemPowerShellProfile",
+      "ComponentType": "FileDownload",
+      "Comment": "Maintenance Toolchain",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Microsoft.PowerShell_profile.ps1",
+      "Target": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Microsoft.PowerShell_profile.ps1"
+    },
+    {
+      "ComponentName": "FsutilDisable8Dot3",
+      "ComponentType": "CommandRun",
+      "Comment": "Maintenance Toolchain",
+      "Command": "fsutil.exe",
+      "Arguments": [
+        "behavior",
+        "set",
+        "disable8dot3",
+        "1"
+      ],
+      "Validate": {
+        "CommandsReturn": [
+          {
+            "Command": "fsutil.exe",
+            "Arguments": [
+              "behavior",
+              "query",
+              "disable8dot3"
+            ],
+            "Match": "The registry state is: 1 (Disable 8dot3 name creation on all volumes)."
+          }
+        ]
+      }
+    },
+    {
+      "ComponentName": "FsutilDisableLastAccess",
+      "ComponentType": "CommandRun",
+      "Comment": "Maintenance Toolchain",
+      "Command": "fsutil.exe",
+      "Arguments": [
+        "behavior",
+        "set",
+        "disablelastaccess",
+        "1"
+      ],
+      "Validate": {
+        "CommandsReturn": [
+          {
+            "Command": "fsutil.exe",
+            "Arguments": [
+              "behavior",
+              "query",
+              "disablelastaccess"
+            ],
+            "Match": "DisableLastAccess = 1"
+          }
+        ]
+      }
+    },
+    {
+      "ComponentName": "home",
+      "ComponentType": "SymbolicLink",
+      "Comment": "Maintenance Toolchain",
+      "Target": "C:\\Users",
+      "Link": "C:\\home"
+    },
+    {
+      "ComponentName": "Start_wuauserv",
+      "ComponentType": "ServiceControl",
+      "Comment": "Required by NET-Framework-Core",
+      "Name": "wuauserv",
+      "StartupType": "Manual",
+      "State": "Running"
+    },
+    {
+      "ComponentName": "GenericWorkerDirectory",
+      "ComponentType": "DirectoryCreate",
+      "Path": "C:\\generic-worker"
+    },
+    {
+      "ComponentName": "WorkerRunnerExeDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/taskcluster-worker-runner/releases/download/v1.0.2/start-worker-windows-amd64",
+      "Target": "C:\\generic-worker\\taskcluster-worker-runner.exe"
+    },
+    {
+      "ComponentName": "WorkerRunnerConfigDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/azure/userdata/Configuration/GenericWorker/worker-runner-azure.yaml",
+      "Target": "C:\\generic-worker\\taskcluster-worker-runner.yaml"
+    },
+    {
+      "ComponentName": "GenericWorkerDownload",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.6.1/generic-worker-multiuser-windows-amd64.exe",
+      "Target": "C:\\generic-worker\\generic-worker.exe",
+      "sha512": "a0f5a8f2674a229ada5c9747bbe64251a645bc9c32645f2095f1ec538f614644bc32bf26181a1b8d9741f17341d7eb4ce6108940295c8678547027e136a14c79"
+    },
+    {
+      "ComponentName": "LiveLogDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe",
+      "Target": "C:\\generic-worker\\livelog.exe"
+    },
+    {
+      "ComponentName": "TaskClusterProxyDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-amd64.exe",
+      "Target": "C:\\generic-worker\\taskcluster-proxy.exe"
+    },
+    {
+      "ComponentName": "NSSMDownload",
+      "ComponentType": "FileDownload",
+      "Source": "https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip",
+      "Target": "C:\\Windows\\Temp\\NSSMInstall.zip"
+    },
+    {
+      "ComponentName": "NSSMInstall",
+      "ComponentType": "CommandRun",
+      "Comment": "NSSM is required to install Generic Worker as a service. Currently ZipInstall fails, so using 7z instead.",
+      "Command": "C:\\Program Files\\7-Zip\\7z.exe",
+      "Arguments": [
+        "x",
+        "-oC:\\",
+        "C:\\Windows\\Temp\\NSSMInstall.zip"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "SevenZip"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "NSSMDownload"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe"
+        ]
+      }
+    },
+    {
+      "ComponentName": "GenericWorkerInstall",
+      "ComponentType": "CommandRun",
+      "Command": "C:\\generic-worker\\generic-worker.exe",
+      "Arguments": [
+        "install",
+        "service",
+        "--nssm",
+        "C:\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe",
+        "--config",
+        "C:\\generic-worker\\generic-worker.config"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "GenericWorkerDownload"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "LiveLogDownload"
+        },
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "NSSMInstall"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\generic-worker\\run-generic-worker.bat",
+          "C:\\generic-worker\\generic-worker.exe"
+        ],
+        "CommandsReturn": [
+          {
+            "Command": "C:\\generic-worker\\generic-worker.exe",
+            "Arguments": [
+              "--version"
+            ],
+            "Like": "generic-worker (multiuser engine) 16.6.1 *"
+          }
+        ]
+      }
+    },
+    {
+      "ComponentName": "GenericWorkerStateWait",
+      "ComponentType": "ChecksumFileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "GenericWorkerInstall"
+        }
+      ],
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-and-reboot.bat",
+      "Target": "C:\\generic-worker\\run-generic-worker.bat"
+    },
+    {
+      "ComponentName": "GenericWorkerConfig",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/generic-worker.config",
+      "Target": "C:\\generic-worker\\generic-worker.config",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskUserInitScript",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "Bug 1433851 - wait for user registry to initialise before running a task",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/task-user-init-win2012.cmd",
+      "Target": "C:\\generic-worker\\task-user-init.cmd",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ]
+    },
+    {
+      "ComponentName": "Mercurial",
+      "ComponentType": "MsiInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1490703",
+      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-4.7.1-x64.msi",
+      "Name": "Mercurial 4.7.1 (x64)",
+      "ProductId": "68FA175A-0F28-49AF-9E65-30CE6B60AE1C"
+    },
+    {
+      "ComponentName": "CarbonClone",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1316329 - support creation of symlinks by task users",
+      "Command": "C:\\Program Files\\Mercurial\\hg.exe",
+      "Arguments": [
+        "clone",
+        "--insecure",
+        "https://bitbucket.org/splatteredbits/carbon",
+        "C:\\Windows\\Temp\\carbon"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "MsiInstall",
+          "ComponentName": "Mercurial"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Windows\\Temp\\carbon\\.hg"
+        ]
+      }
+    },
+    {
+      "ComponentName": "CarbonUpdate",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1316329 - support creation of symlinks by task users",
+      "Command": "C:\\Program Files\\Mercurial\\hg.exe",
+      "Arguments": [
+        "update",
+        "2.4.0",
+        "-R",
+        "C:\\Windows\\Temp\\carbon"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonClone"
+        }
+      ]
+    },
+    {
+      "ComponentName": "CarbonInstall",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1316329 - support creation of symlinks by task users",
+      "Command": "xcopy",
+      "Arguments": [
+        "C:\\Windows\\Temp\\carbon\\Carbon",
+        "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules\\Carbon",
+        "/e",
+        "/i",
+        "/y"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonUpdate"
+        }
+      ]
+    },
+    {
+      "ComponentName": "GrantEveryoneSeCreateSymbolicLinkPrivilege",
+      "ComponentType": "CommandRun",
+      "Comment": "Bug 1316329 - support creation of symlinks by task users",
+      "Command": "powershell",
+      "Arguments": [
+        "-command",
+        "\"& {&'Import-Module' Carbon}\";",
+        "\"& {&'Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "CarbonInstall"
+        }
+      ]
+    },
+    {
+      "ComponentName": "ZDriveAccessRights",
+      "ComponentType": "CommandRun",
+      "Comment": "allows task users full access to the task drive",
+      "Command": "icacls.exe",
+      "Arguments": [
+        "z:\\",
+        "/grant",
+        "Everyone:(OI)(CI)F"
+      ]
+    },
+    {
+      "ComponentName": "KmsIn",
+      "ComponentType": "FirewallRule",
+      "Protocol": "TCP",
+      "LocalPort": 1688,
+      "Direction": "Inbound",
+      "Action": "Allow"
+    },
+    {
+      "ComponentName": "KmsOut",
+      "ComponentType": "FirewallRule",
+      "Protocol": "TCP",
+      "LocalPort": 1688,
+      "Direction": "Outbound",
+      "Action": "Allow"
+    },
+    {
+      "ComponentName": "reg_Power_PreferredPlan_HighPerformance",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1362613",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\explorer\\ControlPanel\\NameSpace\\{025A5937-A6BE-4686-A844-36FE4BEC8B6D}",
+      "ValueName": "PreferredPlan",
+      "ValueType": "String",
+      "ValueData": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
+    },
+    {
+      "ComponentName": "OpenSshDownload",
+      "ComponentType": "FileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Source": "https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win64.zip",
+      "Target": "C:\\Windows\\Temp\\OpenSSH-Win64.zip"
+    },
+    {
+      "ComponentName": "OpenSshUnzip",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Command": "C:\\Program Files\\7-Zip\\7z.exe",
+      "Arguments": [
+        "x",
+        "-o\"C:\\Program Files\"",
+        "C:\\Windows\\Temp\\OpenSSH-Win64.zip"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "SevenZip"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "OpenSshDownload"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\OpenSSH-Win64\\sshd.exe",
+          "C:\\Program Files\\OpenSSH-Win64\\ssh-agent.exe",
+          "C:\\Program Files\\OpenSSH-Win64\\install-sshd.ps1"
+        ]
+      }
+    },
+    {
+      "ComponentName": "SshIn",
+      "ComponentType": "FirewallRule",
+      "Protocol": "TCP",
+      "LocalPort": 22,
+      "Direction": "Inbound",
+      "Action": "Allow"
+    },
+    {
+      "ComponentName": "InstallOpenSSH",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Command": "powershell.exe",
+      "Arguments": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "\"C:\\Program Files\\OpenSSH-Win64\\install-sshd.ps1\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "OpenSshUnzip"
+        }
+      ]
+    },
+    {
+      "ComponentName": "reg_OpenSSH_DefaultShell",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\OpenSSH",
+      "ValueName": "DefaultShell",
+      "ValueType": "String",
+      "ValueData": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+    },
+    {
+      "ComponentName": "reg_OpenSSH_DefaultShellCommandOption",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\OpenSSH",
+      "ValueName": "DefaultShellCommandOption",
+      "ValueType": "String",
+      "ValueData": "/c"
+    },
+    {
+      "ComponentName": "AdministratorSshDir",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Path": "C:\\Users\\Administrator\\.ssh"
+    },
+    {
+      "ComponentName": "AdministratorSshAuthorisedKeys",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/authorized_keys",
+      "Target": "C:\\Users\\Administrator\\.ssh\\authorized_keys",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "AdministratorSshDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "ProgramDataSshDir",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Path": "C:\\ProgramData\\ssh"
+    },
+    {
+      "ComponentName": "sshd_config",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1464343",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/sshd_config",
+      "Target": "C:\\ProgramData\\ssh\\sshd_config",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "InstallOpenSSH"
+        },
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "ProgramDataSshDir"
+        }
+      ]
+    },
+    {
+      "ComponentName": "Start_sshd",
+      "ComponentType": "ServiceControl",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Name": "sshd",
+      "StartupType": "Automatic",
+      "State": "Running",
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "sshd_config"
+        }
+      ]
+    },
+    {
+      "ComponentName": "Start_sshagent",
+      "ComponentType": "ServiceControl",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1454578",
+      "Name": "ssh-agent",
+      "StartupType": "Automatic",
+      "State": "Running",
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "InstallOpenSSH"
+        }
+      ]
+    },
+    {
+      "ComponentName": "HostsFile",
+      "ComponentType": "ChecksumFileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1497308",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/etc/hosts",
+      "Target": "C:\\Windows\\System32\\drivers\\etc\\hosts"
+    },
+    {
+      "ComponentName": "SetHostsFileContent",
+      "ComponentType": "ReplaceInFile",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1497308",
+      "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts",
+      "Match": "127\\.0\\.0\\.1 (hostname|i-[a-f0-9]{17})\\.(workertype|gecko-([1-3]-b-win2012(-alpha|-beta)?|t-win(7-32|10-64)(-gpu(-a|-b)?|-alpha|-beta|-cu)?))\\.(ec2region|(us|eu)[ewc][12])\\.mozilla\\.com",
+      "Replace": "('127.0.0.1 {0}.{1}' -f ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id')), ((Get-ItemProperty -Path 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters' -Name 'NV Domain').'NV Domain').Replace('wintest.releng.', ''))",
+      "DependsOn": [
+        {
+          "ComponentType": "ChecksumFileDownload",
+          "ComponentName": "HostsFile"
+        }
+      ]
+    },
+    {
+      "ComponentName": "GitAndUnixToolsOnPath",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://superuser.com/a/966787/5483",
+      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Git_is1",
+      "ValueName": "Inno Setup CodeFile: Path Option",
+      "ValueType": "String",
+      "ValueData": "CmdTools"
+    },
+    {
+      "ComponentName": "Git",
+      "ComponentType": "ExeInstall",
+      "Url": "https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe",
+      "Arguments": [
+        "/VERYSILENT",
+        "/SUPPRESSMSGBOXES",
+        "/NORESTART",
+        "/NOCANCEL",
+        "/SP-",
+        "/COMPONENTS=\"icons,ext\\reg\\shellhere,assoc,assoc_sh\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "RegistryValueSet",
+          "ComponentName": "GitAndUnixToolsOnPath"
+        }
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\Git\\bin\\git.exe"
+        ]
+      }
+    },
+    {
+      "ComponentName": "env_TASKCLUSTER_ROOT_URL",
+      "ComponentType": "EnvironmentVariableSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1551789",
+      "Name": "TASKCLUSTER_ROOT_URL",
+      "Value": "https://taskcluster.net",
+      "Target": "Machine"
+    },
+    {
+      "ComponentName": "programdata_google_auth",
+      "ComponentType": "DirectoryCreate",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
+      "Path": "C:\\ProgramData\\Google\\Auth"
+    },
+    {
+      "ComponentName": "stackdriver_key",
+      "ComponentType": "SymbolicLink",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
+      "Target": "C:\\builds\\taskcluster-worker-ec2@aws-stackdriver-log-1571127027.json",
+      "Link": "C:\\ProgramData\\Google\\Auth\\application_default_credentials.json",
+      "DependsOn": [
+        {
+          "ComponentType": "ExeInstall",
+          "ComponentName": "GpgForWin"
+        },
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "programdata_google_auth"
+        }
+      ]
+    },
+    {
+      "ComponentName": "jqInstall",
+      "ComponentType": "FileDownload",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1570148#c23",
+      "Source": "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe",
+      "sha512": "58127bae7b27d963cb4ec19779e5ab0938db69190ec66985694320af787e696a8acd490b967255a7fed4c28ec6a2c2bfcd6efbb5b85ec2a950b3e318113d5cde",
+      "Target": "C:\\Windows\\System32\\jq.exe"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+provider:
+  providerType: azure
+worker:
+  implementation: generic-worker
+  path: C:\generic-worker\generic-worker.exe
+  configPath: C:\generic-worker\generic-worker.config
+cacheOverRestarts: C:\generic-worker\worker-runner-cache.json

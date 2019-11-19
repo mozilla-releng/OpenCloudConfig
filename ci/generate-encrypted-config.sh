@@ -13,22 +13,41 @@ rm -f ${current_script_dir}/../cfg/bitbar/.*.pw.gpg
 mkdir -p ${temp_dir}/gnupg
 chmod 700 ${temp_dir}/gnupg
 
-accessToken=$(pass Mozilla/TaskCluster/client/project/releng/generic-worker/bitbar-gecko-t-win10-aarch64)
-clientId=project/releng/generic-worker/bitbar-gecko-t-win10-aarch64
-provisionerId=bitbar
-workerGroup=bitbar-sc
-workerType=gecko-t-win64-aarch64-laptop
 rootURL=https://firefox-ci-tc.services.mozilla.com
-taskDrive=C
 
 for pub_key_path in ${current_script_dir}/../keys/*; do
   workerId=$(basename ${pub_key_path})
-  # most instances have an ip address of 10.7.204.(instance-number + 20) but there are exceptions.
+  if [[ "${workerId}" == "vm-"* ]]; then
+    if az vm show --resource-group rg-east-us-gecko-t -n ${workerId} --query tags.workerType > /dev/null 2>&1; then
+      workerType=$(az vm show --resource-group rg-east-us-gecko-t -n ${workerId} --query tags.workerType --output tsv)
+    elif az vm show --resource-group rg-east-us-gecko-1 -n ${workerId} --query tags.workerType > /dev/null 2>&1; then
+      workerType=$(az vm show --resource-group rg-east-us-gecko-1 -n ${workerId} --query tags.workerType --output tsv)
+    else
+      echo "failed to determine worker type and client id"
+      exit
+    fi
+    clientId=project/releng/generic-worker/azure-${workerType/-azure/}
+    accessToken=$(pass Mozilla/TaskCluster/client/${clientId})
+    provisionerId=azure
+    workerGroup=azure
+    taskDrive=Z
+  else
+    accessToken=$(pass Mozilla/TaskCluster/client/project/releng/generic-worker/bitbar-gecko-t-win10-aarch64)
+    clientId=project/releng/generic-worker/bitbar-gecko-t-win10-aarch64
+    provisionerId=bitbar
+    workerGroup=bitbar-sc
+    workerType=gecko-t-win64-aarch64-laptop
+    taskDrive=C
+  fi
   echo ${workerId}
-  if [[ "${workerId}" == "desktop-"* ]]; then
+  if [[ "${workerId}" == "vm-"* ]]; then
+    recipient=${workerId}
+    publicIP=$(az vm list-ip-addresses -n ${workerId} | jq -r '.[0].virtualMachine.network.publicIpAddresses[0].ipAddress')
+  elif [[ "${workerId}" == "desktop-"* ]]; then
     recipient=${workerId}
     publicIP=0.0.0.0
-  else
+  elif [[ "${workerId}" == "t-lenovoyogac630-"* ]]; then
+    # most instances have an ip address of 10.7.204.(instance-number + 20) but there are exceptions.
     workerNumberPadded=${workerId/t-lenovoyogac630-/}
     workerNumber=$((10#$workerNumberPadded))
     recipient=yoga-${workerNumberPadded}

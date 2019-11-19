@@ -99,16 +99,45 @@ if (Is-Terminating) {
   exit
 }
 if (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) {
-  Write-Log -message 'drive z: exists' -severity 'DEBUG'
+  $z = (Get-PSDrive -Name 'Z')
+  Write-Log -message ('drive z: exists with {0}gb used and {1}gb free' -f $z.Used, $z.Free) -severity 'DEBUG'
 } else {
   Write-Log -message 'drive z: does not exist' -severity 'DEBUG'
 }
 
+$locationType = $(
+  if ((Get-Service -Name 'Ec2Config' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'AmazonSSMAgent' -ErrorAction 'SilentlyContinue')) {
+    'AWS'
+  } elseif ((Get-Service -Name 'GCEAgent' -ErrorAction 'SilentlyContinue') -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
+    'GCP'
+  } elseif ((Get-Service -Name 'WindowsAzureGuestAgent' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'WindowsAzureNetAgentSvc' -ErrorAction 'SilentlyContinue')) {
+    'Azure'
+  } else {
+    'DataCenter'
+  }
+)
+
 # prevent HaltOnIdle running before host rename has occured.
-$instanceId = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id'))
+$expectedHostname = $(
+  switch ($locationType) {
+    'AWS' {
+      (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id')
+    }
+    'GCP' {
+      (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/name')
+    }
+    'Azure' {
+      # todo: revisit this when we see what the worker manager sets instance names to
+      (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.name
+    }
+    'DataCenter' {
+      [System.Net.Dns]::GetHostName()
+    }
+  }
+)
 $dnsHostname = ([System.Net.Dns]::GetHostName())
-if ($instanceId -ne $dnsHostname) {
-  Write-Log -message ('productivity checks skipped. instance id: {0} does not match hostname: {1}.' -f $instanceId, $dnsHostname) -severity 'DEBUG'
+if ($expectedHostname -ne $dnsHostname) {
+  Write-Log -message ('productivity checks skipped. expected hostname: {0} does not match actual hostname: {1}.' -f $expectedHostname, $dnsHostname) -severity 'DEBUG'
   exit
 }
 try {
@@ -127,8 +156,16 @@ if (-not (Is-GenericWorkerRunning)) {
     $uptime = (Get-Uptime)
     if (($uptime) -and ($uptime -gt (New-TimeSpan -minutes 8))) {
       if (-not (Is-RdpSessionActive)) {
-        Write-Log -message ('instance failed productivity check and will be halted. uptime: {0}' -f $uptime) -severity 'ERROR'
-        & shutdown @('-s', '-t', '0', '-c', 'HaltOnIdle :: instance failed productivity checks', '-f', '-d', 'p:4:1')
+        switch ($locationType) {
+          'AWS' {
+            Write-Log -message ('instance failed productivity check and will be halted. uptime: {0}' -f $uptime) -severity 'ERROR'
+            & shutdown @('-s', '-t', '0', '-c', 'HaltOnIdle :: instance failed productivity checks', '-f', '-d', 'p:4:1')
+          }
+          default {
+            Write-Log -message ('instance failed productivity check and will be rebooted. uptime: {0}' -f $uptime) -severity 'ERROR'
+            & shutdown @('-r', '-t', '0', '-c', 'HaltOnIdle :: instance failed productivity checks', '-f', '-d', 'p:4:1')
+          }
+        }
       } else {
         Write-Log -message 'instance failed productivity checks and would be halted, but has rdp session in progress.' -severity 'DEBUG'
       }
@@ -142,8 +179,16 @@ if (-not (Is-GenericWorkerRunning)) {
         Write-Log -message ('occ completed over an hour ago at: {0:u}, with message: {1}.' -f $lastOccEventLog.TimeGenerated, $lastOccEventLog.Message) -severity 'WARN'
         $gwLastLogWrite = (Get-Item 'C:\generic-worker\generic-worker.log').LastWriteTime
         if (($gwLastLogWrite) -lt ((Get-Date).AddHours(-1))) {
-          Write-Log -message ('generic worker log was last updated at: {0:u}, with message: {1}.' -f $gwLastLogWrite, (Get-Content 'C:\generic-worker\generic-worker.log' -Tail 1)) -severity 'WARN'
-          & shutdown @('-s', '-t', '30', '-c', 'HaltOnIdle :: instance failed to start generic worker', '-d', 'p:4:1')
+          switch ($locationType) {
+            'AWS' {
+              Write-Log -message ('generic worker log was last updated at: {0:u}, with message: {1}. halting...' -f $gwLastLogWrite, (Get-Content 'C:\generic-worker\generic-worker.log' -Tail 1)) -severity 'WARN'
+              & shutdown @('-s', '-t', '30', '-c', 'HaltOnIdle :: instance failed to start generic worker', '-d', 'p:4:1')
+            }
+            default {
+              Write-Log -message ('generic worker log was last updated at: {0:u}, with message: {1}. rebooting...' -f $gwLastLogWrite, (Get-Content 'C:\generic-worker\generic-worker.log' -Tail 1)) -severity 'WARN'
+              & shutdown @('-r', '-t', '30', '-c', 'HaltOnIdle :: instance failed to start generic worker', '-d', 'p:4:1')
+            }
+          }
         }
       }
     }

@@ -88,7 +88,7 @@ function Start-LoggedProcess {
 }
 function Install-Dependencies {
   param (
-    [hashtable] $packageProviders = @{ 'NuGet' = 2.8.5.208 },
+    [hashtable] $packageProviders = @{ 'NuGet' = '2.8.5.208' },
     [hashtable[]] $modules = @(
       @{
         'ModuleName' = 'PowerShellGet';
@@ -113,14 +113,14 @@ function Install-Dependencies {
       @{
         'ModuleName' = 'OpenCloudConfig';
         'Repository' = 'PSGallery';
-        'ModuleVersion' = '0.0.52'
+        'ModuleVersion' = '0.0.54'
       }
     ),
     # if modules are detected with a version **less than** specified in ModuleVersion below, they will be purged
     [hashtable[]] $purgeModules = @(
       @{
         'ModuleName' = 'OpenCloudConfig';
-        'ModuleVersion' = '0.0.52'
+        'ModuleVersion' = '0.0.54'
       }
     )
   )
@@ -128,6 +128,23 @@ function Install-Dependencies {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
+    # install windows management framework if it isn't installed
+    if (-not (Get-Command 'Get-PackageProvider' -errorAction SilentlyContinue)) {
+      Write-Log -message ('{0} :: missing windows management framework detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+      switch -wildcard ($osCaption) {
+        'Microsoft Windows Server 2012*' {
+          (New-Object Net.WebClient).DownloadFile('https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win8.1AndW2K12R2-KB3191564-x64.msu', 'C:\Windows\Temp\Win8.1AndW2K12R2-KB3191564-x64.msu')
+          & ('{0}\system32\wusa.exe' -f $env:WinDir) @('C:\Windows\Temp\Win8.1AndW2K12R2-KB3191564-x64.msu', '/quiet')
+          Write-Log -message ('{0} :: wmf 5.1 install attempted' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+        }
+        #'Microsoft Windows 7*' {
+        #  (New-Object Net.WebClient).DownloadFile('https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7-KB3191566-x86.zip', 'C:\Windows\Temp\Win7-KB3191566-x86.zip')
+        #}
+        default {
+          Write-Log -message ('{0} :: no configured resolution for missing wmf for os: {1}' -f $($MyInvocation.MyCommand.Name), (Get-WmiObject -class Win32_OperatingSystem).Caption) -severity 'ERROR'
+        }
+      }
+    }
     foreach ($purgeModule in $purgeModules) {
       if ((Get-Module -ListAvailable -Name $purgeModule['ModuleName'] | ? { $_.Version -lt $purgeModule['ModuleVersion'] })) {
         try {
@@ -1508,7 +1525,17 @@ function Set-ServiceState {
 }
 function Set-ComputerName {
   param (
-    [string] $instanceId = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id')),
+    [string] $locationType,
+    [string] $instanceId = $(
+      if ($locationType -eq 'AWS') {
+        (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id')
+      } elseif ($locationType -eq 'GCP') {
+        (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/name')
+      } elseif ($locationType -eq 'Azure') {
+        # todo: revisit this when we see what the worker manager sets instance names to
+        (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.name
+      }
+    ),
     [string] $dnsHostname = [System.Net.Dns]::GetHostName(),
     [string[]] $rebootReasons = @()
   )
@@ -1543,31 +1570,134 @@ function Get-PublicKeys {
     return $publicKeys
   }
 }
-function Set-DomainName {
+function Set-TaskclusterWorkerLocation {
   param (
-    [string] $publicKeys = (Get-PublicKeys),
-    [string] $workerType = $(if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) { $publicKeys.Replace('0=mozilla-taskcluster-worker-', '') } else { (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType }),
-    [string] $az = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone')
+    [string] $locationType = $(
+      if ((Get-Service -Name 'Ec2Config' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'AmazonSSMAgent' -ErrorAction 'SilentlyContinue')) {
+        'AWS'
+      } elseif ((Get-Service -Name 'GCEAgent' -ErrorAction 'SilentlyContinue') -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
+        'GCP'
+      } elseif ((Get-Service -Name 'WindowsAzureGuestAgent' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'WindowsAzureNetAgentSvc' -ErrorAction 'SilentlyContinue')) {
+        'Azure'
+      } else {
+        'DataCenter'
+      }
+    ),
+    [string] $az = $(
+      if ($locationType -eq 'AWS') {
+        (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone')
+      } elseif ($locationType -eq 'GCP') {
+        (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/zone') -replace '.*/'
+      } elseif ($locationType -eq 'Azure') {
+        # azure az can be blank. if that is so, just use region which is called "location" in azure.
+        $zone = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.zone
+        if (-not [string]::IsNullOrWhiteSpace($zone)) {
+          $zone
+        } else {
+          (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.location
+        }
+      }
+    ),
+    [string] $region = $(
+      if ($locationType -eq 'AWS') {
+        $az.SubString(0, ($az.Length - 1))
+      } elseif ($locationType -eq 'GCP') {
+        $az.SubString(0, ($az.Length - 2))
+      } elseif ($locationType -eq 'Azure') {
+        (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.location
+      }
+    )
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    switch -wildcard ($az) {
-      'eu-central-1*'{
-        $dnsRegion = 'euc1'
+    switch ($locationType) {
+      'EC2' {
+        $taskclusterWorkerLocation = ('{{"cloud":"aws","region":"{0}","availabilityZone":"{1}"}}' -f $region, $az)
       }
-      'us-east-1*'{
-        $dnsRegion = 'use1'
+      'GCP' {
+        $taskclusterWorkerLocation = ('{{"cloud":"google","region":"{0}","availabilityZone":"{1}"}}' -f $region, $az)
       }
-      'us-east-2*'{
-        $dnsRegion = 'use2'
+      'Azure' {
+        $taskclusterWorkerLocation = ('{{"cloud":"azure","region":"{0}","availabilityZone":"{1}"}}' -f $region, $az)
       }
-      'us-west-1*'{
-        $dnsRegion = 'usw1'
+      default {
+        $taskclusterWorkerLocation = ('{{"cloud":"aws","region":"{0}","availabilityZone":"{1}"}}' -f 'us-west-1', 'us-west-1a')
       }
-      'us-west-2*'{
-        $dnsRegion = 'usw2'
+    }
+    [Environment]::SetEnvironmentVariable('TASKCLUSTER_WORKER_LOCATION', $taskclusterWorkerLocation, 'Machine')
+    Write-Log -message ('{0} :: TASKCLUSTER_WORKER_LOCATION set to: {1}' -f $($MyInvocation.MyCommand.Name), $taskclusterWorkerLocation) -severity 'INFO'
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Set-DomainName {
+  param (
+    [string] $locationType,
+    [string] $publicKeys = $(
+      if ($locationType -eq 'AWS') {
+        (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')
+      } else {
+        $null
+      }
+    ),
+    [string] $workerType = $(
+      switch ($locationType) {
+        'AWS' {
+          $(if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) { $publicKeys.Replace('0=mozilla-taskcluster-worker-', '') } else { (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType })
+        }
+        'GCP' {
+          (Invoke-WebRequest -Uri 'http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/taskcluster' -UseBasicParsing | ConvertFrom-Json).workerConfig.openCloudConfig.workerType
+        }
+        'Azure' {
+          (@(((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq 'workerType' })[0].value
+        }
+        default {
+          $null
+        }
+      }
+    ),
+    [string] $az = $(
+      switch ($locationType) {
+        'AWS' {
+          (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/placement/availability-zone')
+        }
+        'GCP' {
+          (New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/zone') -replace '.*/'
+        }
+        'Azure' {
+          # azure az can be blank. if that is so, just use region which is called "location" in azure.
+          $zone = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.zone
+          if (-not [string]::IsNullOrWhiteSpace($zone)) {
+            $zone
+          } else {
+            (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.location
+          }
+        }
+        default {
+          $null
+        }
+      }
+    )
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    switch ($locationType) {
+      'EC2' {
+        $dnsRegion = $az.Replace('-', '').Replace('central', 'c').Replace('east', 'e').Replace('west', 'w').SubString(0,4)
+      }
+      'GCP' {
+        $dnsRegion = ($az -replace ".{2}$").Replace('-', '').Replace('asia', 'a').Replace('australia', 'au').Replace('southamerica', 'sa').Replace('northamerica', 'na').Replace('europe', 'eu').Replace('central', 'c').Replace('east', 'e').Replace('west', 'w').Replace('south', 's').Replace('north', 'n')
+      }
+      'Azure' {
+        $dnsRegion = $az
+      }
+      default {
+        $dnsRegion = $az
       }
     }
     Write-Log -message ('{0} :: availabilityZone: {1}, dnsRegion: {2}.' -f $($MyInvocation.MyCommand.Name), $az, $dnsRegion) -severity 'INFO'
@@ -1676,6 +1806,7 @@ function Invoke-HardwareDiskCleanup {
 }
 function Set-ChainOfTrustKey {
   param (
+    [string] $locationType,
     [string] $workerType,
     [switch] $shutdown
   )
@@ -1786,8 +1917,13 @@ function Set-ChainOfTrustKey {
         }
         if (Test-Path -Path 'C:\generic-worker\ed25519-private.key' -ErrorAction SilentlyContinue) {
           if ($shutdown) {
-            Write-Log -message ('{0} :: ed25519 key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-            & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            if ($locationType -eq 'EC2') {
+              Write-Log -message ('{0} :: ed25519 key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+              & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            } else {
+              Write-Log -message ('{0} :: ed25519 key detected. restarting.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+              & shutdown @('-r', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            }
           } else {
             Write-Log -message ('{0} :: ed25519 key detected' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
           }
@@ -1796,7 +1932,11 @@ function Set-ChainOfTrustKey {
         }
         if ($shutdown) {
           if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
-            & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            if ($locationType -eq 'EC2') {
+              & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            } else {
+              & shutdown @('-r', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            }
           } else {
             Write-Log -message ('{0} :: rdp session detected. awaiting manual shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
           }
@@ -1934,20 +2074,27 @@ function Initialize-Instance {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if ($locationType -ne 'AWS') {
-      Set-NxlogConfig -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev
-    }
     if ($locationType -eq 'AWS') {
-      $rebootReasons = (Set-ComputerName)
-      Set-DomainName
+      Set-TaskclusterWorkerLocation
+      $rebootReasons = (Set-ComputerName -locationType $locationType)
+      Set-DomainName -locationType $locationType
       # Turn off DNS address registration (EC2 DNS is configured to not allow it)
       Set-DynamicDnsRegistration -enabled:$false
+    } elseif (@('GCP', 'Azure').Contains($locationType)) {
+      Set-TaskclusterWorkerLocation
+      $rebootReasons = (Set-ComputerName -locationType $locationType)
+      Set-DomainName -locationType $locationType
+      # todo: figure out if this is needed on gcp or azure
+      # Set-DynamicDnsRegistration -enabled:$false
     }
     if ($rebootReasons.length) {
       # if this is an ami creation instance (not a worker) ...
-      if (($locationType -eq 'AWS') -and ((Get-PublicKeys).StartsWith('0=mozilla-taskcluster-worker-'))) {
+      if (($locationType -eq 'AWS') -and (((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')).StartsWith('0=mozilla-taskcluster-worker-'))) {
         # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
         Set-Ec2ConfigSettings
+        # ensure that an up to date nxlog configuration is used as early as possible
+        Set-NxlogConfig -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev
+      } elseif (@('GCP', 'Azure').Contains($locationType)) {
         # ensure that an up to date nxlog configuration is used as early as possible
         Set-NxlogConfig -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev
       }
@@ -1964,7 +2111,17 @@ function Invoke-OpenCloudConfig {
     [string] $sourceOrg = 'mozilla-releng',
     [string] $sourceRepo = 'OpenCloudConfig',
     [string] $sourceRev = 'master',
-    [string] $locationType = $(if (Get-Service @('Ec2Config', 'AmazonSSMAgent', 'AWSLiteAgent') -ErrorAction SilentlyContinue) { 'AWS' } else { 'DataCenter' })
+    [string] $locationType = $(
+      if (Get-Service @('Ec2Config', 'AmazonSSMAgent', 'AWSLiteAgent') -ErrorAction SilentlyContinue) {
+        'AWS'
+      } elseif ((Get-Service -Name 'GCEAgent' -ErrorAction 'SilentlyContinue') -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
+        'GCP'
+      } elseif ((Get-Service -Name 'WindowsAzureGuestAgent' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'WindowsAzureNetAgentSvc' -ErrorAction 'SilentlyContinue')) {
+        'Azure'
+      } else {
+        'DataCenter'
+      }
+    )
   )
   begin {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
@@ -2037,22 +2194,34 @@ function Invoke-OpenCloudConfig {
       Write-Log -message ('{0} :: workerType: {1}.' -f $($MyInvocation.MyCommand.Name), $workerType) -severity 'INFO'
       Write-Log -message ('{0} :: runDscOnWorker: {1}.' -f $($MyInvocation.MyCommand.Name), $runDscOnWorker) -severity 'DEBUG'
     } else {
-      try {
-        $userdata = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/user-data')
-      } catch {
-        $userdata = $null
-      }
-      $publicKeys = (Get-PublicKeys)
+      if ($locationType -eq 'AWS') {
+        try {
+          $userdata = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/user-data')
+        } catch {
+          $userdata = $null
+        }
+        $publicKeys = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')
 
-      if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) {
-        # ami creation instance
-        $isWorker = $false
-        $workerType = $publicKeys.Replace('0=mozilla-taskcluster-worker-', '')
-        Set-WindowsActivation -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
-      } else {
-        # provisioned worker
+        if ($publicKeys.StartsWith('0=mozilla-taskcluster-worker-')) {
+          # ami creation instance
+          $isWorker = $false
+          $workerType = $publicKeys.Replace('0=mozilla-taskcluster-worker-', '')
+          Set-WindowsActivation -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
+        } else {
+          # provisioned worker
+          $isWorker = $true
+          $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType
+        }
+      } elseif ($locationType -eq 'GCP') {
         $isWorker = $true
-        $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/latest/user-data' -UseBasicParsing | ConvertFrom-Json).workerType
+        $workerType = (Invoke-WebRequest -Uri 'http://169.254.169.254/computeMetadata/v1beta1/instance/attributes/taskcluster' -UseBasicParsing | ConvertFrom-Json).workerConfig.openCloudConfig.workerType
+
+        if (($workerType -eq 'gecko-1-b-win2019-gamma') -or ($workerType -eq 'gecko-1-b-win2012-gamma')) {
+          Set-WindowsActivation -productKeyMapUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/product-key-map.json' -f $sourceOrg, $sourceRepo, $sourceRev)
+        }
+      } elseif ($locationType -eq 'Azure') {
+        $isWorker = $true
+        $workerType = (@(((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.tagsList | ? { $_.name -eq 'workerType' })[0].value
       }
       Write-Log -message ('{0} :: isWorker: {1}.' -f $($MyInvocation.MyCommand.Name), $isWorker) -severity 'INFO'
       Write-Log -message ('{0} :: workerType: {1}.' -f $($MyInvocation.MyCommand.Name), $workerType) -severity 'INFO'
@@ -2087,9 +2256,22 @@ function Invoke-OpenCloudConfig {
         }
       }
       Write-Log -message ('{0} :: runDscOnWorker: {1}' -f $($MyInvocation.MyCommand.Name), $runDscOnWorker) -severity 'DEBUG'
-      $instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-type'))
-      Write-Log -message ('{0} :: instanceType: {1}.' -f $($MyInvocation.MyCommand.Name), $instanceType) -severity 'INFO'
-      [Environment]::SetEnvironmentVariable("TASKCLUSTER_INSTANCE_TYPE", "$instanceType", "Machine")
+
+      switch ($locationType) {
+        'AWS' {
+          $instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-type'))
+        }
+        'GCP' {
+          $instanceType = ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/computeMetadata/v1beta1/instance/machine-type') -replace '.*\/')
+        }
+        # todo: implement instance type discovery for non AWS/GCP
+      }
+      if ($instanceType) {
+        Write-Log -message ('{0} :: instanceType: {1}' -f $($MyInvocation.MyCommand.Name), $instanceType) -severity 'INFO'
+        [Environment]::SetEnvironmentVariable('TASKCLUSTER_INSTANCE_TYPE', $instanceType, 'Machine')
+      } else {
+        Write-Log -message ('{0} :: failed to determine instanceType' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+      }
 
       # workaround for windows update failures on g3 instances
       # https://support.microsoft.com/en-us/help/10164/fix-windows-update-errors
@@ -2119,7 +2301,7 @@ function Invoke-OpenCloudConfig {
       $driveMapTimeout = (Get-Date).AddMinutes(10)
       $driveMapAttempt = 0
       Write-Log -message ('{0} :: drive map timeout set to {1}' -f $($MyInvocation.MyCommand.Name), $driveMapTimeout) -severity 'DEBUG'
-      while (((Get-Date) -lt $driveMapTimeout) -and (-not (Test-VolumeExists -DriveLetter @('Z', 'Y')))) {
+      while (($locationType -ne 'Azure') -and ((Get-Date) -lt $driveMapTimeout) -and (-not (Test-VolumeExists -DriveLetter @('Z', 'Y')))) {
         if (((Get-WmiObject -class Win32_OperatingSystem).Caption.Contains('Windows 10')) -and (($instanceType.StartsWith('c5.')) -or ($instanceType.StartsWith('g3.'))) -and (Test-VolumeExists -DriveLetter @('Z')) -and (-not (Test-VolumeExists -DriveLetter @('Y'))) -and ((Get-WmiObject Win32_LogicalDisk | ? { $_.DeviceID -ne 'C:' }).Size -ge 119GB)) {
           Resize-DiskOne
         }
@@ -2166,7 +2348,6 @@ function Invoke-OpenCloudConfig {
           #if (-not ($isWorker)) {
           #  Set-DefaultProfileProperties
           #}
-          Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=8192;'MaxTimeoutms'=60000}
         }
         'Microsoft Windows 10*' {
           # set network interface to private (reverted after dsc run) http://www.hurryupandwait.io/blog/fixing-winrm-firewall-exception-rule-not-working-when-internet-connection-type-is-set-to-public
@@ -2180,7 +2361,6 @@ function Invoke-OpenCloudConfig {
           #if (-not ($isWorker)) {
           #  Set-DefaultProfileProperties
           #}
-          Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=32696;'MaxTimeoutms'=180000}
         }
         default {
           try {
@@ -2189,9 +2369,9 @@ function Invoke-OpenCloudConfig {
           } catch {
             Write-Log -message ('{0} :: error enabling powershell remoting. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
           }
-          Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=32696;'MaxTimeoutms'=180000}
         }
       }
+      Set-WinrmConfig -settings @{'MaxEnvelopeSizekb'=32696;'MaxTimeoutms'=180000}
       if (Test-Path -Path ('{0}\log\*.dsc-run.log' -f $env:SystemDrive) -ErrorAction SilentlyContinue) {
         try {
           Stop-Transcript
@@ -2225,13 +2405,12 @@ function Invoke-OpenCloudConfig {
           Invoke-RemoteDesiredStateConfig -url ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/xDynamicConfig.ps1' -f $sourceOrg, $sourceRepo, $sourceRev)
         }
       }
-
+      
       Stop-Transcript
       # end run dsc #################################################################################################################################################
-
+      
       # post dsc teardown ###########################################################################################################################################
-
-      Start-Sleep -Seconds 5
+      
       if (((Get-Content $transcript) | % {(
           # a package installed by dsc requested a restart
           ($_ -match 'requires a reboot') -or
@@ -2240,7 +2419,7 @@ function Invoke-OpenCloudConfig {
           ($_ -match 'WSManNetworkFailureDetected') -or
           # a service disable attempt through registry settings failed, because another running service interfered with the registry write
           ($_ -match 'Attempted to perform an unauthorized'))}) -contains $true) {
-        if (-not ($isWorker)) {
+        if ((-not ($isWorker)) -and ($locationType -eq 'AWS')) {
           # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
           Set-Ec2ConfigSettings
         }
@@ -2270,9 +2449,12 @@ function Invoke-OpenCloudConfig {
       }
       # end post dsc teardown #######################################################################################################################################
 
-      # create a scheduled task to run dsc at startup
-      New-PowershellScheduledTask -taskName 'RunDesiredStateConfigurationAtStartup' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/rundsc.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\rundsc.ps1' -sc 'onstart'
-      if (-not ($isWorker)) {
+      # GCP instances run the windows startup script at each boot and have no need for the scheduled task below
+      if ($locationType -ne 'GCP') {
+        # create a scheduled task to run dsc at startup
+        New-PowershellScheduledTask -taskName 'RunDesiredStateConfigurationAtStartup' -scriptUrl ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/rundsc.ps1?{3}' -f $sourceOrg, $sourceRepo, $sourceRev, [Guid]::NewGuid()) -scriptPath 'C:\dsc\rundsc.ps1' -sc 'onstart'
+      }
+      if ((-not ($isWorker)) -and ($locationType -eq 'AWS')) {
         # ensure that Ec2HandleUserData is disabled after the RunDesiredStateConfigurationAtStartup scheduled task has been created
         Set-Ec2ConfigSettings
       }
@@ -2282,32 +2464,18 @@ function Invoke-OpenCloudConfig {
       Remove-DesiredStateConfigTriggers
       New-LocalCache
     }
-    
+
     # archive dsc logs
-    try {
-      Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and $_.Length -eq 0 } | % { Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue }
-      Write-Log -message ('{0} :: deleted empty occ/dsc log files.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    } catch {
-      Write-Log -message ('{0} :: error deleting empty occ/dsc log files. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
-    }
-    try {
-      $zipFilePath = ('{0}\log\{1}.userdata-run.zip' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
-      New-ZipFile -ZipFilePath $zipFilePath -Item @(Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') } | % { $_.FullName })
-      Write-Log -message ('{0} :: log archive {1} created.' -f $($MyInvocation.MyCommand.Name), $zipFilePath) -severity 'INFO'
-    } catch {
-      Write-Log -message ('{0} :: error archiving occ/dsc log files. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
-    }
-    try {
-      Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and (-not $_.Name.EndsWith('.dsc-run.log')) } | % { Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue }
-      Write-Log -message ('{0} :: purged archived occ/dsc log files.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-    } catch {
-      Write-Log -message ('{0} :: error purging archived occ/dsc log files. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
-    }
+    Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and $_.Length -eq 0 } | % { Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue }
+    $zipFilePath = ('{0}\log\{1}.userdata-run.zip' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"))
+    New-ZipFile -ZipFilePath $zipFilePath -Item @(Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') } | % { $_.FullName })
+    Write-Log -message ('{0} :: log archive {1} created.' -f $($MyInvocation.MyCommand.Name), $zipFilePath) -severity 'INFO'
+    Get-ChildItem -Path ('{0}\log' -f $env:SystemDrive) | ? { !$_.PSIsContainer -and $_.Name.EndsWith('.log') -and (-not $_.Name.EndsWith('.dsc-run.log')) } | % { Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue }
 
     if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
       if ($locationType -ne 'DataCenter') {
-        Set-ChainOfTrustKey -workerType $workerType -shutdown:$true
+        Set-ChainOfTrustKey -locationType $locationType -workerType $workerType -shutdown:$true
       }
     } elseif ($isWorker) {
       if ($locationType -ne 'DataCenter') {
@@ -2316,7 +2484,7 @@ function Invoke-OpenCloudConfig {
         }
       } else {
         # todo: generate config file if it does not exist or is invalid (eg: created for an older version of gw)
-        Set-ChainOfTrustKey -workerType $workerType -shutdown:$false
+        Set-ChainOfTrustKey -locationType $locationType -workerType $workerType -shutdown:$false
       }
       Wait-GenericWorkerStart -locationType $locationType -lock $lock
     }

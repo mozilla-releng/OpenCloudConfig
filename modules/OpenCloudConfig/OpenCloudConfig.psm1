@@ -167,6 +167,7 @@ function Get-RemoteResource {
     try {
       if ([Net.ServicePointManager]::SecurityProtocol -ne ([Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12)) {
         [Net.ServicePointManager]::SecurityProtocol = ([Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12)
+        [Net.ServicePointManager]::Expect100Continue = $true
         Write-Log -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} :: added TLS v1.2 to security protocol support list for current powershell session' -f $($MyInvocation.MyCommand.Name))
       } else {
         Write-Log -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} :: detected TLS v1.2 in security protocol support list' -f $($MyInvocation.MyCommand.Name))

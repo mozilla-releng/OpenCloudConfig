@@ -27,7 +27,7 @@ for /f "usebackq tokens=2,* skip=2" %%L in (
 for /f "usebackq tokens=2,* skip=2" %%N in (
   `reg query "HKLM\SOFTWARE\Mozilla\GenericWorker" /v accessToken`
 ) do set access_token=%%O
-cat C:\generic-worker\generic-worker.config | jq ".  | .workerId=\"%worker_id%\" | .rootURL=\"https://stage.taskcluster.nonprod.cloudops.mozgcp.net\" | .clientId=\"%client_id%\" | .accessToken=\"%access_token%\"" > C:\generic-worker\gw.config
+cat C:\generic-worker\generic-worker.config | jq ".  | .workerId=\"%worker_id%\" | .publicIP=\"%public_ip%\" | .rootURL=\"https://stage.taskcluster.nonprod.cloudops.mozgcp.net\" | .clientId=\"%client_id%\" | .accessToken=\"%access_token%\"" > C:\generic-worker\gw.config
 
 echo File C:\dsc\task-claim-state.valid found >> C:\generic-worker\generic-worker-wrapper.log
 echo Deleting C:\dsc\task-claim-state.valid file >> C:\generic-worker\generic-worker-wrapper.log

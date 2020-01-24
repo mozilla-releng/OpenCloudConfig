@@ -1482,7 +1482,7 @@
       "ComponentType": "EnvironmentVariableSet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1551789",
       "Name": "TASKCLUSTER_ROOT_URL",
-      "Value": "https://taskcluster.net",
+      "Value": "https://stage.taskcluster.nonprod.cloudops.mozgcp.net",
       "Target": "Machine"
     },
     {

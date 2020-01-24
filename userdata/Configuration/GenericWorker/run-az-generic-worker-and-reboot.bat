@@ -18,16 +18,13 @@ goto CheckForStateFlag
 :RunWorker
 rem set workerId, publicIP, clientId and accessToken in gw.config
 for /f "tokens=14" %%i in ('"ipconfig | findstr IPv4"') do set public_ip=%%i
-for /f "usebackq tokens=2,* skip=2" %%J in (
-  `wmic computersystem get name`
-) do set worker_id=%%K
 for /f "usebackq tokens=2,* skip=2" %%L in (
   `reg query "HKLM\SOFTWARE\Mozilla\GenericWorker" /v clientId`
 ) do set client_id=%%M
 for /f "usebackq tokens=2,* skip=2" %%N in (
   `reg query "HKLM\SOFTWARE\Mozilla\GenericWorker" /v accessToken`
 ) do set access_token=%%O
-cat C:\generic-worker\generic-worker.config | jq ".  | .workerId=\"%worker_id%\" | .publicIP=\"%public_ip%\" | .rootURL=\"https://stage.taskcluster.nonprod.cloudops.mozgcp.net\" | .clientId=\"%client_id%\" | .accessToken=\"%access_token%\"" > C:\generic-worker\gw.config
+cat C:\generic-worker\generic-worker.config | jq ".  | .workerId=\"%COMPUTERNAME%\" | .publicIP=\"%public_ip%\" | .rootURL=\"%TASKCLUSTER_ROOT_URL%\" | .clientId=\"%client_id%\" | .accessToken=\"%access_token%\"" > C:\generic-worker\gw.config
 
 echo File C:\dsc\task-claim-state.valid found >> C:\generic-worker\generic-worker-wrapper.log
 echo Deleting C:\dsc\task-claim-state.valid file >> C:\generic-worker\generic-worker-wrapper.log

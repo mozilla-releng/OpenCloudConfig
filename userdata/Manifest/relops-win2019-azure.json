@@ -372,7 +372,7 @@
       "ComponentName": "GenericWorkerConfig",
       "ComponentType": "ChecksumFileDownload",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/generic-worker.config",
-      "Target": "C:\\generic-worker\\generic-worker.config",
+      "Target": "C:\\generic-worker\\generic-worker-template.config",
       "DependsOn": [
         {
           "ComponentType": "DirectoryCreate",

@@ -1184,6 +1184,30 @@
       "Path": "C:\\generic-worker"
     },
     {
+      "ComponentName": "WorkerRunnerExeDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/taskcluster-worker-runner/releases/download/v1.0.4/start-worker-windows-amd64",
+      "Target": "C:\\generic-worker\\taskcluster-worker-runner.exe"
+    },
+    {
+      "ComponentName": "WorkerRunnerConfigDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/azure/userdata/Configuration/GenericWorker/worker-runner-azure.yaml",
+      "Target": "C:\\generic-worker\\taskcluster-worker-runner.yaml"
+    },
+    {
       "ComponentName": "GenericWorkerDownload",
       "ComponentType": "ChecksumFileDownload",
       "DependsOn": [
@@ -1192,9 +1216,9 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.5.1/generic-worker-multiuser-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.6.1/generic-worker-multiuser-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "a2c24dcfe113d1fc947eac4b7762aba1f7ffb25fcb39502b5400cfae8dafb8c20f3f129df1bbc0eadaea98d5af62210a88f58c0a00eccc5eaf15c8bf29f454ec"
+      "sha512": "a0f5a8f2674a229ada5c9747bbe64251a645bc9c32645f2095f1ec538f614644bc32bf26181a1b8d9741f17341d7eb4ce6108940295c8678547027e136a14c79"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -1265,8 +1289,7 @@
         "--nssm",
         "C:\\nssm-2.24-103-gdee49fc\\win64\\nssm.exe",
         "--config",
-        "C:\\generic-worker\\generic-worker.config",
-        "--configure-for-aws"
+        "C:\\generic-worker\\generic-worker.config"
       ],
       "DependsOn": [
         {
@@ -1293,7 +1316,7 @@
             "Arguments": [
               "--version"
             ],
-            "Like": "generic-worker (multiuser engine) 16.5.1 *"
+            "Like": "generic-worker (multiuser engine) 16.6.1 *"
           }
         ]
       }
@@ -1307,8 +1330,20 @@
           "ComponentName": "GenericWorkerInstall"
         }
       ],
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-and-reboot.bat",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-az-generic-worker-and-reboot.bat",
       "Target": "C:\\generic-worker\\run-generic-worker.bat"
+    },
+    {
+      "ComponentName": "GenericWorkerConfig",
+      "ComponentType": "ChecksumFileDownload",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/generic-worker.config",
+      "Target": "C:\\generic-worker\\generic-worker-template.config",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ]
     },
     {
       "ComponentName": "TaskUserInitScript",
@@ -1658,7 +1693,7 @@
       "ComponentType": "EnvironmentVariableSet",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1551789",
       "Name": "TASKCLUSTER_ROOT_URL",
-      "Value": "https://taskcluster.net",
+      "Value": "https://firefox-ci-tc.services.mozilla.com",
       "Target": "Machine"
     },
     {

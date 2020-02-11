@@ -209,6 +209,9 @@ if (-not (Is-GenericWorkerRunning)) {
 if (Test-Path -Path 'y:\' -ErrorAction SilentlyContinue) {
   if (-not (Test-Path -Path 'y:\hg-shared' -ErrorAction SilentlyContinue)) {
     New-Item -Path 'y:\hg-shared' -ItemType directory -force
+    Write-Log -message ('{0} :: y:\hg-shared created' -f $($MyInvocation.MyCommand.Name), $path) -severity 'INFO'
+  } else {
+    Write-Log -message ('{0} :: y:\hg-shared detected' -f $($MyInvocation.MyCommand.Name), $path) -severity 'DEBUG'
   }
   & icacls @('y:\hg-shared', '/grant', 'Everyone:(OI)(CI)F')
 }

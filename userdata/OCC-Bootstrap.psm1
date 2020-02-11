@@ -990,7 +990,12 @@ function New-LocalCache {
   }
   process {
     foreach ($path in $paths) {
-      New-Item -Path $path -ItemType directory -force
+      if (-not (Test-Path -Path $path -ErrorAction SilentlyContinue)) {
+        New-Item -Path $path -ItemType directory -force
+        Write-Log -message ('{0} :: {1} created' -f $($MyInvocation.MyCommand.Name), $path) -severity 'INFO'
+      } else {
+        Write-Log -message ('{0} :: {1} detected' -f $($MyInvocation.MyCommand.Name), $path) -severity 'DEBUG'
+      }
       & 'icacls.exe' @($path, '/grant', 'Everyone:(OI)(CI)F')
     }
   }
@@ -2462,6 +2467,8 @@ function Invoke-OpenCloudConfig {
     if (($isWorker) -and (-not ($runDscOnWorker))) {
       Stop-DesiredStateConfig
       Remove-DesiredStateConfigTriggers
+      New-LocalCache
+    } elseif ($locationType -eq 'Azure') {
       New-LocalCache
     }
 

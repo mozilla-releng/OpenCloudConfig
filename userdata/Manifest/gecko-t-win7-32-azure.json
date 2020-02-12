@@ -886,7 +886,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/azure/userdata/Configuration/GenericWorker/worker-runner-azure.yaml",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-azure.yaml",
       "Target": "C:\\generic-worker\\taskcluster-worker-runner.yaml"
     },
     {

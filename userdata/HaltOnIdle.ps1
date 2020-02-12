@@ -106,11 +106,11 @@ if (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) {
 }
 
 $locationType = $(
-  if ((Get-Service -Name 'Ec2Config' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'AmazonSSMAgent' -ErrorAction 'SilentlyContinue')) {
+  if (Get-Service -Name @('Ec2Config', 'AmazonSSMAgent') -ErrorAction 'SilentlyContinue') {
     'AWS'
   } elseif ((Get-Service -Name 'GCEAgent' -ErrorAction 'SilentlyContinue') -or (Test-Path -Path ('{0}\GooGet\googet.exe' -f $env:ProgramData) -ErrorAction 'SilentlyContinue')) {
     'GCP'
-  } elseif ((Get-Service -Name 'WindowsAzureGuestAgent' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'WindowsAzureNetAgentSvc' -ErrorAction 'SilentlyContinue')) {
+  } elseif (Get-Service -Name @('WindowsAzureGuestAgent', 'WindowsAzureNetAgentSvc') -ErrorAction 'SilentlyContinue') {
     'Azure'
   } else {
     'DataCenter'

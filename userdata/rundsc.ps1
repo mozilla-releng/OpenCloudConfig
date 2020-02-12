@@ -222,7 +222,7 @@ function Set-OpenCloudConfigSource {
                   $sourceItemValue = 'OpenCloudConfig'
                 }
                 'Revision' {
-                  $sourceItemValue = 'azure'
+                  $sourceItemValue = 'master'
                 }
               }
             }

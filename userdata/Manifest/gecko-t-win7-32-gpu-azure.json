@@ -873,7 +873,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.0.1/start-worker-windows-386",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/start-worker-windows-386",
       "Target": "C:\\generic-worker\\taskcluster-worker-runner.exe"
     },
     {
@@ -897,9 +897,9 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.6.1/generic-worker-multiuser-windows-386.exe",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/generic-worker-multiuser-windows-386.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "c736e658d43e6b527c064ee0f187e8060ad6a44f159f77ec9edcbd40eda908be7dd03025bb100091c47d2e0ae0e901f36a38c03f9fc2a3881d93cf6a86da269b"
+      "sha512": "9eebcd0dde48c08c4fe7cbe880c3906025df90ad0515aa4f01b0c81a9aa0823b4697ded248b2cede61cc71731306ea7ed7da4330d672ecd6d5777c1cc92fb339"
     },
     {
       "ComponentName": "LiveLogDownload",

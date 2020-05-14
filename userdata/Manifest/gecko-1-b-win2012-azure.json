@@ -1131,7 +1131,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.0.1/start-worker-windows-amd64",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/start-worker-windows-amd64",
       "Target": "C:\\generic-worker\\taskcluster-worker-runner.exe"
     },
     {
@@ -1155,9 +1155,9 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.6.1/generic-worker-multiuser-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/generic-worker-multiuser-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "a0f5a8f2674a229ada5c9747bbe64251a645bc9c32645f2095f1ec538f614644bc32bf26181a1b8d9741f17341d7eb4ce6108940295c8678547027e136a14c79"
+      "sha512": "043683af41a0402e62bf71909eb9472f8c8d4a4bf60db35419e667afb07d175970e86eec640336c2630f8bfa45dada284a75e0626fe0b82004d0850a067897b8"
     },
     {
       "ComponentName": "LiveLogDownload",

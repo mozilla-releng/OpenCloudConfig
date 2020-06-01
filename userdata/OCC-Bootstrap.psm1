@@ -1595,7 +1595,14 @@ function Set-TaskclusterWorkerLocation {
       } elseif ((Get-Service -Name 'WindowsAzureGuestAgent' -ErrorAction 'SilentlyContinue') -or (Get-Service -Name 'WindowsAzureNetAgentSvc' -ErrorAction 'SilentlyContinue')) {
         'Azure'
       } else {
-        'DataCenter'
+        try {
+          # on azure we may trigger occ before the agent is installed or we may not have installed the agent (32 bit systems). this is a quick check to verify if that is what's happening here.
+          if ((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) {
+            'Azure'
+          }
+        } catch {
+          'DataCenter'
+        }
       }
     ),
     [string] $az = $(
@@ -2107,7 +2114,14 @@ function Initialize-Instance {
       } elseif (Get-Service -Name  @('WindowsAzureGuestAgent', 'WindowsAzureNetAgentSvc') -ErrorAction 'SilentlyContinue') {
         'Azure'
       } else {
-        'DataCenter'
+        try {
+          # on azure we may trigger occ before the agent is installed or we may not have installed the agent (32 bit systems). this is a quick check to verify if that is what's happening here.
+          if ((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) {
+            'Azure'
+          }
+        } catch {
+          'DataCenter'
+        }
       }
     ),
     [hashtable[]] $downloads = $(switch ($locationType) {
@@ -2254,7 +2268,14 @@ function Invoke-OpenCloudConfig {
       } elseif (Get-Service -Name  @('WindowsAzureGuestAgent', 'WindowsAzureNetAgentSvc') -ErrorAction 'SilentlyContinue') {
         'Azure'
       } else {
-        'DataCenter'
+        try {
+          # on azure we may trigger occ before the agent is installed or we may not have installed the agent (32 bit systems). this is a quick check to verify if that is what's happening here.
+          if ((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) {
+            'Azure'
+          }
+        } catch {
+          'DataCenter'
+        }
       }
     )
   )

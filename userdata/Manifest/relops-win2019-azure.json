@@ -61,6 +61,21 @@
       "Comment": "Disable indexing on all disk volumes (for performance)"
     },
     {
+      "ComponentName": "ruby_devkit",
+      "ComponentType": "ExeInstall",
+      "Comment": "required by papertrail-cli",
+      "Url": "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.6.6-1/rubyinstaller-devkit-2.6.6-1-x64.exe",
+      "Arguments": [
+        "/verysilent",
+        "/log=C:\\log\\install-ruby.log"
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Ruby26-x64\\bin\\ruby.exe"
+        ]
+      }
+    },
+    {
       "ComponentName": "ProcessExplorer",
       "ComponentType": "ZipInstall",
       "Comment": "Maintenance Toolchain",

@@ -230,7 +230,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/start-worker-windows-amd64",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/start-worker-windows-amd64",
       "Target": "C:\\generic-worker\\taskcluster-worker-runner.exe"
     },
     {
@@ -254,9 +254,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/generic-worker-multiuser-windows-amd64.exe",
-      "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "043683af41a0402e62bf71909eb9472f8c8d4a4bf60db35419e667afb07d175970e86eec640336c2630f8bfa45dada284a75e0626fe0b82004d0850a067897b8"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/generic-worker-multiuser-windows-amd64",
+      "Target": "C:\\generic-worker\\generic-worker.exe"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -267,7 +266,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/livelog-windows-amd64",
       "Target": "C:\\generic-worker\\livelog.exe"
     },
     {
@@ -279,7 +278,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/taskcluster-proxy-windows-amd64",
       "Target": "C:\\generic-worker\\taskcluster-proxy.exe"
     },
     {

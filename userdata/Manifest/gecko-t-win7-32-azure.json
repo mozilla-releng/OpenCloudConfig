@@ -874,7 +874,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/start-worker-windows-386",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/start-worker-windows-386",
       "Target": "C:\\generic-worker\\taskcluster-worker-runner.exe"
     },
     {
@@ -898,9 +898,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/generic-worker-multiuser-windows-386.exe",
-      "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "9eebcd0dde48c08c4fe7cbe880c3906025df90ad0515aa4f01b0c81a9aa0823b4697ded248b2cede61cc71731306ea7ed7da4330d672ecd6d5777c1cc92fb339"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/generic-worker-multiuser-windows-386",
+      "Target": "C:\\generic-worker\\generic-worker.exe"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -911,9 +910,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-386.exe",
-      "Target": "C:\\generic-worker\\livelog.exe",
-      "sha512": "34cdece120f03e3f6b0ae2576d846c3fc38385fc976a5f20d60a50871e1519fc8a938355a607f6a5a4c658c838089571c435f01731d10600513ea63b3b1be01c"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/livelog-windows-386",
+      "Target": "C:\\generic-worker\\livelog.exe"
     },
     {
       "ComponentName": "TaskClusterProxyDownload",
@@ -924,9 +922,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-386.exe",
-      "Target": "C:\\generic-worker\\taskcluster-proxy.exe",
-      "sha512": "83ec125f0fa8b8989e28cefa3b35c560556bf518c446f406a6320f758f6aaecac8b9e43a234cb1f2bdeb8d5126d68182aecfb2824b22668f3119812e2f587b25"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/taskcluster-proxy-windows-386",
+      "Target": "C:\\generic-worker\\taskcluster-proxy.exe"
     },
     {
       "ComponentName": "NSSMDownload",

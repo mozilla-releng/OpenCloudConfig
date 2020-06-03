@@ -1131,7 +1131,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/start-worker-windows-amd64",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/start-worker-windows-amd64",
       "Target": "C:\\generic-worker\\taskcluster-worker-runner.exe"
     },
     {
@@ -1155,9 +1155,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v29.5.2/generic-worker-multiuser-windows-amd64.exe",
-      "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "043683af41a0402e62bf71909eb9472f8c8d4a4bf60db35419e667afb07d175970e86eec640336c2630f8bfa45dada284a75e0626fe0b82004d0850a067897b8"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/generic-worker-multiuser-windows-amd64",
+      "Target": "C:\\generic-worker\\generic-worker.exe"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -1168,9 +1167,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe",
-      "Target": "C:\\generic-worker\\livelog.exe",
-      "sha512": "80cc08012a766c1f4c9da82b3d82af1612d6994714e775182d6ffa1e2b61d5fac4eefc2b5031f5d5ff28caa35dd9a5c6ada9147dc80289226b6f8722f0234a95"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/livelog-windows-amd64",
+      "Target": "C:\\generic-worker\\livelog.exe"
     },
     {
       "ComponentName": "TaskClusterProxyDownload",
@@ -1181,9 +1179,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-amd64.exe",
-      "Target": "C:\\generic-worker\\taskcluster-proxy.exe",
-      "sha512": "66dc995d3950f92e4007e0d021ff66d7ce9e9c45e95dd1295b31dc01362f558df893d5db6cec85b2b3832172be454acc0ca079447e7b99fdddb47a58ea84f2f9"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v30.0.2/taskcluster-proxy-windows-amd64",
+      "Target": "C:\\generic-worker\\taskcluster-proxy.exe"
     },
     {
       "ComponentName": "NSSMDownload",

@@ -1933,7 +1933,7 @@ function Set-ChainOfTrustKey {
         }
         if (Test-Path -Path 'C:\generic-worker\ed25519-private.key' -ErrorAction SilentlyContinue) {
           if ($shutdown) {
-            if ($locationType -eq 'AWS') {
+            if (@('AWS', 'Azure').Contains($locationType)) {
               Write-Log -message ('{0} :: ed25519 key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
               & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
             } else {
@@ -2666,7 +2666,7 @@ function Invoke-OpenCloudConfig {
 
     if ((-not ($isWorker)) -and ($locationType -eq 'Azure')) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-      Set-ChainOfTrustKey -locationType $locationType -workerType $workerType -shutdown:$false
+      Set-ChainOfTrustKey -locationType $locationType -workerType $workerType -shutdown:$(if (($workerType -match 'win7-32')) { $true } else { $false })
     } elseif ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
       if ($locationType -ne 'DataCenter') {

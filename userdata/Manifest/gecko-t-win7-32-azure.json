@@ -47,89 +47,39 @@
       "Path": "C:\\log"
     },
     {
-      "ComponentName": "StackdriverLogging",
-      "ComponentType": "ExeInstall",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
-      "Url": "https://dl.google.com/cloudagents/windows/StackdriverLogging-v1-9.exe",
-      "Arguments": [
-        "/S"
-      ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d"
-        ],
-        "ServiceStatus": [
-          {
-            "Name": "StackdriverLogging",
-            "Status": "running"
-          }
-        ]
-      }
-    },
-    {
       "ComponentName": "fluentd_gw_exe",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.exe.conf",
-      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\gw.exe.conf",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "StackdriverLogging"
-        }
-      ]
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\gw.exe.conf"
     },
     {
       "ComponentName": "fluentd_gw_service",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.service.conf",
-      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\gw.service.conf",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "StackdriverLogging"
-        }
-      ]
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\gw.service.conf"
     },
     {
       "ComponentName": "fluentd_gw_wrapper",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.wrapper.conf",
-      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\gw.wrapper.conf",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "StackdriverLogging"
-        }
-      ]
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\gw.wrapper.conf"
     },
     {
       "ComponentName": "fluentd_occ",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/occ.conf",
-      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\occ.conf",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "StackdriverLogging"
-        }
-      ]
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\occ.conf"
     },
     {
       "ComponentName": "fluentd_redact",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/redact.conf",
-      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\redact.conf",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "StackdriverLogging"
-        }
-      ]
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\redact.conf"
     },
     {
       "ComponentName": "NxLog",

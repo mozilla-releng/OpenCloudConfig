@@ -1933,9 +1933,12 @@ function Set-ChainOfTrustKey {
         }
         if (Test-Path -Path 'C:\generic-worker\ed25519-private.key' -ErrorAction SilentlyContinue) {
           if ($shutdown) {
-            if (@('AWS', 'Azure').Contains($locationType)) {
+            if ($locationType -eq 'AWS') {
               Write-Log -message ('{0} :: ed25519 key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
               & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            } elseif ($locationType -eq 'Azure') {
+              Write-Log -message ('{0} :: ed25519 key detected. triggering sysprep generalize and shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+              & ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) @('/generalize', '/shutdown', '/oobe'. '/mode:vm') # remove the /mode:vm switch if creating images for different hardware profiles
             } else {
               Write-Log -message ('{0} :: ed25519 key detected. restarting.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
               & shutdown @('-r', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')

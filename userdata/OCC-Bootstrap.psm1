@@ -2669,7 +2669,7 @@ function Invoke-OpenCloudConfig {
 
     if ((-not ($isWorker)) -and ($locationType -eq 'Azure')) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-      Set-ChainOfTrustKey -locationType $locationType -workerType $workerType -shutdown:$(if (($workerType -match 'win7-32')) { $true } else { $false })
+      Set-ChainOfTrustKey -locationType $locationType -workerType $workerType -shutdown:$true
     } elseif ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue)) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
       if ($locationType -ne 'DataCenter') {

@@ -63,6 +63,9 @@ function Start-LoggedProcess {
   }
   process {
     try {
+      if (-not (Test-Path -Path $filePath -ErrorAction SilentlyContinue)) {
+        Write-Log -message ('{0} :: {1} does not map to an existing path.' -f $($MyInvocation.MyCommand.Name), $filePath) -severity 'WARN'
+      }
       $process = (Start-Process -FilePath $filePath -ArgumentList $argumentList -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
       Wait-Process -InputObject $process # see: https://stackoverflow.com/a/43728914/68115
       if ($process.ExitCode -and $process.TotalProcessorTime) {
@@ -1938,7 +1941,8 @@ function Set-ChainOfTrustKey {
               & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
             } elseif ($locationType -eq 'Azure') {
               Write-Log -message ('{0} :: ed25519 key detected. triggering sysprep generalize and shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-              & ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) @('/generalize', '/shutdown', '/oobe'. '/mode:vm') # remove the /mode:vm switch if creating images for different hardware profiles
+              Start-LoggedProcess -filePath ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) -ArgumentList @('/generalize', '/shutdown', '/oobe'. '/mode:vm') -redirectStandardOutput 'C:\log\sysprep-generalize-shutdown-stdout.log' -redirectStandardError 'C:\log\sysprep-generalize-shutdown-stderr.log' -name 'sysprep-generalize-shutdown' # remove the /mode:vm switch if creating images for different hardware profiles
+              exit
             } else {
               Write-Log -message ('{0} :: ed25519 key detected. restarting.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
               & shutdown @('-r', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')

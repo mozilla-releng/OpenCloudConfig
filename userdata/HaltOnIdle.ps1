@@ -83,7 +83,6 @@ function Is-Terminating {
 }
 
 function Is-OpenCloudConfigRunning {
-  #return ((Is-ConditionTrue -proc 'OpenCloudConfig semaphore' -activity 'present' -predicate (Test-Path -Path 'C:\dsc\in-progress.lock' -ErrorAction SilentlyContinue)) -and (Is-ConditionTrue -proc 'OpenCloudConfig' -predicate ((Get-CimInstance Win32_Process -Filter "name = 'powershell.exe'" | ? { $_.CommandLine -eq 'powershell.exe -File C:\dsc\rundsc.ps1' }).Length -gt 0)))
   return (Is-ConditionTrue -proc 'OpenCloudConfig' -predicate (Test-Path -Path 'C:\dsc\in-progress.lock' -ErrorAction SilentlyContinue))
 }
 
@@ -95,14 +94,37 @@ function Is-RdpSessionActive {
   return (Is-ConditionTrue -proc 'remote desktop session' -predicate (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -gt 0) -activity 'active' -falseSeverity 'DEBUG')
 }
 
-if (Is-Terminating) {
-  exit
+function Get-PublicKeys {
+  # just a helper function that fails quietly if no public keys are associated with the instance
+  process {
+    try {
+      $publicKeys = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/public-keys')
+    } catch {
+      $publicKeys = ''
+    }
+    return $publicKeys
+  }
 }
-if (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) {
-  $z = (Get-PSDrive -Name 'Z')
-  Write-Log -message ('drive z: exists with {0}gb used and {1}gb free' -f ($z.Used / 1Gb), ($z.Free / 1Gb)) -severity 'DEBUG'
-} else {
-  Write-Log -message 'drive z: does not exist' -severity 'DEBUG'
+
+function Is-Worker {
+  param (
+    [string] $locationType
+  )
+  switch ($locationType) {
+    'AWS' {
+      $isWorker = (-not ((Get-PublicKeys).StartsWith('0=mozilla-taskcluster-worker-')))
+      break
+    }
+    'Azure' {
+      $isWorker = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.resourceGroupName.StartsWith('taskcluster-')
+      break
+    }
+    default {
+      $isWorker = $true
+      break
+    }
+  }
+  return $isWorker
 }
 
 $locationType = $(
@@ -123,6 +145,17 @@ $locationType = $(
     }
   }
 )
+
+if ((Is-Terminating) -or (-not (Is-Worker -locationType $locationType))) {
+  exit
+}
+
+if (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) {
+  $z = (Get-PSDrive -Name 'Z')
+  Write-Log -message ('drive z: exists with {0}gb used and {1}gb free' -f ($z.Used / 1Gb), ($z.Free / 1Gb)) -severity 'DEBUG'
+} else {
+  Write-Log -message 'drive z: does not exist' -severity 'DEBUG'
+}
 
 # prevent HaltOnIdle running before host rename has occured.
 $expectedHostname = $(

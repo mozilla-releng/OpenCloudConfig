@@ -67,19 +67,27 @@ function Is-ConditionTrue {
 }
 
 function Is-Terminating {
-  try {
-    $response = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/spot/termination-time')
-    $result = (-not ($response.Contains('(404)')))
+  param (
+    [string] $locationType
+  )
+  switch ($locationType) {
+    'AWS' {
+      try {
+        $response = (New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/spot/termination-time')
+        $result = (-not ($response.Contains('(404)')))
+      } catch {
+        $result = $false
+      }
+      $isTerminating = (($result) -and ($response))
+      break
+    }
+    default {
+      $isTerminating = $false
+      break
+    }
   }
-  catch {
-    $result = $false
-  }
-  if (($result) -and ($response)) {
-    Write-Log -message ('{0} :: spot termination notice received: {1}.' -f $($MyInvocation.MyCommand.Name), $response) -severity 'WARN'
-  } else {
-    #Write-Log -message ('{0} :: spot termination notice not detected.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-  }
-  return [bool](($result) -and ($response))
+  Write-Log -message ('{0} :: locationType: {1}, isTerminating: {2}' -f $($MyInvocation.MyCommand.Name), $locationType, $isTerminating) -severity 'DEBUG'
+  return $isTerminating
 }
 
 function Is-OpenCloudConfigRunning {
@@ -124,6 +132,7 @@ function Is-Worker {
       break
     }
   }
+  Write-Log -message ('{0} :: locationType: {1}, isWorker: {2}' -f $($MyInvocation.MyCommand.Name), $locationType, $isWorker) -severity 'DEBUG'
   return $isWorker
 }
 
@@ -146,7 +155,7 @@ $locationType = $(
   }
 )
 
-if ((Is-Terminating) -or (-not (Is-Worker -locationType $locationType))) {
+if ((Is-Terminating -locationType $locationType) -or (-not (Is-Worker -locationType $locationType))) {
   exit
 }
 

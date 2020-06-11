@@ -2488,9 +2488,25 @@ function Invoke-OpenCloudConfig {
       if ($isWorker) {
         switch ($locationType) {
           'Azure' {
-            while ((-not (Test-VolumeExists -DriveLetter @('Y'))) -or (-not (Test-VolumeExists -DriveLetter @('Z')))) {
+            if ((-not (Test-VolumeExists -DriveLetter @('Y'))) -or (-not (Test-VolumeExists -DriveLetter @('Z')))) {
+              $diskpartScriptPath = 'C:\Windows\Temp\diskpart-init-disks.txt'
+              [IO.File]::WriteAllLines($diskpartScriptPath, @(
+                'select disk 2',
+                'clean',
+                'convert gpt',
+                'create partition primary',
+                'format quick fs=ntfs label=cache',
+                'assign letter=Y',
+                'select disk 3',
+                'clean',
+                'convert gpt',
+                'create partition primary',
+                'format quick fs=ntfs label=cache',
+                'assign letter=Z'
+              ))
+              Start-LoggedProcess -filePath ('{0}\system32\diskpart.exe' -f $env:WINDIR) -ArgumentList @('/s', $diskpartScriptPath) -redirectStandardOutput 'C:\log\diskpart-init-disks-stdout.log' -redirectStandardError 'C:\log\diskpart-init-disks-stderr.log' -name 'diskpart-init-disks'
               Write-Log -message ('{0} :: awaiting cache and task drive letter assignment...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
-              Start-Sleep -Seconds 60
+              Start-Sleep -Seconds 15
             }
             break
           }

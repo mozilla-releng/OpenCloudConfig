@@ -2486,19 +2486,31 @@ function Invoke-OpenCloudConfig {
       #  }
       #}
       if ($isWorker) {
-        if (-not (Test-VolumeExists -DriveLetter @('Z'))) {
-          Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-          & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1')
-        }
-        switch -wildcard ($workerType) {
-          'gecko-*' {
-            if (-not (Test-VolumeExists -DriveLetter @('Y'))) {
-              Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-              & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1')
+        switch ($locationType) {
+          'Azure' {
+            while ((-not (Test-VolumeExists -DriveLetter @('Y'))) -or (-not (Test-VolumeExists -DriveLetter @('Z')))) {
+              Write-Log -message ('{0} :: awaiting cache and task drive letter assignment...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+              Start-Sleep -Seconds 60
             }
+            break
           }
           default {
-            Write-Log -message ('{0} :: missing cache drive. ignoring...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+            if (-not (Test-VolumeExists -DriveLetter @('Z'))) {
+              Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+              & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1')
+            }
+            switch -wildcard ($workerType) {
+              'gecko-*' {
+                if (-not (Test-VolumeExists -DriveLetter @('Y'))) {
+                  Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+                  & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1')
+                }
+              }
+              default {
+                Write-Log -message ('{0} :: missing cache drive. ignoring...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+              }
+            }
+            break
           }
         }
       }

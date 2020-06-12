@@ -2467,7 +2467,9 @@ function Invoke-OpenCloudConfig {
       if ($isWorker) {
         Resize-DiskZero
       }
-      Set-Pagefile -isWorker:$isWorker -lock $lock -workerType $workerType
+      if ($locationType -ne 'Azure') {
+        Set-Pagefile -isWorker:$isWorker -lock $lock -workerType $workerType
+      }
       # reattempt drive mapping for up to 10 minutes
       #$driveMapTimeout = (Get-Date).AddMinutes(10)
       #$driveMapAttempt = 0

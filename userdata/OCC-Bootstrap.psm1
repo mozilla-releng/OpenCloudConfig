@@ -1930,7 +1930,8 @@ function Set-ChainOfTrustKey {
           Start-LoggedProcess -filePath 'C:\generic-worker\generic-worker.exe' -ArgumentList @('new-ed25519-keypair', '--file', 'C:\generic-worker\ed25519-private.key') -redirectStandardOutput 'C:\log\new-ed25519-keypair-stdout.log' -name 'generic-worker-new-ed25519-keypair'
           if (Test-Path -Path 'C:\generic-worker\ed25519-private.key' -ErrorAction SilentlyContinue) {
             if (Test-Path -Path 'C:\log\new-ed25519-keypair-stdout.log' -ErrorAction SilentlyContinue) {
-              $publicKey = (Get-Content -Path 'C:\log\new-ed25519-keypair-stdout.log' | Select-Object -Skip 2 -First 1)
+              $keygenOutput = (Get-Content -Path 'C:\log\new-ed25519-keypair-stdout.log')
+              $publicKey = $keygenOutput[($keygenOutput.Length - 1)]
               [IO.File]::WriteAllLines('C:\generic-worker\ed25519-public.key', @($publicKey, ''), (New-Object -TypeName 'System.Text.UTF8Encoding' -ArgumentList $false))
               Write-Log -message ('{0} :: ed25519 key generated. public key: {1}' -f $($MyInvocation.MyCommand.Name), $publicKey) -severity 'INFO'
             }

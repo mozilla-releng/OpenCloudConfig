@@ -307,8 +307,8 @@ function Get-SysprepState {
 }
 
 $sysprepState = (Get-SysprepState)
-switch ($sysprepState) {
-  'IMAGE_STATE_COMPLETE' {
+switch -regex ($sysprepState) {
+  'IMAGE_STATE_COMPLETE|IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT' {
     try {
       Set-ExecutionPolicy -ExecutionPolicy 'RemoteSigned' -Force -ErrorAction SilentlyContinue
     } catch {

@@ -2624,8 +2624,8 @@ function Invoke-OpenCloudConfig {
       Install-Dependencies
 
       switch -regex ($workerType) {
-        # bypass dsc on windows 7
-        '^gecko-t-win7-(.*)$' {
+        # bypass dsc on azure testers
+        '^gecko-t-(.*)-azure$' {
           Invoke-CustomDesiredStateProvider -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev -workerType $workerType
         }
         # bypass dsc on hardware (gecko-t-win10-a64-beta, gecko-t-win10-64-hw*, gecko-t-win10-64-ux*)

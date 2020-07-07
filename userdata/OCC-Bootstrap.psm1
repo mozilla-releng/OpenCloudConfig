@@ -715,8 +715,7 @@ function Mount-DiskOne {
         }
       }
       if ($pagefileName) {
-        Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-        & shutdown @('-r', '-t', '0', '-c', ('page file {0} removed' -f $pagefileName), '-f', '-d', 'p:2:4')
+        Invoke-Shutdown -comment ('page file {0} removed' -f $pagefileName) -code 'p:2:4' -delay 0 -restart -unlock
       }
       if (Get-Command -Name 'Clear-Disk' -errorAction SilentlyContinue) {
         try {
@@ -879,8 +878,7 @@ function Set-Pagefile {
               # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)
               Set-Ec2ConfigSettings
             }
-            Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-            & shutdown @('-r', '-t', '0', '-c', ('page file {0} created' -f $name), '-f', '-d', 'p:2:4')
+            Invoke-Shutdown -comment ('page file {0} created' -f $name) -code 'p:2:4' -delay 0 -restart -unlock
           }
           catch {
             Write-Log -message ('{0} :: failed to create pagefile: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $name, $_.Exception.Message) -severity 'ERROR'
@@ -1814,9 +1812,7 @@ function Invoke-HardwareDiskCleanup {
         Write-Log -message "Current available disk space CRITCAL $perfree% free. Will not start Generic-Worker!" -severity 'Error' 
         Sleep 15
       } until ($TimeNow -ge $TimeEnd)
-      Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-      & shutdown @('-s', '-t', '0', '-c', 'Restarting disk space Critical', '-f', '-d', 'p:2:4')
-      exit
+      Invoke-Shutdown -comment 'restarting. disk space critical' -code 'p:2:4' -delay 0 -restart -unlock
     }
   }
   end {
@@ -1853,7 +1849,7 @@ function Set-ChainOfTrustKey {
           Start-LoggedProcess -filePath 'icacls' -ArgumentList @('C:\generic-worker\ed25519-private.key', '/inheritance:r') -name 'icacls-ed25519-inheritance-remove'
           if ($shutdown) {
             Write-Log -message ('{0} :: ed25519 key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-            & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+            Invoke-Shutdown -comment 'dsc run complete' -code 'p:2:4' -delay 0 -unlock
           } else {
             Write-Log -message ('{0} :: ed25519 key detected' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
           }
@@ -1943,13 +1939,14 @@ function Set-ChainOfTrustKey {
           if ($shutdown) {
             if ($locationType -eq 'AWS') {
               Write-Log -message ('{0} :: ed25519 key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-              & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+              Invoke-Shutdown -comment 'dsc run complete' -code 'p:2:4' -delay 0 -unlock
             } elseif ($locationType -eq 'Azure') {
               Write-Log -message ('{0} :: ed25519 key detected. triggering sysprep generalize and shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
               Start-LoggedProcess -filePath ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) -ArgumentList $(if ($workerType -match 'win7') { @('/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml') } else { @('/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml', '/mode:vm') }) -redirectStandardOutput 'C:\log\sysprep-generalize-shutdown-stdout.log' -redirectStandardError 'C:\log\sysprep-generalize-shutdown-stderr.log' -name 'sysprep-generalize-shutdown' # remove the /mode:vm switch if creating images for different hardware profiles
             } else {
               Write-Log -message ('{0} :: ed25519 key detected. restarting.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
               & shutdown @('-r', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+              Invoke-Shutdown -comment 'dsc run complete' -code 'p:2:4' -delay 0 -restart -unlock
             }
           } else {
             Write-Log -message ('{0} :: ed25519 key detected' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
@@ -1960,9 +1957,9 @@ function Set-ChainOfTrustKey {
         if ($shutdown) {
           if (@(Get-Process | ? { $_.ProcessName -eq 'rdpclip' }).length -eq 0) {
             if ($locationType -eq 'AWS') {
-              & shutdown @('-s', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+              Invoke-Shutdown -comment 'dsc run complete' -code 'p:2:4' -delay 0 -unlock
             } else {
-              & shutdown @('-r', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')
+              Invoke-Shutdown -comment 'dsc run complete' -code 'p:2:4' -delay 0 -restart -unlock
             }
           } else {
             Write-Log -message ('{0} :: rdp session detected. awaiting manual shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
@@ -2042,6 +2039,7 @@ function Wait-GenericWorkerStart {
             Write-Log -message ('{0} :: semaphore {1} deleted.' -f $($MyInvocation.MyCommand.Name), $taskClaimSemaphore) -severity 'INFO'
           }
           & shutdown @('-r', '-t', '0', '-c', 'reboot to rouse the generic worker', '-f', '-d', '4:5')
+          Invoke-Shutdown -comment 'reboot to rouse the generic worker' -code '4:5' -delay 0 -restart -unlock
         } else {
           $timer.Stop()
           Write-Log -message ('{0} :: generic-worker running process detected {1} ms after task-claim-state.valid flag set.' -f $($MyInvocation.MyCommand.Name), $timer.ElapsedMilliseconds) -severity 'INFO'
@@ -2273,7 +2271,7 @@ function Initialize-Instance {
         Set-NxlogConfig -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev
       }
       Write-Log -message ('{0} :: reboot required: {1}' -f $($MyInvocation.MyCommand.Name), [string]::Join(', ', $rebootReasons)) -severity 'DEBUG'
-      & shutdown @('-r', '-t', '0', '-c', [string]::Join(', ', $rebootReasons), '-f', '-d', 'p:4:1')
+      Invoke-Shutdown -comment [string]::Join(', ', $rebootReasons) -code 'p:4:1' -delay 0 -restart -unlock
     }
   }
   end {
@@ -2534,13 +2532,13 @@ function Invoke-OpenCloudConfig {
           default {
             if (-not (Test-VolumeExists -DriveLetter @('Z'))) {
               Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-              & shutdown @('-s', '-t', '0', '-c', 'missing task drive', '-f', '-d', '1:1')
+              Invoke-Shutdown -comment 'missing task drive' -code '1:1' -delay 0 -unlock
             }
             switch -wildcard ($workerType) {
               'gecko-*' {
                 if (-not (Test-VolumeExists -DriveLetter @('Y'))) {
                   Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-                  & shutdown @('-s', '-t', '0', '-c', 'missing cache drive', '-f', '-d', '1:1')
+                  Invoke-Shutdown -comment 'missing cache drive' -code '1:1' -delay 0 -unlock
                 }
               }
               default {
@@ -2655,7 +2653,7 @@ function Invoke-OpenCloudConfig {
           Set-Ec2ConfigSettings
         }
         Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
-        & shutdown @('-r', '-t', '0', '-c', 'the dsc process did not complete and now requires a restart', '-f', '-d', 'p:4:2')
+        Invoke-Shutdown -comment 'the dsc process did not complete and now requires a restart' -code 'p:4:2' -delay 0 -restart -unlock
       }
       if (($locationType -ne 'DataCenter') -and (((Get-Content $transcript) | % { ($_ -match 'failed to execute Set-TargetResource') }) -contains $true)) {
         Write-Log -message ('{0} :: dsc run failed.' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
@@ -2667,7 +2665,7 @@ function Invoke-OpenCloudConfig {
             Write-Log -message ('{0} :: waiting for occ ci task to fail due to timeout. shutdown in {1} minutes.' -f $($MyInvocation.MyCommand.Name), [Math]::Round(((5 * 60) - $timer.Elapsed.TotalMinutes))) -severity 'WARN'
             Start-Sleep -Seconds 600
           }
-          & shutdown @('-s', '-t', '0', '-c', 'dsc run failed', '-f', '-d', 'p:2:4')
+          Invoke-Shutdown -comment 'dsc run failed' -code 'p:2:4' -delay 0 -unlock
         }
       }
       switch -wildcard ((Get-WmiObject -class Win32_OperatingSystem).Caption) {
@@ -2741,6 +2739,67 @@ function Invoke-OpenCloudConfig {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
     }
     Write-Log -message ('{0} :: userdata run completed' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Get-SysprepState {
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    try {
+      $sysprepState = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State' -Name 'ImageState').ImageState
+      Write-Log -message ('{0} :: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State ImageState read as {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'DEBUG'
+    } catch {
+      Write-Log -message ('{0} :: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State ImageState read failure. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+      $sysprepState = $null
+    }
+    return $sysprepState
+  }
+  end {
+    Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+}
+function Invoke-Shutdown {
+  param (
+    [Parameter(Mandatory = $true)]
+    [string] $comment,
+
+    [Parameter(Mandatory = $true)]
+    [string] $code,
+
+    [int] $delay = 0,
+    [switch] $restart = $false,
+    [switch] $unlock = $false,
+    [string] $sysprepState = (Get-SysprepState),
+    [string] $lock = 'C:\dsc\in-progress.lock'
+  )
+  begin {
+    Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
+  }
+  process {
+    if (($unlock) -and (Test-Path -Path $lock -ErrorAction SilentlyContinue)) {
+      Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
+      if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
+        Write-Log -message ('{0} :: failed to remove lock file: {1}' -f $($MyInvocation.MyCommand.Name), $lock) -severity 'ERROR'
+      } else {
+        Write-Log -message ('{0} :: lock file: {1}, removed' -f $($MyInvocation.MyCommand.Name), $lock) -severity 'INFO'
+      }
+    }
+    switch -regex ($sysprepState) {
+      'IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT' {
+        # https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-deployment-runsynchronous-runsynchronouscommand-willreboot#remarks
+        exit $(if ($restart) { 2 } else { 0 })
+        break
+      }
+      default {
+        Write-Log -message ('{0} :: sysprep state: {1}, invoking {2}, with {3} second delay and comment: {4}' -f $($MyInvocation.MyCommand.Name), $sysprepState, $(if ($restart) { 'restart' } else { 'shutdown' }), $delay, $comment) -severity 'DEBUG'
+        & shutdown @($(if ($restart) { '-r' } else { '-s' }), '-t', $delay, '-c', $comment, '-f', '-d', $code)
+        break
+      }
+    }
   }
   end {
     Write-Log -message ('{0} :: end - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'

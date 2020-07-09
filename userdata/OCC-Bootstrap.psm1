@@ -1941,8 +1941,10 @@ function Set-ChainOfTrustKey {
               Write-Log -message ('{0} :: ed25519 key detected. shutting down.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
               Invoke-Shutdown -comment 'dsc run complete' -code 'p:2:4' -delay 0 -unlock
             } elseif ($locationType -eq 'Azure') {
-              Write-Log -message ('{0} :: ed25519 key detected. triggering sysprep generalize and shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
-              Start-LoggedProcess -filePath ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) -ArgumentList $(if ($workerType -match 'win7') { @('/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml') } else { @('/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml', '/mode:vm') }) -redirectStandardOutput 'C:\log\sysprep-generalize-shutdown-stdout.log' -redirectStandardError 'C:\log\sysprep-generalize-shutdown-stderr.log' -name 'sysprep-generalize-shutdown' # remove the /mode:vm switch if creating images for different hardware profiles
+              Write-Log -message ('{0} :: ed25519 key detected. shutting down or returning control to sysprep.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+              Invoke-Shutdown -comment 'dsc run complete' -code 'p:2:4' -delay 0 -unlock
+              #Write-Log -message ('{0} :: ed25519 key detected. triggering sysprep generalize and shutdown.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+              #Start-LoggedProcess -filePath ('{0}\system32\sysprep\sysprep.exe' -f $env:WINDIR) -ArgumentList $(if ($workerType -match 'win7') { @('/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml') } else { @('/generalize', '/shutdown', '/oobe', '/unattend:C:\Windows\Temp\generalize.xml', '/mode:vm') }) -redirectStandardOutput 'C:\log\sysprep-generalize-shutdown-stdout.log' -redirectStandardError 'C:\log\sysprep-generalize-shutdown-stderr.log' -name 'sysprep-generalize-shutdown' # remove the /mode:vm switch if creating images for different hardware profiles
             } else {
               Write-Log -message ('{0} :: ed25519 key detected. restarting.' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
               & shutdown @('-r', '-t', '0', '-c', 'dsc run complete', '-f', '-d', 'p:2:4')

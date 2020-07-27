@@ -308,7 +308,8 @@ function Get-SysprepState {
 
 $sysprepState = (Get-SysprepState)
 switch -regex ($sysprepState) {
-  'IMAGE_STATE_COMPLETE|IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT' {
+  'IMAGE_STATE_(COMPLETE|SPECIALIZE_RESEAL_TO_AUDIT|UNDEPLOYABLE)' {
+    Write-Log -message ('{0} :: bootstrap triggered. sysprep state: {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'WARN'
     try {
       Set-ExecutionPolicy -ExecutionPolicy 'RemoteSigned' -Force -ErrorAction SilentlyContinue
     } catch {
@@ -323,7 +324,7 @@ switch -regex ($sysprepState) {
     break
   }
   default {
-    Write-Log -message ('{0} :: no available implementation for sysprep state: {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'WARN'
+    Write-Log -message ('{0} :: bootstrap skipped. no implementation for sysprep state: {1}' -f $($MyInvocation.MyCommand.Name), $sysprepState) -severity 'WARN'
     break
   }
 }

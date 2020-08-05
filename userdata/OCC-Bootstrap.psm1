@@ -2791,8 +2791,9 @@ function Invoke-Shutdown {
       }
     }
     switch -regex ($sysprepState) {
-      'IMAGE_STATE_SPECIALIZE_RESEAL_TO_AUDIT' {
+      'IMAGE_STATE_(SPECIALIZE_RESEAL_TO_AUDIT|UNDEPLOYABLE)' {
         # https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-deployment-runsynchronous-runsynchronouscommand-willreboot#remarks
+        Write-Log -message ('{0} :: sysprep state: {1}, returning control to sysprep with exit code: {2}' -f $($MyInvocation.MyCommand.Name), $sysprepState, $(if ($restart) { 2 } else { 0 })) -severity 'DEBUG'
         exit $(if ($restart) { 2 } else { 0 })
         break
       }

@@ -386,6 +386,9 @@ function Invoke-OccReset {
           Write-Log -message ('{0} :: remote patch executed {1}' -f $($MyInvocation.MyCommand.Name), $remotePatch) -severity 'DEBUG'
         } catch {
           Write-Log -message ('{0} :: error executing remote patch script {1}. {2}' -f $($MyInvocation.MyCommand.Name), $remotePatch, $_.Exception.Message) -severity 'ERROR'
+          if ($_.Exception.InnerException) {
+            Write-Log -message ('{0} :: inner exception: {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.InnerException.Message) -severity 'ERROR';
+          }
         }
       }
       if ((${env:PROCESSOR_ARCHITEW6432} -eq 'ARM64') -and (-not (Test-ScheduledTaskExists -TaskName 'RunDesiredStateConfigurationAtStartup'))) {

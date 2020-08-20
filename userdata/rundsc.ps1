@@ -342,7 +342,7 @@ function Get-NetAdapterLegacy {
       }
     )
   )
-  $result = (Get-CIMInstance @wmiArgs | Select-Object -Property $wmiProps)
+  $result = (Get-CIMInstance $wmiArgs | Select-Object -Property $wmiProps)
   if(@($result).Count -eq 0 -and -not $name.Contains('*')) {
     return @()
     #throw "Get-NetAdapterLegacy: No Win32_NetworkAdapter objects found with property 'NetConnectionID' equal to '$name'"

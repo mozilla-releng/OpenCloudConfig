@@ -2735,6 +2735,12 @@ function Invoke-OpenCloudConfig {
       } else {
         Set-ChainOfTrustKey -locationType $locationType -workerType $workerType -shutdown:$false
       }
+      # Work around for https://bugzilla.mozilla.org/show_bug.cgi?id=1405083
+      # Specificly for Yogas. Not ideal but should work   
+      if (${env:PROCESSOR_ARCHITEW6432} -eq 'ARM64') {
+        $network = ((Get-NetConnectionProfile).name)
+        Set-NetConnectionProfile -Name "$network" -NetworkCategory Private
+      }
       Wait-GenericWorkerStart -locationType $locationType -lock $lock
     }
     if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {

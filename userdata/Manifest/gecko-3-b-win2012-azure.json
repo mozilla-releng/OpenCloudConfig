@@ -7,39 +7,74 @@
       "Path": "C:\\log"
     },
     {
+      "ComponentName": "StackdriverConfigDirectory",
+      "ComponentType": "DirectoryCreate",
+      "Path": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d"
+    },
+    {
       "ComponentName": "fluentd_gw_exe",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.exe.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\gw.exe.conf"
+      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\gw.exe.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "StackdriverConfigDirectory"
+        }
+      ]
     },
     {
       "ComponentName": "fluentd_gw_service",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.service.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\gw.service.conf"
+      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\gw.service.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "StackdriverConfigDirectory"
+        }
+      ]
     },
     {
       "ComponentName": "fluentd_gw_wrapper",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.wrapper.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\gw.wrapper.conf"
+      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\gw.wrapper.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "StackdriverConfigDirectory"
+        }
+      ]
     },
     {
       "ComponentName": "fluentd_occ",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/occ.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\occ.conf"
+      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\occ.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "StackdriverConfigDirectory"
+        }
+      ]
     },
     {
       "ComponentName": "fluentd_redact",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/redact.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\redact.conf"
+      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\redact.conf",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "StackdriverConfigDirectory"
+        }
+      ]
     },
     {
       "ComponentName": "NxLog",

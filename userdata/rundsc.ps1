@@ -45,9 +45,11 @@ function Write-Log {
   } catch {
     Write-Error -Exception $_.Exception -message ('failed to write to event log source: {0}/{1}. the log message was: {2}' -f $logName, $source, $message)
   }
-  if ([Environment]::UserInteractive -and $env:OccConsoleOutput) {
+  if ($env:OccConsoleOutput -eq 'host') {
     $fc = @{ 'Information' = 'White'; 'Error' = 'Red'; 'Warning' = 'DarkYellow'; 'SuccessAudit' = 'DarkGray' }[$entryType]
     Write-Host -object $message -ForegroundColor $fc
+  } elseif ($env:OccConsoleOutput) {
+    Write-Output -InputObject $message
   }
 }
 

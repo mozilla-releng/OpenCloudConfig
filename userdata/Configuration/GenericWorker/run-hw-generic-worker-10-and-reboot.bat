@@ -55,6 +55,11 @@ goto CheckForStateFlag
 ping -n 2 127.0.0.1 1>/nul
 goto CheckForStateFlag
 
+rem Supressing firewall warnings. Current user needs to be fully logged in.
+rem not an ideal place for this, but it works as needed
+rem https://bugzilla.mozilla.org/show_bug.cgi?id=1405083
+netsh firewall set notifications mode = disable profile = all
+
 :RunWorker
 echo File C:\dsc\task-claim-state.valid found >> C:\generic-worker\generic-worker-wrapper.log
 echo Deleting C:\dsc\task-claim-state.valid file >> C:\generic-worker\generic-worker-wrapper.log

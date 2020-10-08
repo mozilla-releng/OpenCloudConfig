@@ -116,6 +116,11 @@ function Install-Dependencies {
         'ModuleVersion' = '2.7.0.0'
       },
       @{
+        'ModuleName' = 'Carbon';
+        'Repository' = 'PSGallery';
+        'ModuleVersion' = '2.9.2'
+      },
+      @{
         'ModuleName' = 'OpenCloudConfig';
         'Repository' = 'PSGallery';
         'ModuleVersion' = '0.0.54'

@@ -1370,66 +1370,6 @@
       ]
     },
     {
-      "ComponentName": "CarbonClone",
-      "ComponentType": "CommandRun",
-      "Comment": "Bug 1316329 - support creation of symlinks by task users",
-      "Command": "C:\\Program Files\\Mercurial\\hg.exe",
-      "Arguments": [
-        "clone",
-        "--insecure",
-        "https://bitbucket.org/splatteredbits/carbon",
-        "C:\\Windows\\Temp\\carbon"
-      ],
-      "DependsOn": [
-        {
-          "ComponentType": "MsiInstall",
-          "ComponentName": "Mercurial"
-        }
-      ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\Windows\\Temp\\carbon\\.hg"
-        ]
-      }
-    },
-    {
-      "ComponentName": "CarbonUpdate",
-      "ComponentType": "CommandRun",
-      "Comment": "Bug 1316329 - support creation of symlinks by task users",
-      "Command": "C:\\Program Files\\Mercurial\\hg.exe",
-      "Arguments": [
-        "update",
-        "2.4.0",
-        "-R",
-        "C:\\Windows\\Temp\\carbon"
-      ],
-      "DependsOn": [
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "CarbonClone"
-        }
-      ]
-    },
-    {
-      "ComponentName": "CarbonInstall",
-      "ComponentType": "CommandRun",
-      "Comment": "Bug 1316329 - support creation of symlinks by task users",
-      "Command": "xcopy",
-      "Arguments": [
-        "C:\\Windows\\Temp\\carbon\\Carbon",
-        "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules\\Carbon",
-        "/e",
-        "/i",
-        "/y"
-      ],
-      "DependsOn": [
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "CarbonUpdate"
-        }
-      ]
-    },
-    {
       "ComponentName": "GrantEveryoneSeCreateSymbolicLinkPrivilege",
       "ComponentType": "CommandRun",
       "Comment": "Bug 1316329 - support creation of symlinks by task users",
@@ -1437,13 +1377,7 @@
       "Arguments": [
         "-command",
         "\"& {&'Import-Module' Carbon}\";",
-        "\"& {&'Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}\""
-      ],
-      "DependsOn": [
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "CarbonInstall"
-        }
+        "\"& {&'Grant-CPrivilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}\""
       ]
     },
     {

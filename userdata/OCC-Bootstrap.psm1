@@ -2539,19 +2539,41 @@ function Invoke-OpenCloudConfig {
             break
           }
           default {
-            if (-not (Test-VolumeExists -DriveLetter @('Z'))) {
-              Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-              Invoke-Shutdown -comment 'missing task drive' -code '1:1' -delay 0 -unlock
-            }
-            switch -wildcard ($workerType) {
-              'gecko-*' {
-                if (-not (Test-VolumeExists -DriveLetter @('Y'))) {
-                  Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-                  Invoke-Shutdown -comment 'missing cache drive' -code '1:1' -delay 0 -unlock
+            switch -regex ($workerType) {
+              '^(comm|gecko|mpd001)-[123]-b-win2012(-c[45])?$' {
+                $timer = [Diagnostics.Stopwatch]::StartNew()
+                while (($timer.Elapsed.TotalMinutes -lt 5) -and (-not (Test-VolumeExists -DriveLetter @('Z')))) {
+                  Write-Log -message ('{0} :: missing task drive. waiting for ec2config to map drives...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+                  Start-Sleep -Seconds 10
                 }
+                $timer.Stop()
+                if (-not (Test-VolumeExists -DriveLetter @('Z'))) {
+                  $driveLetterConfigPath = 'C:\Program Files\Amazon\Ec2ConfigService\Settings\DriveLetterConfig.xml'
+                  $driveLetterConfigIsOccCustom = ((Test-Path -Path $driveLetterConfigPath -ErrorAction SilentlyContinue) -and ((Get-Content -Path $driveLetterConfigPath | %{ $_ -match 'task' }) -contains $true))
+                  if ($driveLetterConfigIsOccCustom -and (Test-VolumeExists -DriveLetter @('D'))) {
+                    Format-Volume -FileSystem 'NTFS' -DriveLetter 'D' -NewFileSystemLabel 'task' -Confirm:$false
+                    Write-Log -message ('{0} :: missing task drive. drive D: formatted and labelled "task". rebooting instance to trigger ec2config drive remap' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+                    Invoke-Shutdown -comment 'missing task drive' -code 'p:2:4' -delay 0 -restart -unlock
+                  }
+                }
+                break
               }
               default {
-                Write-Log -message ('{0} :: missing cache drive. ignoring...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+                if (-not (Test-VolumeExists -DriveLetter @('Z'))) {
+                  Write-Log -message ('{0} :: missing task drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+                  Invoke-Shutdown -comment 'missing task drive' -code '1:1' -delay 0 -unlock
+                }
+                switch -wildcard ($workerType) {
+                  'gecko-*' {
+                    if (-not (Test-VolumeExists -DriveLetter @('Y'))) {
+                      Write-Log -message ('{0} :: missing cache drive. terminating instance...' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
+                      Invoke-Shutdown -comment 'missing cache drive' -code '1:1' -delay 0 -unlock
+                    }
+                  }
+                  default {
+                    Write-Log -message ('{0} :: missing cache drive. ignoring...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+                  }
+                }
               }
             }
             break

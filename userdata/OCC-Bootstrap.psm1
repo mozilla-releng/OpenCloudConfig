@@ -2542,19 +2542,31 @@ function Invoke-OpenCloudConfig {
             switch -regex ($workerType) {
               '^(comm|gecko|mpd001)-[123]-b-win2012(-c[45])?$' {
                 $timer = [Diagnostics.Stopwatch]::StartNew()
-                while (($timer.Elapsed.TotalMinutes -lt 5) -and (-not (Test-VolumeExists -DriveLetter @('Z')))) {
-                  Write-Log -message ('{0} :: missing task drive. waiting for ec2config to map drives...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
+                while (($timer.Elapsed.TotalMinutes -lt 5) -and ((-not (Test-VolumeExists -DriveLetter @('Y'))) -or (-not (Test-VolumeExists -DriveLetter @('Z'))))) {
+                  Write-Log -message ('{0} :: missing cache or task drive. waiting for ec2config to map drives...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
                   Start-Sleep -Seconds 10
                 }
                 $timer.Stop()
-                if (-not (Test-VolumeExists -DriveLetter @('Z'))) {
+                if ((-not (Test-VolumeExists -DriveLetter @('Y'))) -or (-not (Test-VolumeExists -DriveLetter @('Z')))) {
                   $driveLetterConfigPath = 'C:\Program Files\Amazon\Ec2ConfigService\Settings\DriveLetterConfig.xml'
-                  $driveLetterConfigIsOccCustom = ((Test-Path -Path $driveLetterConfigPath -ErrorAction SilentlyContinue) -and ((Get-Content -Path $driveLetterConfigPath | %{ $_ -match 'task' }) -contains $true))
-                  if ($driveLetterConfigIsOccCustom -and (Test-VolumeExists -DriveLetter @('D'))) {
+                  $driveLetterConfigContainsTaskDrive = ((Test-Path -Path $driveLetterConfigPath -ErrorAction SilentlyContinue) -and ((Get-Content -Path $driveLetterConfigPath | %{ $_ -match 'task' }) -contains $true))
+                  $driveLetterConfigContainsCacheDrive = ((Test-Path -Path $driveLetterConfigPath -ErrorAction SilentlyContinue) -and ((Get-Content -Path $driveLetterConfigPath | %{ $_ -match 'cache' }) -contains $true))
+                  $driveLetterConfigRequiresReboot = $false
+                  if ($driveLetterConfigContainsTaskDrive -and (Test-VolumeExists -DriveLetter @('D'))) {
                     Format-Volume -FileSystem 'NTFS' -DriveLetter 'D' -NewFileSystemLabel 'task' -Confirm:$false
-                    Write-Log -message ('{0} :: missing task drive. drive D: formatted and labelled "task". rebooting instance to trigger ec2config drive remap' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-                    Invoke-Shutdown -comment 'missing task drive' -code 'p:2:4' -delay 0 -restart -unlock
+                    Write-Log -message ('{0} :: missing task drive. drive D: formatted and labelled "task". rebooting instance to trigger ec2config drive remap...' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+                    $driveLetterConfigRequiresReboot = $true
                   }
+                  if ($driveLetterConfigContainsCacheDrive -and (Test-VolumeExists -DriveLetter @('E'))) {
+                    Format-Volume -FileSystem 'NTFS' -DriveLetter 'E' -NewFileSystemLabel 'cache' -Confirm:$false
+                    Write-Log -message ('{0} :: missing cache drive. drive E: formatted and labelled "cache". rebooting instance to trigger ec2config drive remap...' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
+                    $driveLetterConfigRequiresReboot = $true
+                  }
+                  if ($driveLetterConfigRequiresReboot) {
+                    Invoke-Shutdown -comment 'reboot to trigger ec2config drive remap' -code 'p:2:4' -delay 0 -restart -unlock
+                  }
+                } else {
+
                 }
                 break
               }

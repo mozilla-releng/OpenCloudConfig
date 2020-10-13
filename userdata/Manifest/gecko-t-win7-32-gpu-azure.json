@@ -823,7 +823,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v31.0.0/start-worker-windows-386",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v37.3.0/start-worker-windows-386",
       "Target": "C:\\generic-worker\\taskcluster-worker-runner.exe"
     },
     {
@@ -847,7 +847,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v31.0.0/generic-worker-multiuser-windows-386",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v37.3.0/generic-worker-multiuser-windows-386",
       "Target": "C:\\generic-worker\\generic-worker.exe"
     },
     {
@@ -859,7 +859,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v31.0.0/livelog-windows-386",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v37.3.0/livelog-windows-386",
       "Target": "C:\\generic-worker\\livelog.exe"
     },
     {
@@ -871,7 +871,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v31.0.0/taskcluster-proxy-windows-386",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v37.3.0/taskcluster-proxy-windows-386",
       "Target": "C:\\generic-worker\\taskcluster-proxy.exe"
     },
     {

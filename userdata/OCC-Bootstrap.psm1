@@ -2566,7 +2566,7 @@ function Invoke-OpenCloudConfig {
                     Invoke-Shutdown -comment 'reboot to trigger ec2config drive remap' -code 'p:2:4' -delay 0 -restart -unlock
                   }
                 } else {
-
+                  Write-Log -message ('{0} :: cache and task drives detected' -f $($MyInvocation.MyCommand.Name)) -severity 'INFO'
                 }
                 break
               }

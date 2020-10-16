@@ -2218,6 +2218,16 @@
       "Source": "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe",
       "sha512": "58127bae7b27d963cb4ec19779e5ab0938db69190ec66985694320af787e696a8acd490b967255a7fed4c28ec6a2c2bfcd6efbb5b85ec2a950b3e318113d5cde",
       "Target": "C:\\Windows\\System32\\jq.exe"
+    },
+    {
+      "ComponentName": "reg_DisableIpv6",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1671210",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters",
+      "ValueName": "DisabledComponents",
+      "ValueType": "Dword",
+      "ValueData": "0xff",
+      "Hex": true
     }
   ]
 }

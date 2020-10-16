@@ -1815,6 +1815,16 @@
         "-command",
         "\"& { $ll = Get-WinUserLanguageList; if (@($ll | ? { $_.LanguageTag -eq 'ja' }).Length -lt 1) { $ll.Add('ja'); Set-WinUserLanguageList -LanguageList $ll -Force } }\""
       ]
+    },
+    {
+      "ComponentName": "reg_DisableIpv6",
+      "ComponentType": "RegistryValueSet",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1671210",
+      "Key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters",
+      "ValueName": "DisabledComponents",
+      "ValueType": "Dword",
+      "ValueData": "0xff",
+      "Hex": true
     }
   ],
   "ProvisionerConfiguration": {

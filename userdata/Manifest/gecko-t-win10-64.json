@@ -1815,6 +1815,16 @@
       "ValueType": "Dword",
       "ValueData": "0xff",
       "Hex": true
+    },
+    {
+      "ComponentName": "InstallJapaneseLanguageSupport",
+      "ComponentType": "CommandRun",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1555360",
+      "Command": "powershell",
+      "Arguments": [
+        "-command",
+        "\"& { $ll = Get-WinUserLanguageList; if (@($ll | ? { $_.LanguageTag -eq 'ja' }).Length -lt 1) { $ll.Add('ja'); Set-WinUserLanguageList -LanguageList $ll -Force } }\";"
+      ]
     }
   ],
   "ProvisionerConfiguration": {

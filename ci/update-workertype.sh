@@ -31,7 +31,7 @@ manifest=./OpenCloudConfig/userdata/Manifest/${tc_worker_type}.json
 # get some secrets from tc
 secrets_url=taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig
 read TASKCLUSTER_AWS_ACCESS_KEY TASKCLUSTER_AWS_SECRET_KEY userdata<<EOF
-$(curl -s -N ${secrets_url}:updateworkertype | jq '.' | python -c 'import json, sys; a = json.load(sys.stdin)["secret"]; print a["aws"]["access"], a["aws"]["secret"], ("<powershell>\nInvoke-Expression (New-Object Net.WebClient).DownloadString(('\''https://raw.githubusercontent.com/SOURCE_ORG_TOKEN/SOURCE_REPO_TOKEN/SOURCE_REV_TOKEN/userdata/rundsc.ps1?{0}'\'' -f [Guid]::NewGuid()))\n</powershell>\n<persist>true</persist>\n<secrets>\n  <rootPassword>ROOT_PASSWORD_TOKEN</rootPassword>\n  <rootGpgKey>\n%s\n</rootGpgKey>\n  <workerPassword>WORKER_PASSWORD_TOKEN</workerPassword>\n</secrets>\n<SourceOrganisation>SOURCE_ORG_TOKEN</SourceOrganisation>\n<SourceRepository>SOURCE_REPO_TOKEN</SourceRepository>\n<SourceRevision>SOURCE_REV_TOKEN</SourceRevision>" % (a["rootGpgKey"])).replace("\n", "\\\\n");' 2> /dev/null)
+$(curl -s -N ${secrets_url}:updateworkertype | jq '.' | python -c 'import json, sys; a = json.load(sys.stdin)["secret"]; print a["aws"]["access"], a["aws"]["secret"], ("<powershell>\nInvoke-Expression -Command \"& net @('user', 'Administrator', 'ROOT_PASSWORD_TOKEN')\";\nInvoke-Expression (New-Object Net.WebClient).DownloadString(('\''https://raw.githubusercontent.com/SOURCE_ORG_TOKEN/SOURCE_REPO_TOKEN/SOURCE_REV_TOKEN/userdata/rundsc.ps1?{0}'\'' -f [Guid]::NewGuid()))\n</powershell>\n<persist>true</persist>\n<secrets>\n  <rootPassword>ROOT_PASSWORD_TOKEN</rootPassword>\n  <rootGpgKey>\n%s\n</rootGpgKey>\n  <workerPassword>WORKER_PASSWORD_TOKEN</workerPassword>\n</secrets>\n<SourceOrganisation>SOURCE_ORG_TOKEN</SourceOrganisation>\n<SourceRepository>SOURCE_REPO_TOKEN</SourceRepository>\n<SourceRevision>SOURCE_REV_TOKEN</SourceRevision>" % (a["rootGpgKey"])).replace("\n", "\\\\n");' 2> /dev/null)
 EOF
 
 : ${TASKCLUSTER_AWS_ACCESS_KEY:?"TASKCLUSTER_AWS_ACCESS_KEY is not set"}
@@ -196,8 +196,8 @@ root_password="$(pwgen -1sBync 16)"
 root_password="${root_password//[<>\"\'\`\\\/]/_}"
 worker_password="$(pwgen -1sBync 16)"
 worker_password="${worker_password//[<>\"\'\`\\\/]/_}"
-userdata=${userdata/ROOT_PASSWORD_TOKEN/$root_password}
-userdata=${userdata/WORKER_PASSWORD_TOKEN/$worker_password}
+userdata=${userdata//ROOT_PASSWORD_TOKEN/$root_password}
+userdata=${userdata//WORKER_PASSWORD_TOKEN/$worker_password}
 
 # if commit message includes a line like: "(alpha-source|beta-source): custom-gh-username-or-org custom-gh-repo custom-gh-ref-or-rev"
 # and worker type is an alpha or beta, inject userdata with custom org, repo and ref data so that beta amis are built with

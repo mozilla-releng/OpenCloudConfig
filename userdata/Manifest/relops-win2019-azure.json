@@ -237,7 +237,7 @@
       "Path": "C:\\generic-worker"
     },
     {
-      "ComponentName": "WorkerRunnerExeDownload",
+      "ComponentName": "TaskclusterWorkerRunnerDownload",
       "ComponentType": "FileDownload",
       "DependsOn": [
         {
@@ -246,7 +246,7 @@
         }
       ],
       "Source": "https://github.com/taskcluster/taskcluster/releases/download/v37.3.0/start-worker-windows-amd64",
-      "Target": "C:\\generic-worker\\taskcluster-worker-runner.exe"
+      "Target": "C:\\generic-worker\\worker-runner.exe"
     },
     {
       "ComponentName": "WorkerRunnerConfigDownload",
@@ -258,10 +258,10 @@
         }
       ],
       "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-azure.yaml",
-      "Target": "C:\\generic-worker\\taskcluster-worker-runner.yaml"
+      "Target": "C:\\generic-worker\\worker-runner.yml"
     },
     {
-      "ComponentName": "GenericWorkerDownload",
+      "ComponentName": "TaskclusterGenericWorkerDownload",
       "ComponentType": "ChecksumFileDownload",
       "DependsOn": [
         {
@@ -343,7 +343,7 @@
       "DependsOn": [
         {
           "ComponentType": "ChecksumFileDownload",
-          "ComponentName": "GenericWorkerDownload"
+          "ComponentName": "TaskclusterGenericWorkerDownload"
         },
         {
           "ComponentType": "FileDownload",

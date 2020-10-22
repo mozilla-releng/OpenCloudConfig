@@ -2,7 +2,7 @@ provider:
   providerType: azure
 worker:
   implementation: generic-worker
-  service: GenericWorker
+  service: TaskclusterGenericWorker
   configPath: C:\generic-worker\generic-worker-config.yml
   protocolPipe: \\.\pipe\generic-worker
 cacheOverRestarts: C:\generic-worker\worker-runner-cache.json

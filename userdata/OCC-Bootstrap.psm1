@@ -1992,38 +1992,48 @@ function Wait-GenericWorkerStart {
   }
   process {
     if ($locationType -eq 'Azure') {
-      foreach ($path in @('C:\AzureData\CustomData.bin', 'C:\generic-worker\taskcluster-worker-runner.exe', 'C:\generic-worker\taskcluster-worker-runner.yaml')) {
+      $taskclusterPaths = @(
+        'C:\AzureData\CustomData.bin',
+        'C:\generic-worker\generic-worker.exe',
+        'C:\generic-worker\generic-worker.yml',
+        'C:\generic-worker\worker-runner.exe',
+        'C:\generic-worker\worker-runner.yml'
+      )
+      foreach ($path in $taskclusterPaths) {
         if (Test-Path -Path $path -ErrorAction SilentlyContinue) {
           Write-Log -message ('{0} :: path: "{1}" detected' -f $($MyInvocation.MyCommand.Name), $path) -severity 'DEBUG'
         } else {
           Write-Log -message ('{0} :: path: "{1}" not detected' -f $($MyInvocation.MyCommand.Name), $path) -severity 'ERROR'
         }
       }
-      $gwService = (Get-Service -Name 'GenericWorker')
-      if ($gwService) {
-        Write-Log -message ('{0} :: GenericWorker service detected in {1} state' -f $($MyInvocation.MyCommand.Name), $gwService.Status) -severity $(if ($gwService.Status -eq 'Stopped') { 'DEBUG' } else { 'ERROR' })
-      } else {
-        Write-Log -message ('{0} :: GenericWorker service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-      }
-      try {
-        Start-Process -FilePath 'C:\generic-worker\taskcluster-worker-runner.exe' -ArgumentList @('C:\generic-worker\taskcluster-worker-runner.yaml') -NoNewWindow -RedirectStandardOutput 'C:\generic-worker\taskcluster-worker-runner.log' -RedirectStandardError 'C:\generic-worker\taskcluster-worker-runner.log'
-        Write-Log -message ('{0} :: taskcluster worker runner triggered' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
-        $gwService = (Get-Service -Name 'GenericWorker')
-        if ($gwService) {
-          Write-Log -message ('{0} :: GenericWorker service detected in {1} state' -f $($MyInvocation.MyCommand.Name), $gwService.Status) -severity $(if ($gwService.Status -eq 'Stopped') { 'DEBUG' } else { 'ERROR' })
-        } else {
-          Write-Log -message ('{0} :: GenericWorker service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
-        }
-        foreach ($processName in @('generic-worker', 'taskcluster-worker-runner', 'taskcluster-proxy', 'livelog')) {
-          $detectedProcesses = @(Get-Process | ? { $_.ProcessName -eq $processName })
-          if (($detectedProcesses) -and ($detectedProcesses.Length)) {
-            Write-Log -message ('{0} :: {1} {2} running process(es) detected' -f $($MyInvocation.MyCommand.Name), $detectedProcesses.Length, $processName) -severity 'DEBUG'
-          } else {
-            Write-Log -message ('{0} :: no {1} running process detected' -f $($MyInvocation.MyCommand.Name), $processName) -severity 'WARN'
+      $taskclusterServices = @(
+        'TaskclusterGenericWorker',
+        'TaskclusterWorkerRunner'
+      )
+      foreach ($svcName in $taskclusterServices) {
+        $svc = (Get-Service -Name $svcName -ErrorAction 'SilentlyContinue')
+        if ($svc) {
+          Write-Log -message ('{0} :: {1} service detected in {2} state' -f $($MyInvocation.MyCommand.Name), $svcName, $svc.Status) -severity $(if ($svc.Status -eq 'Stopped') { 'DEBUG' } else { 'ERROR' })
+          if ($svc.Status -eq 'Stopped') {
+            Set-ServiceState -name $svcName -state 'Running'
           }
+        } else {
+          Write-Log -message ('{0} :: {1} service not detected' -f $($MyInvocation.MyCommand.Name)) -severity 'ERROR'
         }
-      } catch {
-        Write-Log -message ('{0} :: error triggering taskcluster worker runner. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
+      }
+      $taskclusterProcesses = @(
+        'generic-worker',
+        'worker-runner',
+        'taskcluster-proxy',
+        'livelog'
+      )
+      foreach ($processName in $taskclusterProcesses) {
+        $detectedProcesses = @(Get-Process | ? { $_.ProcessName -like "*${processName}*" })
+        if (($detectedProcesses) -and ($detectedProcesses.Length)) {
+          Write-Log -message ('{0} :: {1} {2} running process(es) detected' -f $($MyInvocation.MyCommand.Name), $detectedProcesses.Length, $processName) -severity 'DEBUG'
+        } else {
+          Write-Log -message ('{0} :: no {1} running process detected' -f $($MyInvocation.MyCommand.Name), $processName) -severity 'WARN'
+        }
       }
     } else {
       if (Test-Path -Path 'C:\generic-worker\run-generic-worker.bat' -ErrorAction SilentlyContinue) {

@@ -2267,13 +2267,13 @@ function Initialize-Instance {
 
     if ($locationType -eq 'AWS') {
       Set-TaskclusterWorkerLocation
-      $rebootReasons = (Set-ComputerName -locationType $locationType)
+      $rebootReasons = @((Set-ComputerName -locationType $locationType) | ? { $_ -is [String] }) # some versions of powershell see the output of Set-ComputerName as an array containing a System.Management.ManagementBaseObject as well as the intended strings
       Set-DomainName -locationType $locationType
       # Turn off DNS address registration (EC2 DNS is configured to not allow it)
       Set-DynamicDnsRegistration -enabled:$false
     } elseif (@('GCP', 'Azure').Contains($locationType)) {
       Set-TaskclusterWorkerLocation
-      $rebootReasons = (Set-ComputerName -locationType $locationType)
+      $rebootReasons = @((Set-ComputerName -locationType $locationType) | ? { $_ -is [String] }) # some versions of powershell see the output of Set-ComputerName as an array containing a System.Management.ManagementBaseObject as well as the intended strings
       Set-DomainName -locationType $locationType
       # todo: figure out if this is needed on gcp or azure
       # Set-DynamicDnsRegistration -enabled:$false

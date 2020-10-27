@@ -1128,7 +1128,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-azure.yaml",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-azure.yml",
       "Target": "C:\\generic-worker\\worker-runner.yml"
     },
     {
@@ -2231,7 +2231,7 @@
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1497308",
       "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts",
       "Match": "127\\.0\\.0\\.1 (hostname|i-[a-f0-9]{17})\\.(workertype|gecko-([1-3]-b-win2012(-alpha|-beta)?|t-win(7-32|10-64)(-gpu(-a|-b)?|-alpha|-beta|-cu)?))\\.(ec2region|(us|eu)[ewc][12])\\.mozilla\\.com",
-      "Replace": "('127.0.0.1 {0}.{1}' -f ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id')), ((Get-ItemProperty -Path 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters' -Name 'NV Domain').'NV Domain').Replace('wintest.releng.', ''))",
+      "Replace": "('127.0.0.1 {0}.{1}' -f ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.name), ((Get-ItemProperty -Path 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters' -Name 'NV Domain').'NV Domain').Replace('wintest.releng.', ''))",
       "DependsOn": [
         {
           "ComponentType": "ChecksumFileDownload",

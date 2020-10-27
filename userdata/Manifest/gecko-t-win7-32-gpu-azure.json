@@ -2494,25 +2494,6 @@
       "sha512": "c0eac71b95d1c0232ce1457561a66e24d3ef687ba8012f072d28f89df9dd409584b262b7bac9977f500ec99c0c31138c36f0da48972b818bacba2bc601d5f3a4"
     },
     {
-      "ComponentName": "vcredist_vs2015_x64",
-      "ComponentType": "ExeInstall",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1460042",
-      "Url": "http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe",
-      "Arguments": [
-        "/install",
-        "/passive",
-        "/norestart",
-        "/log",
-        "C:\\log\\vcredist_vs2015_x64-install.log"
-      ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\Windows\\System32\\vcruntime140.dll"
-        ]
-      },
-      "sha512": "729b1e37aefdf708df6a787b2eecd0e4e186c4e8a6d6f3028b0134f81c4216f889e67645d9279cb0ae60079a8f6f68ac88ec5d1fe27ee54f8de563b5209698f3"
-    },
-    {
       "ComponentName": "ProgramData_Mozilla_AccessRights",
       "ComponentType": "CommandRun",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1494048",
@@ -2542,7 +2523,7 @@
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1497308",
       "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts",
       "Match": "127\\.0\\.0\\.1 (hostname|i-[a-f0-9]{17})\\.(workertype|gecko-([1-3]-b-win2012(-alpha|-beta)?|t-win(7-32|10-64)(-gpu(-a|-b)?|-alpha|-beta|-cu)?))\\.(ec2region|(us|eu)[ewc][12])\\.mozilla\\.com",
-      "Replace": "('127.0.0.1 {0}.{1}' -f ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id')), ((Get-ItemProperty -Path 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters' -Name 'NV Domain').'NV Domain').Replace('wintest.releng.', ''))",
+      "Replace": "('127.0.0.1 {0}.{1}' -f ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.name), ((Get-ItemProperty -Path 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters' -Name 'NV Domain').'NV Domain').Replace('wintest.releng.', ''))",
       "DependsOn": [
         {
           "ComponentType": "ChecksumFileDownload",

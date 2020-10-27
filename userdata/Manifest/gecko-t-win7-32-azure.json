@@ -613,69 +613,25 @@
       "Link": "C:\\mozilla-build\\python3\\python3.exe"
     },
     {
-      "ComponentName": "DeleteMozillaBuildMercurial",
-      "ComponentType": "CommandRun",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "MozillaBuildSetup"
-        }
-      ],
-      "Command": "cmd.exe",
-      "Arguments": [
-        "/c",
-        "del",
-        "C:\\mozilla-build\\python\\Scripts\\hg*"
-      ],
-      "Validate": {
-        "PathsNotExist": [
-          "C:\\mozilla-build\\python\\hg",
-          "C:\\mozilla-build\\python\\hg.exe"
-        ]
-      }
-    },
-    {
-      "ComponentName": "Mercurial",
-      "ComponentType": "MsiInstall",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1490703",
-      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-4.7.1-x86.msi",
-      "Name": "Mercurial 4.7.1 (x86)",
-      "ProductId": "2190A397-656F-4D0B-AAF6-1BBE030F7BE2",
-      "sha512": "e255574fa70ac820ccd9046387b203262ed4bde07588359ae94c94cb13684f55c835e8c55ef6c1c2594a3769148057498a281b2c4753539a7a0ea12f36b999da"
-    },
-    {
       "ComponentName": "MercurialConfig",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "Required by clonebundle and share hg extensions",
       "DependsOn": [
         {
-          "ComponentType": "MsiInstall",
-          "ComponentName": "Mercurial"
-        }
-      ],
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/mercurial.ini",
-      "Target": "C:\\Program Files\\Mercurial\\Mercurial.ini"
-    },
-    {
-      "ComponentName": "robustcheckout",
-      "ComponentType": "ChecksumFileDownload",
-      "Comment": "Required by robustcheckout hg extension",
-      "DependsOn": [
-        {
           "ComponentType": "ExeInstall",
           "ComponentName": "MozillaBuildSetup"
         }
       ],
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/FirefoxBuildResources/robustcheckout.py",
-      "Target": "C:\\mozilla-build\\robustcheckout.py"
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/mercurial.ini",
+      "Target": "C:\\mozilla-build\\hg\\Mercurial.ini"
     },
     {
       "ComponentName": "MercurialCerts",
       "ComponentType": "ChecksumFileDownload",
       "DependsOn": [
         {
-          "ComponentType": "MsiInstall",
-          "ComponentName": "Mercurial"
+          "ComponentType": "ExeInstall",
+          "ComponentName": "MozillaBuildSetup"
         }
       ],
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/cacert.pem",
@@ -705,17 +661,13 @@
         },
         {
           "ComponentType": "MsiInstall",
-          "ComponentName": "Mercurial"
-        },
-        {
-          "ComponentType": "MsiInstall",
           "ComponentName": "python_3_7_3_win32_exe"
         }
       ],
       "Name": "PATH",
       "Values": [
-        "C:\\Program Files\\Mercurial",
         "C:\\mozilla-build\\7zip",
+        "C:\\mozilla-build\\hg",
         "C:\\mozilla-build\\info-zip",
         "C:\\mozilla-build\\kdiff3",
         "C:\\mozilla-build\\moztools-x64\\bin",
@@ -871,7 +823,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-azure.yaml",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-azure.yml",
       "Target": "C:\\generic-worker\\worker-runner.yml"
     },
     {
@@ -2530,25 +2482,6 @@
       "sha512": "c0eac71b95d1c0232ce1457561a66e24d3ef687ba8012f072d28f89df9dd409584b262b7bac9977f500ec99c0c31138c36f0da48972b818bacba2bc601d5f3a4"
     },
     {
-      "ComponentName": "vcredist_vs2015_x64",
-      "ComponentType": "ExeInstall",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1460042",
-      "Url": "http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe",
-      "Arguments": [
-        "/install",
-        "/passive",
-        "/norestart",
-        "/log",
-        "C:\\log\\vcredist_vs2015_x64-install.log"
-      ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\Windows\\System32\\vcruntime140.dll"
-        ]
-      },
-      "sha512": "729b1e37aefdf708df6a787b2eecd0e4e186c4e8a6d6f3028b0134f81c4216f889e67645d9279cb0ae60079a8f6f68ac88ec5d1fe27ee54f8de563b5209698f3"
-    },
-    {
       "ComponentName": "ProgramData_Mozilla_AccessRights",
       "ComponentType": "CommandRun",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1494048",
@@ -2578,7 +2511,7 @@
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1497308",
       "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts",
       "Match": "127\\.0\\.0\\.1 (hostname|i-[a-f0-9]{17})\\.(workertype|gecko-([1-3]-b-win2012(-alpha|-beta)?|t-win(7-32|10-64)(-gpu(-a|-b)?|-alpha|-beta|-cu)?))\\.(ec2region|(us|eu)[ewc][12])\\.mozilla\\.com",
-      "Replace": "('127.0.0.1 {0}.{1}' -f ((New-Object Net.WebClient).DownloadString('http://169.254.169.254/latest/meta-data/instance-id')), ((Get-ItemProperty -Path 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters' -Name 'NV Domain').'NV Domain').Replace('wintest.releng.', ''))",
+      "Replace": "('127.0.0.1 {0}.{1}' -f ((((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json).compute.name), ((Get-ItemProperty -Path 'HKLM:SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters' -Name 'NV Domain').'NV Domain').Replace('wintest.releng.', ''))",
       "DependsOn": [
         {
           "ComponentType": "ChecksumFileDownload",

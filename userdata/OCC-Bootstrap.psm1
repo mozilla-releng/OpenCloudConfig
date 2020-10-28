@@ -373,16 +373,18 @@ function Invoke-CustomDesiredStateProvider {
                 Invoke-ReplaceInFile -verbose -component $component
               }
             }
-            if ($component.DependsOn) {
-              Write-Log -severity 'debug' -message ('{0} :: component {1}_{2} applied. component has {3} dependencies ({4}) which have already been applied' -f $($MyInvocation.MyCommand.Name), $component.ComponentType, $component.ComponentName, $component.DependsOn.Length, (($component.DependsOn | % { '{0}_{1}' -f $_.ComponentType, $_.ComponentName }) -join ', '))
-            } else {
-              Write-Log -severity 'debug' -message ('{0} :: component {1}_{2} applied. component has no dependencies' -f $($MyInvocation.MyCommand.Name), $component.ComponentType, $component.ComponentName)
-            }
             $appliedComponents += New-Object -TypeName 'PSObject' -Property @{ 'ComponentName' = $component.ComponentName; 'ComponentType' = $component.ComponentType; 'AppliedState' = 'Success' }
+            if ($component.DependsOn) {
+              Write-Log -severity 'debug' -message ('{0} :: component {1}/{2} ({3}_{4}) applied. component has {5} dependencies ({6}) which have already been applied' -f $($MyInvocation.MyCommand.Name), $appliedComponents.Length, $manifest.Components.Length, $component.ComponentType, $component.ComponentName, $component.DependsOn.Length, (($component.DependsOn | % { '{0}_{1}' -f $_.ComponentType, $_.ComponentName }) -join ', '))
+            } else {
+              Write-Log -severity 'debug' -message ('{0} :: component {1}/{2} ({3}_{4}) applied. component has no dependencies' -f $($MyInvocation.MyCommand.Name), $appliedComponents.Length, $manifest.Components.Length, $component.ComponentType, $component.ComponentName)
+            }
           } catch {
-            Write-Log -severity 'error' -message ('{0} :: component {1}_{2} apply failure. {3}' -f $($MyInvocation.MyCommand.Name), $component.ComponentType, $component.ComponentName, $_.Exception.Message)
             $appliedComponents += New-Object -TypeName 'PSObject' -Property @{ 'ComponentName' = $component.ComponentName; 'ComponentType' = $component.ComponentType; 'AppliedState' = 'Failure' }
+            Write-Log -severity 'error' -message ('{0} :: component {1}/{2} ({3}_{4}) apply failure. {5}' -f $($MyInvocation.MyCommand.Name), $appliedComponents.Length, $manifest.Components.Length, $component.ComponentType, $component.ComponentName, $_.Exception.Message)
           }
+        } else {
+          Write-Log -severity 'debug' -message ('{0} :: component {1}_{2} application postponed. component has {3} dependencies ({4}) which have not (all) been applied yet' -f $($MyInvocation.MyCommand.Name), $component.ComponentType, $component.ComponentName, $component.DependsOn.Length, (($component.DependsOn | % { '{0}_{1}' -f $_.ComponentType, $_.ComponentName }) -join ', '))
         }
       }
     }

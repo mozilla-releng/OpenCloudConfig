@@ -2771,7 +2771,7 @@ function Invoke-OpenCloudConfig {
     }
 
     if ((-not ($isWorker)) -and ($locationType -eq 'Azure')) {
-      if ((-not (Test-VolumeExists -DriveLetter @('Y'))) || (-not (Test-VolumeExists -DriveLetter @('Z')))) { # if the y: or z: drive isn't mapped and we're on Azure, map it.
+      if ((-not (Test-VolumeExists -DriveLetter @('Y'))) -or (-not (Test-VolumeExists -DriveLetter @('Z')))) { # if the y: or z: drive isn't mapped and we're on Azure, map it.
         Set-DriveLetters
       }
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue
@@ -2783,7 +2783,7 @@ function Invoke-OpenCloudConfig {
       }
     } elseif ($isWorker) {
       if ($locationType -eq 'Azure') {
-        if ((-not (Test-VolumeExists -DriveLetter @('Y'))) || (-not (Test-VolumeExists -DriveLetter @('Z')))) { # if the y: or z: drive isn't mapped and we're on Azure, map it.
+        if ((-not (Test-VolumeExists -DriveLetter @('Y'))) -or (-not (Test-VolumeExists -DriveLetter @('Z')))) { # if the y: or z: drive isn't mapped and we're on Azure, map it.
           Set-DriveLetters
         }
       } else {

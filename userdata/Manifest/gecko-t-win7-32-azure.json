@@ -1369,7 +1369,7 @@
           "ComponentName": "NSSMInstall"
         },
         {
-          "ComponentType": "ChecksumFileDownload",
+          "ComponentType": "FileDownload",
           "ComponentName": "TaskclusterWorkerRunnerDownload"
         }
       ]

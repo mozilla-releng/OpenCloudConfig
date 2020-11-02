@@ -3,6 +3,6 @@ provider:
 worker:
   implementation: generic-worker
   service: TaskclusterGenericWorker
-  configPath: C:\generic-worker\generic-worker-config.yml
+  configPath: C:\generic-worker\generic-worker.yml
   protocolPipe: \\.\pipe\generic-worker
 cacheOverRestarts: C:\generic-worker\worker-runner-cache.json

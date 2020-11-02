@@ -2015,7 +2015,8 @@ function Wait-GenericWorkerStart {
       foreach ($svcName in $taskclusterServices) {
         $svc = (Get-Service -Name $svcName -ErrorAction 'SilentlyContinue')
         if ($svc) {
-          Write-Log -message ('{0} :: {1} service detected in {2} state' -f $($MyInvocation.MyCommand.Name), $svcName, $svc.Status) -severity $(if ($svc.Status -eq 'Stopped') { 'DEBUG' } else { 'ERROR' })
+          $serviceUser = (Get-WmiObject -Class 'Win32_Service' | ? { $_.Name -eq $svcName }).StartName
+          Write-Log -message ('{0} :: {1} service detected in {2} state, with logon user: {3}' -f $($MyInvocation.MyCommand.Name), $svcName, $svc.Status, $serviceUser) -severity $(if ($svc.Status -eq 'Stopped') { 'DEBUG' } else { 'ERROR' })
           if ($svc.Status -eq 'Stopped') {
             Set-ServiceState -name $svcName -state 'Running'
           }

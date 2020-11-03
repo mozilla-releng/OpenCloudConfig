@@ -2071,7 +2071,6 @@ function Wait-GenericWorkerStart {
             }
             Write-Log -message ('{0} :: path: "{1}" rechecked. has dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, $sddl) -severity 'DEBUG'
           }
-          icacls 'C:\generic-worker\generic-worker.yml' /grant:r 'Administrators:(GA)' /inheritance:r
         } else {
           Write-Log -message ('{0} :: path: "{1}" not detected' -f $($MyInvocation.MyCommand.Name), $path) -severity 'ERROR'
         }

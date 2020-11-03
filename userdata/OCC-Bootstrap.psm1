@@ -2056,7 +2056,22 @@ function Wait-GenericWorkerStart {
       )
       foreach ($path in $taskclusterPaths) {
         if (Test-Path -Path $path -ErrorAction SilentlyContinue) {
-          Write-Log -message ('{0} :: path: "{1}" detected' -f $($MyInvocation.MyCommand.Name), $path) -severity 'DEBUG'
+          try {
+            $sddl = (Get-Acl -Path $path).Sddl
+          } catch {
+            $sddl = ''
+          }
+          Write-Log -message ('{0} :: path: "{1}" detected with dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, $sddl) -severity 'DEBUG'
+          if ($path.EndsWith('.yml') -and ($sddl -ne 'D:PAI(A;;FA;;;OW)')) {
+            Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/grant', 'Administrators:(GA)', '/inheritance:r') -name ('set-dacl-{0}-yml' -f [IO.Path]::GetFileNameWithoutExtension($path))
+            try {
+              $sddl = (Get-Acl -Path $path).Sddl
+            } catch {
+              $sddl = ''
+            }
+            Write-Log -message ('{0} :: path: "{1}" rechecked. has dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, $sddl) -severity 'DEBUG'
+          }
+          icacls 'C:\generic-worker\generic-worker.yml' /grant:r 'Administrators:(GA)' /inheritance:r
         } else {
           Write-Log -message ('{0} :: path: "{1}" not detected' -f $($MyInvocation.MyCommand.Name), $path) -severity 'ERROR'
         }

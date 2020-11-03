@@ -2346,14 +2346,24 @@ function Initialize-Instance {
       Set-DomainName -locationType $locationType
       # Turn off DNS address registration (EC2 DNS is configured to not allow it)
       Set-DynamicDnsRegistration -enabled:$false
-    } elseif (@('GCP', 'Azure').Contains($locationType)) {
+    } elseif ($locationType -eq 'GCP') {
       Set-TaskclusterWorkerLocation
       $rebootReasons = @((Set-ComputerName -locationType $locationType) | ? { $_ -is [String] }) # some versions of powershell see the output of Set-ComputerName as an array containing a System.Management.ManagementBaseObject as well as the intended strings
       Set-DomainName -locationType $locationType
       # todo: figure out if this is needed on gcp or azure
       # Set-DynamicDnsRegistration -enabled:$false
+    } elseif ($locationType -eq 'Azure') {
+      Set-TaskclusterWorkerLocation
+      $instanceMetadata = (((Invoke-WebRequest -Headers @{'Metadata'=$true} -UseBasicParsing -Uri ('http://169.254.169.254/metadata/instance?api-version={0}' -f '2019-06-04')).Content) | ConvertFrom-Json)
+      $isWorker = $instanceMetadata.compute.resourceGroupName.StartsWith('taskcluster-')
+      if ($isWorker) {
+        $rebootReasons = @((Set-ComputerName -locationType $locationType) | ? { $_ -is [String] }) # some versions of powershell see the output of Set-ComputerName as an array containing a System.Management.ManagementBaseObject as well as the intended strings
+      } else {
+        $rebootReasons = $false
+      }
+      Set-DomainName -locationType $locationType
     }
-    if ($rebootReasons.length) {
+    if (($rebootReasons) -and ($rebootReasons.length)) {
       # if this is an ami creation instance (not a worker) ...
       if (($locationType -eq 'AWS') -and ((Get-PublicKeys).StartsWith('0=mozilla-taskcluster-worker-'))) {
         # ensure that Ec2HandleUserData is enabled before reboot (if the RunDesiredStateConfigurationAtStartup scheduled task doesn't yet exist)

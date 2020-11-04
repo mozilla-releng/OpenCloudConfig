@@ -2062,18 +2062,39 @@ function Wait-GenericWorkerStart {
           } catch {
             $sddl = ''
           }
-          Write-Log -message ('{0} :: path: "{1}" detected with dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, $sddl) -severity 'DEBUG'
+          Write-Log -message ('{0} :: path: {1}, detected with dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, $sddl) -severity 'DEBUG'
           if (($path.EndsWith('.yml') -or $path.EndsWith('.json')) -and ($sddl -ne 'D:PAI(A;;FA;;;OW)')) {
-            Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/grant', 'Administrators:(GA)', '/inheritance:r') -name ('set-dacl-{0}-{1}' -f [IO.Path]::GetFileNameWithoutExtension($path), [IO.Path]::GetExtension($path).Replace('.', ''))
-            try {
-              $sddl = (Get-Acl -Path $path).Sddl
-            } catch {
-              $sddl = ''
+            $fileNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($path)
+            $fileExtension = [IO.Path]::GetExtension($path).Replace('.', '')
+            switch -regex ($fileNameWithoutExtension) {
+              '^generic-worker$' {
+                $serviceName = 'TaskclusterGenericWorker'
+              }
+              '^worker-runner(.*)?$' {
+                $serviceName = 'TaskclusterWorkerRunner'
+              }
+              default {
+                $serviceName = $false
+              }
             }
-            Write-Log -message ('{0} :: path: "{1}" rechecked. has dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, $sddl) -severity 'DEBUG'
+            if ($serviceName) {
+              try {
+                $serviceUser = (Get-WmiObject -Class 'Win32_Service' | ? { $_.Name -eq $serviceName }).StartName
+                Write-Log -message ('{0} :: service user: {1}, determined for service: {2}' -f $($MyInvocation.MyCommand.Name), $serviceUser, $serviceName) -severity 'DEBUG'
+              } catch {
+                $serviceUser = $false
+                Write-Log -message ('{0} :: failed to determine service user for service: {1}' -f $($MyInvocation.MyCommand.Name), $serviceName) -severity 'ERROR'
+              }
+              if ($serviceUser) {
+                Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/setowner', $serviceUser) -name ('set-owner-{0}-{1}' -f $fileNameWithoutExtension, $fileExtension)
+                Write-Log -message ('{0} :: path: {1}, dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, (Get-Acl -Path $path).Sddl) -severity 'DEBUG'
+                Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/inheritance:r') -name ('remove-inheritance-{0}-{1}' -f $fileNameWithoutExtension, $fileExtension)
+                Write-Log -message ('{0} :: path: {1}, dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, (Get-Acl -Path $path).Sddl) -severity 'DEBUG'
+              }
+            }
           }
         } else {
-          Write-Log -message ('{0} :: path: "{1}" not detected' -f $($MyInvocation.MyCommand.Name), $path) -severity 'ERROR'
+          Write-Log -message ('{0} :: path: {1} not detected' -f $($MyInvocation.MyCommand.Name), $path) -severity 'ERROR'
         }
       }
       $taskclusterServices = @(

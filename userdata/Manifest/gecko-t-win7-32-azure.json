@@ -1465,23 +1465,6 @@
       ]
     },
     {
-      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_ObjectName",
-      "ComponentType": "CommandRun",
-      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
-      "Arguments": [
-        "set",
-        "TaskclusterWorkerRunner",
-        "ObjectName",
-        "NetworkService"
-      ],
-      "DependsOn": [
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
-        }
-      ]
-    },
-    {
       "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Type",
       "ComponentType": "CommandRun",
       "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
@@ -1496,10 +1479,6 @@
         {
           "ComponentType": "CommandRun",
           "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
-        },
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_ObjectName"
         }
       ]
     },

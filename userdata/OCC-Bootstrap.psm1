@@ -2052,7 +2052,8 @@ function Wait-GenericWorkerStart {
         'C:\generic-worker\generic-worker.exe',
         'C:\generic-worker\generic-worker.yml',
         'C:\generic-worker\worker-runner.exe',
-        'C:\generic-worker\worker-runner.yml'
+        'C:\generic-worker\worker-runner.yml',
+        'C:\generic-worker\worker-runner-cache.json'
       )
       foreach ($path in $taskclusterPaths) {
         if (Test-Path -Path $path -ErrorAction SilentlyContinue) {
@@ -2062,8 +2063,8 @@ function Wait-GenericWorkerStart {
             $sddl = ''
           }
           Write-Log -message ('{0} :: path: "{1}" detected with dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, $sddl) -severity 'DEBUG'
-          if ($path.EndsWith('.yml') -and ($sddl -ne 'D:PAI(A;;FA;;;OW)')) {
-            Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/grant', 'Administrators:(GA)', '/inheritance:r') -name ('set-dacl-{0}-yml' -f [IO.Path]::GetFileNameWithoutExtension($path))
+          if (($path.EndsWith('.yml') -or $path.EndsWith('.json')) -and ($sddl -ne 'D:PAI(A;;FA;;;OW)')) {
+            Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/grant', 'Administrators:(GA)', '/inheritance:r') -name ('set-dacl-{0}-{1}' -f [IO.Path]::GetFileNameWithoutExtension($path), [IO.Path]::GetExtension($path).Replace('.', ''))
             try {
               $sddl = (Get-Acl -Path $path).Sddl
             } catch {

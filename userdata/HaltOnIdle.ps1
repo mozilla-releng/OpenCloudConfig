@@ -159,11 +159,14 @@ if ((Is-Terminating -locationType $locationType) -or (-not (Is-Worker -locationT
   exit
 }
 
-if (Test-Path -Path 'Z:\' -ErrorAction SilentlyContinue) {
-  $z = (Get-PSDrive -Name 'Z')
-  Write-Log -message ('drive z: exists with {0}gb used and {1}gb free' -f ($z.Used / 1Gb), ($z.Free / 1Gb)) -severity 'DEBUG'
-} else {
-  Write-Log -message 'drive z: does not exist' -severity 'DEBUG'
+foreach ($driveLetter in @('C', 'D', 'E', 'F', 'Y', 'Z')) {
+  if (Test-Path -Path ('{0}:\' -f $driveLetter) -ErrorAction SilentlyContinue) {
+    $drive = (Get-PSDrive -Name $driveLetter)
+    $volume = (Get-Volume -DriveLetter $driveLetter -ErrorAction 'SilentlyContinue')
+    Write-Log -message ('drive {0}: exists with volume label {1}, {2:N2}gb used and {3:N2}gb free' -f $driveLetter, $volume.FileSystemLabel, ($drive.Used / 1Gb), ($drive.Free / 1Gb)) -severity 'DEBUG'
+  } else {
+    Write-Log -message ('drive {0}: does not exist' -f $driveLetter) -severity 'DEBUG'
+  }
 }
 
 # prevent HaltOnIdle running before host rename has occured.

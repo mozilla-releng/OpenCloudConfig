@@ -161,7 +161,7 @@ if ((Is-Terminating -locationType $locationType) -or (-not (Is-Worker -locationT
 
 foreach ($driveLetter in @('C', 'D', 'E', 'F', 'Y', 'Z')) {
   if (Test-Path -Path ('{0}:\' -f $driveLetter) -ErrorAction SilentlyContinue) {
-    $drive = (Get-PSDrive -Name $driveLetter)
+    $drive = (Get-PSDrive -Name $driveLetter -ErrorAction 'SilentlyContinue')
     $volume = (Get-Volume -DriveLetter $driveLetter -ErrorAction 'SilentlyContinue')
     Write-Log -message ('drive {0}: exists with volume label {1}, {2:N2}gb used and {3:N2}gb free' -f $driveLetter, $volume.FileSystemLabel, ($drive.Used / 1Gb), ($drive.Free / 1Gb)) -severity 'DEBUG'
   } elseif (@('Y', 'Z').Contains($driveLetter)) {

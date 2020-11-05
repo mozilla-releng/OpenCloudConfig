@@ -163,7 +163,7 @@ foreach ($driveLetter in @('C', 'D', 'E', 'F', 'Y', 'Z')) {
   if (Test-Path -Path ('{0}:\' -f $driveLetter) -ErrorAction SilentlyContinue) {
     $drive = (Get-PSDrive -Name $driveLetter -ErrorAction 'SilentlyContinue')
     $volume = (Get-Volume -DriveLetter $driveLetter -ErrorAction 'SilentlyContinue')
-    Write-Log -message ('drive {0}: exists with volume label {1}, {2:N2}gb used and {3:N2}gb free' -f $driveLetter, $volume.FileSystemLabel, ($drive.Used / 1Gb), ($drive.Free / 1Gb)) -severity 'DEBUG'
+    Write-Log -message ('drive {0}: exists with volume label {1}, {2:N1}gb used and {3:N1}gb free' -f $driveLetter, $volume.FileSystemLabel, ($drive.Used / 1Gb), ($drive.Free / 1Gb)) -severity 'DEBUG'
   } elseif (@('Y', 'Z').Contains($driveLetter)) {
     Write-Log -message ('drive {0}: does not exist' -f $driveLetter) -severity 'DEBUG'
   }

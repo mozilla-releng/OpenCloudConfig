@@ -2085,19 +2085,19 @@ function Wait-GenericWorkerStart {
                 $serviceUser = $false
                 Write-Log -message ('{0} :: failed to determine service user for service: {1}' -f $($MyInvocation.MyCommand.Name), $serviceName) -severity 'ERROR'
               }
-              if ($serviceUser) {
+              #if ($serviceUser) {
                 # https://bugzilla.mozilla.org/show_bug.cgi?id=1609067
                 # https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/icacls
                 # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/81d92bba-d22b-4a8c-908a-554ab29148ab
 
                 # here we set the file owner to the user that the relevant windows service runs under
-                Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/setowner', $serviceUser) -name ('set-owner-{0}-{1}' -f $fileNameWithoutExtension, $fileExtension)
-                Write-Log -message ('{0} :: path: {1}, dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, (Get-Acl -Path $path).Sddl) -severity 'DEBUG'
+                #Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/setowner', $serviceUser) -name ('set-owner-{0}-{1}' -f $fileNameWithoutExtension, $fileExtension)
+                #Write-Log -message ('{0} :: path: {1}, dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, (Get-Acl -Path $path).Sddl) -severity 'DEBUG'
 
                 # here we grant the owner (s-1-3-0 is the well-known-sid for creator-owner), full access and remove inherited acls (from parent folders)
-                Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/grant:r', '*s-1-3-0:f', '/inheritance:r') -name ('set-dacl-{0}-{1}' -f $fileNameWithoutExtension, $fileExtension)
-                Write-Log -message ('{0} :: path: {1}, dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, (Get-Acl -Path $path).Sddl) -severity 'DEBUG'
-              }
+                #Start-LoggedProcess -filePath 'icacls' -ArgumentList @($path, '/grant:r', '*s-1-3-0:f', '/inheritance:r') -name ('set-dacl-{0}-{1}' -f $fileNameWithoutExtension, $fileExtension)
+                #Write-Log -message ('{0} :: path: {1}, dacl: {2}' -f $($MyInvocation.MyCommand.Name), $path, (Get-Acl -Path $path).Sddl) -severity 'DEBUG'
+              #}
             }
           }
         } else {
@@ -2105,8 +2105,8 @@ function Wait-GenericWorkerStart {
         }
       }
       $taskclusterServices = @(
-        'TaskclusterGenericWorker',
-        'TaskclusterWorkerRunner'
+        'TaskclusterWorkerRunner',
+        'TaskclusterGenericWorker'
       )
       foreach ($svcName in $taskclusterServices) {
         $svc = (Get-Service -Name $svcName -ErrorAction 'SilentlyContinue')

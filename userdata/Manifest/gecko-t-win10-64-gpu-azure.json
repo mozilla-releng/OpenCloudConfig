@@ -1200,7 +1200,7 @@
         "set",
         "TaskclusterWorkerRunner",
         "Start",
-        "SERVICE_AUTO_START"
+        "SERVICE_DEMAND_START"
       ],
       "DependsOn": [
         {

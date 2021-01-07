@@ -190,9 +190,9 @@ function Invoke-LoggedCommandRun {
     $redirectStandardOutput = ('{0}\log\{1}-{2}-stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), [IO.Path]::GetFileNameWithoutExtension($command))
     $redirectStandardError = ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), [IO.Path]::GetFileNameWithoutExtension($command))
     try {
-      $argumentList = @($arguments | ? { (($_ -is [String]) -and (-not [String]::IsNullOrWhiteSpace($_))) })
+      $argumentList = [string[]]@($arguments | ? { (($_ -is [String]) -and (-not [String]::IsNullOrWhiteSpace($_))) })
     } catch {
-      $argumentList = @()
+      $argumentList = [string[]]@()
       Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'warn' -message ('{0} ({1}) :: failed to parse argument list for command  {2}. {3}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, $_.Exception.Message)
     }
     try {
@@ -208,6 +208,9 @@ function Invoke-LoggedCommandRun {
       }
     } catch {
       Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: error executing command ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($argumentList -join ' '), $_.Exception.Message)
+      for ($i = 0; $i -lt $argumentList.Length; $i ++) {
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} ({1}) :: $argumentList[{2}]: {3}' -f $($MyInvocation.MyCommand.Name), $componentName, $i, $argumentList[$i])
+      }
       $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction 'SilentlyContinue')
       if (($standardErrorFile) -and $standardErrorFile.Length) {
         Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($argumentList -join ' '), (Get-Content -Path $redirectStandardError -Raw))

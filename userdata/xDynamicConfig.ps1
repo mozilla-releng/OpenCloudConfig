@@ -357,7 +357,7 @@ Configuration xDynamicConfig {
           ProductId = $item.ProductId
           Ensure = 'Present'
           Arguments = $item.Arguments
-          LogPath = ('{0}\log\{1}-{2}.msi.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $item.ComponentName)
+          LogPath = ('{0}\log\{1}-{2}.msi-install.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $item.ComponentName)
         }
         Log ('Log_MsiInstall_{0}' -f $item.ComponentName) {
           DependsOn = ('[Package]MsiInstall_{0}' -f $item.ComponentName)

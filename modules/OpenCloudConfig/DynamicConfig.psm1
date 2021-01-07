@@ -190,30 +190,36 @@ function Invoke-LoggedCommandRun {
     $redirectStandardOutput = ('{0}\log\{1}-{2}-stdout.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), [IO.Path]::GetFileNameWithoutExtension($command))
     $redirectStandardError = ('{0}\log\{1}-{2}-stderr.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), [IO.Path]::GetFileNameWithoutExtension($command))
     try {
-      $process = (Start-Process $command -ArgumentList $arguments -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
+      $argumentList = @($arguments | ? { (($_ -is [String]) -and (-not [String]::IsNullOrWhiteSpace($_))) })
+    } catch {
+      $argumentList = @()
+      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'warn' -message ('{0} ({1}) :: failed to parse argument list for command  {2}. {3}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, $_.Exception.Message)
+    }
+    try {
+      $process = (Start-Process $command -ArgumentList $argumentList -NoNewWindow -RedirectStandardOutput $redirectStandardOutput -RedirectStandardError $redirectStandardError -PassThru)
       $timeoutError = $null
       Wait-Process -Timeout $timeoutInSeconds -InputObject $process -ErrorAction 'SilentlyContinue' -ErrorVariable timeoutError # see: https://stackoverflow.com/a/43728914/68115
       if ($timeoutError) {
-        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'warn' -message ('{0} ({1}) :: command ({2} {3}) execution timed out with error: {4} after {5} seconds.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), $timeoutError, $timeoutInSeconds)
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'warn' -message ('{0} ({1}) :: command ({2} {3}) execution timed out with error: {4} after {5} seconds.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($argumentList -join ' '), $timeoutError, $timeoutInSeconds)
       } elseif ($process.ExitCode -and $process.TotalProcessorTime) {
-        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: command ({2} {3}) exited with code: {4} after a processing time of: {5}.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), $process.ExitCode, $process.TotalProcessorTime)
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: command ({2} {3}) exited with code: {4} after a processing time of: {5}.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($argumentList -join ' '), $process.ExitCode, $process.TotalProcessorTime)
       } else {
-        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: command ({2} {3}) executed.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '))
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: command ({2} {3}) executed.' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($argumentList -join ' '))
       }
     } catch {
-      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: error executing command ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), $_.Exception.Message)
+      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: error executing command ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($argumentList -join ' '), $_.Exception.Message)
       $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction 'SilentlyContinue')
       if (($standardErrorFile) -and $standardErrorFile.Length) {
-        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($argumentList -join ' '), (Get-Content -Path $redirectStandardError -Raw))
       }
     }
     $standardErrorFile = (Get-Item -Path $redirectStandardError -ErrorAction 'SilentlyContinue')
     if (($standardErrorFile) -and $standardErrorFile.Length) {
-      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), (Get-Content -Path $redirectStandardError -Raw))
+      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: ({2} {3}). {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($argumentList -join ' '), (Get-Content -Path $redirectStandardError -Raw))
     }
     $standardOutputFile = (Get-Item -Path $redirectStandardOutput -ErrorAction 'SilentlyContinue')
     if (($standardOutputFile) -and $standardOutputFile.Length) {
-      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: ({2} {3}). log: {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($arguments -join ' '), $redirectStandardOutput)
+      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: ({2} {3}). log: {4}' -f $($MyInvocation.MyCommand.Name), $componentName, $command, ($argumentList -join ' '), $redirectStandardOutput)
     }
   }
   end {
@@ -933,7 +939,7 @@ function Invoke-DownloadInstall {
       }
       'msi' {
         $command = ('{0}\system32\msiexec.exe' -f $env:WinDir)
-        $arguments = @('/i', $localPath, '/log', ('{0}\log\{1}-{2}.msi.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $component.ComponentName), '/quiet', '/norestart')
+        $arguments = @('/i', $localPath, '/log', ('{0}\log\{1}-{2}.msi-install.log' -f $env:SystemDrive, [DateTime]::Now.ToString("yyyyMMddHHmmss"), $component.ComponentName), '/quiet', '/norestart')
       }
       'msu' {
         $command = ('{0}\system32\wusa.exe' -f $env:WinDir)

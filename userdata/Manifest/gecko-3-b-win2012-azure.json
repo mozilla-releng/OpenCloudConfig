@@ -505,7 +505,7 @@
         "/ceip",
         "off",
         "/log",
-        "C:\\log\\windowssdk10setup.log"
+        "C:\\log\\windowssdk10setup-install.log"
       ],
       "Validate": {
         "PathsExist": [

@@ -736,7 +736,7 @@
         "pip",
         "install",
         "--upgrade",
-        "pip==19.2.3"
+        "pip==20.3.3"
       ],
       "Validate": {
         "CommandsReturn": [
@@ -748,7 +748,7 @@
               "show",
               "pip"
             ],
-            "Match": "Version: 19.2.3"
+            "Match": "Version: 20.3.3"
           }
         ]
       }
@@ -960,7 +960,7 @@
         "pip",
         "install",
         "--upgrade",
-        "pip==19.2.3"
+        "pip==20.3.3"
       ],
       "Validate": {
         "CommandsReturn": [
@@ -972,7 +972,7 @@
               "show",
               "pip"
             ],
-            "Match": "Version: 19.2.3"
+            "Match": "Version: 20.3.3"
           }
         ]
       }

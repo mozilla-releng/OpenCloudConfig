@@ -687,7 +687,7 @@
         "pip",
         "install",
         "--upgrade",
-        "pip==19.2.3"
+        "pip==20.3.3"
       ],
       "Validate": {
         "CommandsReturn": [
@@ -699,7 +699,7 @@
               "show",
               "pip"
             ],
-            "Match": "Version: 19.2.3"
+            "Match": "Version: 20.3.3"
           }
         ]
       }
@@ -911,7 +911,7 @@
         "pip",
         "install",
         "--upgrade",
-        "pip==19.2.3"
+        "pip==20.3.3"
       ],
       "Validate": {
         "CommandsReturn": [
@@ -923,7 +923,7 @@
               "show",
               "pip"
             ],
-            "Match": "Version: 19.2.3"
+            "Match": "Version: 20.3.3"
           }
         ]
       }
@@ -993,28 +993,15 @@
     {
       "ComponentName": "dir_TOOLTOOL_CACHE",
       "ComponentType": "DirectoryCreate",
-      "Path": "Y:\\tooltool_cache"
+      "Path": "C:\\builds\\tooltool_cache"
     },
     {
       "ComponentName": "env_TOOLTOOL_CACHE",
       "ComponentType": "EnvironmentVariableSet",
       "Comment": "Tells the build system where to find the local tooltool cache",
       "Name": "TOOLTOOL_CACHE",
-      "Value": "Y:\\tooltool_cache",
+      "Value": "C:\\builds\\tooltool_cache",
       "Target": "Machine",
-      "DependsOn": [
-        {
-          "ComponentType": "DirectoryCreate",
-          "ComponentName": "dir_TOOLTOOL_CACHE"
-        }
-      ]
-    },
-    {
-      "ComponentName": "link_TOOLTOOL_CACHE",
-      "ComponentType": "SymbolicLink",
-      "Comment": "Provides backwards compatibility to hardcoded cache paths",
-      "Target": "Y:\\tooltool_cache",
-      "Link": "C:\\builds\\tooltool_cache",
       "DependsOn": [
         {
           "ComponentType": "DirectoryCreate",
@@ -1028,7 +1015,7 @@
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1421114",
       "Command": "icacls.exe",
       "Arguments": [
-        "Y:\\tooltool_cache",
+        "C:\\builds\\tooltool_cache",
         "/grant",
         "Everyone:(OI)(CI)F"
       ],

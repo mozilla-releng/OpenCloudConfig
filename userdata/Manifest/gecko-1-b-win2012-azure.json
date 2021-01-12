@@ -1060,23 +1060,6 @@
       "Target": "Machine"
     },
     {
-      "ComponentName": "reg_WindowsErrorReportingLocalDumps",
-      "ComponentType": "RegistryKeySet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1261812",
-      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting",
-      "ValueName": "LocalDumps"
-    },
-    {
-      "ComponentName": "reg_WindowsErrorReportingDontShowUI",
-      "ComponentType": "RegistryValueSet",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1261812",
-      "Key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting",
-      "ValueName": "DontShowUI",
-      "ValueType": "Dword",
-      "ValueData": "0x00000001",
-      "Hex": true
-    },
-    {
       "ComponentName": "env_DXSDK_DIR",
       "ComponentType": "EnvironmentVariableSet",
       "DependsOn": [

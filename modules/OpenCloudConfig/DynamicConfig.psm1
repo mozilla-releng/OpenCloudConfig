@@ -588,11 +588,41 @@ function Invoke-RegistryKeySet {
     Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} ({1}) :: begin - {2:o}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, (Get-Date).ToUniversalTime())
   }
   process {
+    switch -regex (($component.Key).Split('\')[0]) {
+      'HKEY_CURRENT_USER|HKCU' {
+        $path = $component.Key.Replace('HKEY_CURRENT_USER\', 'HKCU:\').Replace('HKCU\', 'HKCU:\')
+      }
+      'HKEY_LOCAL_MACHINE|HKLM' {
+        $path = $component.Key.Replace('HKEY_LOCAL_MACHINE\', 'HKLM:\').Replace('HKLM\', 'HKLM:\')
+      }
+      'HKEY_CLASSES_ROOT|HKCR' {
+        $path = $component.Key.Replace('HKEY_CLASSES_ROOT\', 'HKCR:\').Replace('HKCR\', 'HKCR:\')
+      }
+      'HKEY_CURRENT_CONFIG|HKCC' {
+        $path = $component.Key.Replace('HKEY_CURRENT_CONFIG\', 'HKCC:\').Replace('HKCC\', 'HKCC:\')
+      }
+      'HKEY_USERS|HKU' {
+        $path = $component.Key.Replace('HKEY_USERS\', 'HKU:\').Replace('HKU\', 'HKU:\')
+      }
+      default {
+        $path = $component.Key
+      }
+    }
+    if (-not (Get-Item -Path $path -ErrorAction 'SilentlyContinue')) {
+      try {
+        New-Item -Path $path -Force
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry path: {2} created' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $path)
+      } catch {
+        Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to create registry path {2}. {3}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $path, $_.Exception.Message)
+      }
+    } else {
+      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'debug' -message ('{0} ({1}) :: registry path: {2} detected' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $path)
+    }
     try {
-      New-Item -Path $component.Key -Name $component.ValueName -Force
-      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry key {2} created at {3}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueName, $component.Key)
+      New-Item -Path $path -Name $component.ValueName -Force
+      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'info' -message ('{0} ({1}) :: registry key {2} created at {3}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueName, $path)
     } catch {
-      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to create registry key {2} at {3}. {4}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueName, $component.Key, $_.Exception.Message)
+      Write-Log -verbose:$verbose -logName $eventLogName -source $eventLogSource -severity 'error' -message ('{0} ({1}) :: failed to create registry key {2} at {3}. {4}' -f $($MyInvocation.MyCommand.Name), $component.ComponentName, $component.ValueName, $path, $_.Exception.Message)
     }
   }
   end {

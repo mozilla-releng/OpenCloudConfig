@@ -310,6 +310,16 @@ switch -regex ($sysprepState) {
     } catch {
       Write-Log -message ('{0} :: failed to set powershell execution policy to remote signed. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
     }
+    if ([Net.ServicePointManager]::SecurityProtocol -ne ([Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12)) {
+      try {
+        [Net.ServicePointManager]::SecurityProtocol = ([Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12)
+        Write-Log -message ('{0} :: added TLS v1.2 to security protocol support list for current powershell session' -f $($MyInvocation.MyCommand.Name))
+      } catch {
+        Write-Log -message ('{0} :: failed to add TLS v1.2 to security protocol support list for current powershell session. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'WARN'
+      }
+    } else {
+      Write-Log -message ('{0} :: detected TLS v1.2 in security protocol support list' -f $($MyInvocation.MyCommand.Name))
+    }
     Set-OpenCloudConfigSource
     $sourceOrg = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction 'SilentlyContinue') -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation' -ErrorAction 'SilentlyContinue')) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Organisation').Organisation } else { 'mozilla-releng' })
     $sourceRepo = $(if ((Test-Path -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -ErrorAction 'SilentlyContinue') -and (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository' -ErrorAction 'SilentlyContinue')) { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Mozilla\OpenCloudConfig\Source' -Name 'Repository').Repository } else { 'OpenCloudConfig' })

@@ -65,6 +65,7 @@ function Start-LoggedProcess {
   }
   process {
     try {
+      Write-Log -message ('{0} :: {1} - command execution queued ({2} {3})' -f $($MyInvocation.MyCommand.Name), $name, $filePath, ($argumentList -join ' ')) -severity 'DEBUG'
       if (-not (Test-Path -Path $filePath -ErrorAction SilentlyContinue)) {
         Write-Log -message ('{0} :: {1} does not map to an existing path.' -f $($MyInvocation.MyCommand.Name), $filePath) -severity 'WARN'
       }
@@ -154,21 +155,32 @@ function Install-Dependencies {
           Write-Log -message ('{0} :: no configured resolution for missing wmf for os: {1}' -f $($MyInvocation.MyCommand.Name), (Get-WmiObject -class Win32_OperatingSystem).Caption) -severity 'ERROR'
         }
       }
+    } else {
+      Write-Log -message ('{0} :: windows management framework detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     }
-    foreach ($purgeModule in $purgeModules) {
-      if ((Get-Module -ListAvailable -Name $purgeModule['ModuleName'] | ? { $_.Version -lt $purgeModule['ModuleVersion'] })) {
-        try {
-          Remove-Module -Name $purgeModule['ModuleName'] -Force -ErrorAction SilentlyContinue
-          Remove-Item -path (Join-Path -Path $env:PSModulePath.Split(';') -ChildPath $purgeModule['ModuleName']) -recurse -force -ErrorAction SilentlyContinue
-        } catch {
-          Write-Log -message ('{0} :: error removing module: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $purgeModule['ModuleName'], $_.Exception.Message) -severity 'ERROR'
+    if (Get-Command -Name 'Get-Module' -errorAction SilentlyContinue) {
+      foreach ($purgeModule in $purgeModules) {
+        if ((Get-Module -ListAvailable -Name $purgeModule['ModuleName'] | ? { $_.Version -lt $purgeModule['ModuleVersion'] })) {
+          Write-Log -message ('{0} :: module: {1} detected with version less than: {2}' -f $($MyInvocation.MyCommand.Name), $purgeModule['ModuleName'], $purgeModule['ModuleVersion']) -severity 'DEBUG'
+          try {
+            Remove-Module -Name $purgeModule['ModuleName'] -Force -ErrorAction SilentlyContinue
+            Remove-Item -path (Join-Path -Path $env:PSModulePath.Split(';') -ChildPath $purgeModule['ModuleName']) -recurse -force -ErrorAction SilentlyContinue
+            Write-Log -message ('{0} :: module: {1}, removed' -f $($MyInvocation.MyCommand.Name), $purgeModule['ModuleName']) -severity 'DEBUG'
+          } catch {
+            Write-Log -message ('{0} :: error removing module: {1}. {2}' -f $($MyInvocation.MyCommand.Name), $purgeModule['ModuleName'], $_.Exception.Message) -severity 'ERROR'
+          }
+        } elseif ((Get-Module -ListAvailable -Name $purgeModule['ModuleName'] | ? { $_.Version -ge $purgeModule['ModuleVersion'] })) {
+          Write-Log -message ('{0} :: module: {1} detected with version greater than or equal to: {2}' -f $($MyInvocation.MyCommand.Name), $purgeModule['ModuleName'], $purgeModule['ModuleVersion']) -severity 'DEBUG'
         }
       }
+    } else {
+      Write-Log -message ('{0} :: powershell Get-Module cmdlet absence detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
     }
     foreach ($packageProviderName in $packageProviders.Keys) {
       $version = $packageProviders.Item($packageProviderName)
       $packageProvider = (Get-PackageProvider -Name $packageProviderName -ForceBootstrap:$true)
       if ((-not ($packageProvider)) -or ($packageProvider.Version -lt $version)) {
+        Write-Log -message ('{0} :: outdated or missing package provider detected' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
         try {
           Install-PackageProvider -Name $packageProviderName -MinimumVersion $version -Force
           Write-Log -message ('{0} :: powershell package provider: {1}, version: {2}, installed' -f $($MyInvocation.MyCommand.Name), $packageProviderName, $version) -severity 'INFO'

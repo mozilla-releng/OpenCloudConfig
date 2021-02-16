@@ -85,6 +85,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:cot-gecko-1-b-win2012-beta
@@ -151,6 +152,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:cot-gecko-1-b-win2012-xlarge
@@ -217,6 +219,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:cot-gecko-1-b-win2012
@@ -282,6 +285,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:cot-gecko-2-b-win2012
@@ -347,6 +351,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:cot-gecko-3-b-win2012
@@ -412,6 +417,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:cot-gecko-3-b-win2012-c4
@@ -477,6 +483,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:cot-gecko-3-b-win2012-c5
@@ -542,6 +549,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win7-32-cu
@@ -606,6 +614,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win7-32-gpu-b
@@ -671,6 +680,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win7-32-beta
@@ -736,6 +746,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win7-32
@@ -800,6 +811,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win7-32-gpu
@@ -864,6 +876,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win10-64-cu
@@ -928,6 +941,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win10-64-alpha
@@ -993,6 +1007,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win10-64-beta
@@ -1058,6 +1073,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win10-64
@@ -1122,6 +1138,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win10-64-gpu-a
@@ -1187,6 +1204,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win10-64-gpu-b
@@ -1252,6 +1270,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win10-64-gpu-s
@@ -1317,6 +1336,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:gecko-t-win10-64-gpu
@@ -1381,6 +1401,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:cot-mpd001-1-b-win2012
@@ -1446,6 +1467,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:cot-mpd001-3-b-win2012
@@ -1511,6 +1533,7 @@ tasks:
 - provisionerId: releng-3
   workerType: linux
   scopes:
+  - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:logs
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updatetooltoolrepo
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
   - secrets:get:repo:github.com/mozilla-releng/OpenCloudConfig:relops-image-builder

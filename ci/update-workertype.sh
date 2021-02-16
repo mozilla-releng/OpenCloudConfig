@@ -412,7 +412,7 @@ yq '.' ./ami-list.yml > ./ami-list.json
 yq '.' ./ami-latest.yml > ./ami-latest.json
 
 # harvest instance logs
-secrets_url=taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
+secrets_url=taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig:logs
 PAPERTRAIL_API_TOKEN=$(curl -s -N ${secrets_url} | jq -r '.secret.papertrail.token')
 programs=('dsc-run' 'ed25519-public-key' 'fluentd' 'HaltOnIdle' 'MaintainSystem' 'nxlog' 'OpenCloudConfig' 'OpenSSH' 'Service_Control_Manager' 'stderr' 'stdout' 'sysprep-cbs' 'sysprep-ddaclsys' 'sysprep-setupact' 'sysprep-setupapi.app' 'sysprep-setupapi.dev' 'user32')
 for program in ${programs[@]}; do

@@ -1131,9 +1131,9 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.5.5/generic-worker-multiuser-windows-amd64.exe",
+      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.5.1/generic-worker-multiuser-windows-amd64.exe",
       "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "25c88a9195f6a1116d32e4c8cf9d1c59bdabcf5397b5cdca7e46a655a75060f3d2a441b785b7479e640bb0364ff7e8fdf84e0fe72d7bcfd83998c250a895caf9"
+      "sha512": "a2c24dcfe113d1fc947eac4b7762aba1f7ffb25fcb39502b5400cfae8dafb8c20f3f129df1bbc0eadaea98d5af62210a88f58c0a00eccc5eaf15c8bf29f454ec"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -1232,7 +1232,7 @@
             "Arguments": [
               "--version"
             ],
-            "Like": "generic-worker (multiuser engine) 16.5.5 *"
+            "Like": "generic-worker (multiuser engine) 16.5.1 *"
           }
         ]
       }
@@ -1561,6 +1561,34 @@
   "ProvisionerConfiguration": {
     "instanceTypes": [
       {
+        "instanceType": "c4.4xlarge",
+        "capacity": 1,
+        "utility": 0.9,
+        "launchSpec": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/sda1",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 40,
+                "VolumeType": "gp2"
+              }
+            },
+            {
+              "DeviceName": "/dev/sdb",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 120,
+                "VolumeType": "gp2"
+              }
+            }
+          ]
+        },
+        "scopes": [],
+        "secrets": {},
+        "userData": {}
+      },
+      {
         "instanceType": "c5.4xlarge",
         "capacity": 1,
         "utility": 1,
@@ -1575,15 +1603,7 @@
               }
             },
             {
-              "DeviceName": "xvdy",
-              "Ebs": {
-                "DeleteOnTermination": true,
-                "VolumeSize": 120,
-                "VolumeType": "gp2"
-              }
-            },
-            {
-              "DeviceName": "xvdz",
+              "DeviceName": "/dev/sdb",
               "Ebs": {
                 "DeleteOnTermination": true,
                 "VolumeSize": 120,

@@ -6,6 +6,8 @@ if [ "${#}" -lt 1 ]; then
   echo "workertype argument missing; usage: ./update-workertype.sh workertype" >&2
   exit 64
 fi
+mkdir -p ./instance-logs
+touch ./instance-logs/no-instance-logs
 tc_worker_type="${1}"
 
 manifest=./OpenCloudConfig/userdata/Manifest/${tc_worker_type}.json
@@ -242,6 +244,7 @@ while [ -z "$aws_instance_id" ]; do
     echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] create instance failed. retrying..."
   fi
 done
+log_min_time=$(date --utc +"%F %T UTC")
 until `aws ec2 create-tags --region ${aws_region} --resources "${aws_instance_id}" --tags "Key=WorkerType,Value=golden-${tc_worker_type}" "Key=source,Value=${GITHUB_HEAD_REPO_URL::-4}/commit/${GITHUB_HEAD_SHA:0:7}" "Key=build,Value=https://tools.taskcluster.net/tasks/${TASK_ID}" >/dev/null 2>&1`; do
   echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] waiting for instance instantiation"
 done
@@ -407,3 +410,15 @@ for region in ${ami_copy_regions[@]} ${aws_region}; do
 done
 yq '.' ./ami-list.yml > ./ami-list.json
 yq '.' ./ami-latest.yml > ./ami-latest.json
+
+# harvest instance logs
+secrets_url=taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig:updateworkertype
+PAPERTRAIL_API_TOKEN=$(curl -s -N ${secrets_url} | jq -r '.secret.papertrail.token')
+programs=('dsc-run' 'ed25519-public-key' 'fluentd' 'HaltOnIdle' 'MaintainSystem' 'nxlog' 'OpenCloudConfig' 'OpenSSH' 'Service_Control_Manager' 'stderr' 'stdout' 'sysprep-cbs' 'sysprep-ddaclsys' 'sysprep-setupact' 'sysprep-setupapi.app' 'sysprep-setupapi.dev' 'user32')
+for program in ${programs[@]}; do
+  if papertrail --group 2488493 --system ${aws_instance_id}.${tc_worker_type}.usw2.mozilla.com --min-time "${log_min_time}" "program:${program}" > ./instance-logs/${program}.log && [ -s ./instance-logs/${program}.log ]; then
+    rm -f ./instance-logs/no-instance-logs
+  elif [ -f ./instance-logs/${program}.log ] && [ ! -s ./instance-logs/${program}.log ] ; then
+    rm ./instance-logs/${program}.log
+  fi
+done

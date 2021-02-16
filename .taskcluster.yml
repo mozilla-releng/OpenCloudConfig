@@ -138,6 +138,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-1-b-win2012-beta AMIs'
     description: 'recreate Firefox Windows try experimental build AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -200,6 +204,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-1-b-win2012-xlarge AMIs'
     description: 'recreate Firefox Windows try xlarge build AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -260,6 +268,10 @@ tasks:
       'public/ami-list.yml':
         type: file
         path: './ami-list.yml'
+        expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
         expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-1-b-win2012 AMIs'
@@ -322,6 +334,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-2-b-win2012 AMIs'
     description: 'recreate Firefox Windows l2 build AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -382,6 +398,10 @@ tasks:
       'public/ami-list.yml':
         type: file
         path: './ami-list.yml'
+        expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
         expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-3-b-win2012 AMIs'
@@ -444,6 +464,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-3-b-win2012-c4 AMIs'
     description: 'recreate Firefox Windows prod build AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -505,6 +529,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-3-b-win2012-c5 AMIs'
     description: 'recreate Firefox Windows prod build AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -564,6 +592,10 @@ tasks:
       'public/ami-list.yml':
         type: file
         path: './ami-list.yml'
+        expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
         expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win7-32-cu AMIs'
@@ -626,6 +658,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win7-32-gpu-b AMIs'
     description: 'recreate Experimental Firefox Windows 7 GPU (32 bit) test AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -687,6 +723,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win7-32-beta AMIs'
     description: 'recreate Experimental Firefox Windows 7 (32 bit) test AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -746,6 +786,10 @@ tasks:
       'public/ami-list.yml':
         type: file
         path: './ami-list.yml'
+        expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
         expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win7-32 AMIs'
@@ -807,6 +851,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win7-32-gpu AMIs'
     description: 'recreate Firefox Windows 7 (32 bit) test AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -866,6 +914,10 @@ tasks:
       'public/ami-list.yml':
         type: file
         path: './ami-list.yml'
+        expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
         expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win10-64-cu AMIs'
@@ -928,6 +980,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win10-64-alpha AMIs'
     description: 'recreate Experimental Firefox Windows 10 (64 bit) test AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -989,6 +1045,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win10-64-beta AMIs'
     description: 'recreate Experimental Firefox Windows 10 (64 bit) test AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -1048,6 +1108,10 @@ tasks:
       'public/ami-list.yml':
         type: file
         path: './ami-list.yml'
+        expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
         expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win10-64 AMIs'
@@ -1110,6 +1174,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win10-64-gpu-a AMIs'
     description: 'recreate Experimental Firefox Windows 10 (64 bit) GPU test AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -1170,6 +1238,10 @@ tasks:
       'public/ami-list.yml':
         type: file
         path: './ami-list.yml'
+        expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
         expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win10-64-gpu-b AMIs'
@@ -1232,6 +1304,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win10-64-gpu-s AMIs'
     description: 'recreate Experimental Firefox Windows 10 (64 bit) GPU test AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -1291,6 +1367,10 @@ tasks:
       'public/ami-list.yml':
         type: file
         path: './ami-list.yml'
+        expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
         expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update gecko-t-win10-64-gpu AMIs'
@@ -1353,6 +1433,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update mpd001-1-b-win2012 AMIs'
     description: 'recreate MPD Windows prod build AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -1414,6 +1498,10 @@ tasks:
         type: file
         path: './ami-list.yml'
         expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
+        expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update mpd001-3-b-win2012 AMIs'
     description: 'recreate MPD Windows prod build AMIs using OpenCloudConfig for configuration and dependency installation'
@@ -1473,6 +1561,10 @@ tasks:
       'public/ami-list.yml':
         type: file
         path: './ami-list.yml'
+        expires: "{{ '1 year' | $fromNow }}"
+      'public/instance-logs':
+        type: directory
+        path: './instance-logs'
         expires: "{{ '1 year' | $fromNow }}"
   metadata:
     name: 'Update relops-image-builder AMIs'

@@ -1,0 +1,14 @@
+<powershell>
+Invoke-Expression -Command "& net @('user', 'Administrator', 'ROOT_PASSWORD_TOKEN')";
+[Net.ServicePointManager]::SecurityProtocol = ([Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12)
+Invoke-Expression (New-Object Net.WebClient).DownloadString(('https://raw.githubusercontent.com/SOURCE_ORG_TOKEN/SOURCE_REPO_TOKEN/SOURCE_REV_TOKEN/userdata/rundsc.ps1?{0}' -f [Guid]::NewGuid()))
+</powershell>
+<persist>true</persist>
+<secrets>
+  <rootPassword>ROOT_PASSWORD_TOKEN</rootPassword>
+  <rootGpgKey>ROOT_GPG_KEY_TOKEN</rootGpgKey>
+  <workerPassword>WORKER_PASSWORD_TOKEN</workerPassword>
+</secrets>
+<SourceOrganisation>SOURCE_ORG_TOKEN</SourceOrganisation>
+<SourceRepository>SOURCE_REPO_TOKEN</SourceRepository>
+<SourceRevision>SOURCE_REV_TOKEN</SourceRevision>

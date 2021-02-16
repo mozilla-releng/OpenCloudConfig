@@ -32,10 +32,6 @@ manifest=./OpenCloudConfig/userdata/Manifest/${tc_worker_type}.json
 
 # get some secrets from tc
 secrets_url=taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig
-read userdata<<EOF
-$(curl -s -N ${secrets_url}:updateworkertype | jq '.' | python2 -c 'import json, sys; a = json.load(sys.stdin)["secret"]; print ("<powershell>\nInvoke-Expression -Command \"& net @('\''user'\'', '\''Administrator'\'', '\''ROOT_PASSWORD_TOKEN'\'')\";\n[Net.ServicePointManager]::SecurityProtocol = ([Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12)\nInvoke-Expression (New-Object Net.WebClient).DownloadString(('\''https://raw.githubusercontent.com/SOURCE_ORG_TOKEN/SOURCE_REPO_TOKEN/SOURCE_REV_TOKEN/userdata/rundsc.ps1?{0}'\'' -f [Guid]::NewGuid()))\n</powershell>\n<persist>true</persist>\n<secrets>\n  <rootPassword>ROOT_PASSWORD_TOKEN</rootPassword>\n  <rootGpgKey>\n%s\n</rootGpgKey>\n  <workerPassword>WORKER_PASSWORD_TOKEN</workerPassword>\n</secrets>\n<SourceOrganisation>SOURCE_ORG_TOKEN</SourceOrganisation>\n<SourceRepository>SOURCE_REPO_TOKEN</SourceRepository>\n<SourceRevision>SOURCE_REV_TOKEN</SourceRevision>" % (a["rootGpgKey"])).replace("\n", "\\\\n");' 2> /dev/null)
-EOF
-
 TASKCLUSTER_AWS_ACCESS_KEY=$(curl -s -N ${secrets_url}:updateworkertype | jq -r '.secret.aws.access')
 TASKCLUSTER_AWS_SECRET_KEY=$(curl -s -N ${secrets_url}:updateworkertype | jq -r '.secret.aws.secret')
 : ${TASKCLUSTER_AWS_ACCESS_KEY:?"TASKCLUSTER_AWS_ACCESS_KEY is not set"}
@@ -191,6 +187,7 @@ echo "DEBUG: parsing provisioner configuration (first instance type) from ${mani
 snapshot_aws_instance_type=$(jq -c -r '.ProvisionerConfiguration.instanceTypes[0].instanceType' ${manifest})
 
 echo "DEBUG: constructing userdata..."
+userdata=$(cat ./OpenCloudConfig/ci/userdata)
 SOURCE_ORG_REPO=${GITHUB_HEAD_REPO_URL:19}
 SOURCE_ORG_REPO=${SOURCE_ORG_REPO/.git/}
 SOURCE_ORG=${SOURCE_ORG_REPO/\/$GITHUB_HEAD_REPO_NAME/}
@@ -202,6 +199,7 @@ worker_password="$(pwgen -1sBync 16)"
 worker_password="${worker_password//[<>\"\'\`\\\/]/_}"
 userdata=${userdata//ROOT_PASSWORD_TOKEN/$root_password}
 userdata=${userdata//WORKER_PASSWORD_TOKEN/$worker_password}
+userdata=${userdata//ROOT_GPG_KEY_TOKEN/$(curl -s -N ${secrets_url}:updateworkertype | jq -r '.secret.rootGpgKey')}
 
 # if commit message includes a line like: "(alpha-source|beta-source): custom-gh-username-or-org custom-gh-repo custom-gh-ref-or-rev"
 # and worker type is an alpha or beta, inject userdata with custom org, repo and ref data so that beta amis are built with
@@ -414,8 +412,7 @@ yq '.' ./ami-list.yml > ./ami-list.json
 yq '.' ./ami-latest.yml > ./ami-latest.json
 
 # harvest instance logs
-secrets_url=taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig:logs
-PAPERTRAIL_API_TOKEN=$(curl -s -N ${secrets_url} | jq -r '.secret.papertrail.token')
+PAPERTRAIL_API_TOKEN=$(curl -s -N ${secrets_url}:updateworkertype | jq -r '.secret.papertrail.token')
 programs=('dsc-run' 'ed25519-public-key' 'fluentd' 'HaltOnIdle' 'MaintainSystem' 'nxlog' 'OpenCloudConfig' 'OpenSSH' 'Service_Control_Manager' 'stderr' 'stdout' 'sysprep-cbs' 'sysprep-ddaclsys' 'sysprep-setupact' 'sysprep-setupapi.app' 'sysprep-setupapi.dev' 'user32')
 for program in ${programs[@]}; do
   if papertrail --group 2488493 --system ${aws_instance_id}.${tc_worker_type}.usw2.mozilla.com --min-time "${log_min_time}" "program:${program}" > ./instance-logs/${program}.log && [ -s ./instance-logs/${program}.log ]; then

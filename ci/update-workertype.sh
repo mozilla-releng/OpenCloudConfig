@@ -415,7 +415,7 @@ yq '.' ./ami-latest.yml > ./ami-latest.json
 export PAPERTRAIL_API_TOKEN=$(curl -s -N ${secrets_url}:updateworkertype | jq -r '.secret.papertrail.token')
 programs=('dsc-run' 'ed25519-public-key' 'fluentd' 'HaltOnIdle' 'MaintainSystem' 'nxlog' 'OpenCloudConfig' 'OpenSSH' 'Service_Control_Manager' 'stderr' 'stdout' 'sysprep-cbs' 'sysprep-ddaclsys' 'sysprep-setupact' 'sysprep-setupapi.app' 'sysprep-setupapi.dev' 'user32')
 for program in ${programs[@]}; do
-  if papertrail --group 2488493 --system ${aws_instance_id}.${tc_worker_type}.usw2.mozilla.com --min-time "${log_min_time}" "program:${program}" > ./instance-logs/${program}.log && [ -s ./instance-logs/${program}.log ]; then
+  if papertrail --system ${aws_instance_id}.${tc_worker_type}.usw2.mozilla.com --min-time "${log_min_time}" "program:${program}" > ./instance-logs/${program}.log && [ -s ./instance-logs/${program}.log ]; then
     rm -f ./instance-logs/no-instance-logs
   elif [ -f ./instance-logs/${program}.log ] && [ ! -s ./instance-logs/${program}.log ] ; then
     rm ./instance-logs/${program}.log

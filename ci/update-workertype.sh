@@ -343,16 +343,16 @@ for region in ${ami_copy_regions[@]}; do
   cat ./workertype-secrets.json | jq --arg ec2region $region --arg amiid $aws_copied_ami_id -c '.secret.latest.amis |= . + [{region:$ec2region,"ami-id":$amiid}]' > ./.workertype-secrets.json && rm ./workertype-secrets.json && mv ./.workertype-secrets.json ./workertype-secrets.json
 
   # purge all but 10 newest workertype amis in region
-  #aws ec2 describe-images --region ${region} --owners self --filters "Name=name,Values=${tc_worker_type} *" | jq '[ .Images[] | { ImageId, CreationDate, SnapshotId: .BlockDeviceMappings[0].Ebs.SnapshotId } ] | sort_by(.CreationDate) [ 0 : -10 ]' > ./delete-queue-${region}.json
-  #jq '.|keys[]' ./delete-queue-${region}.json | while read i; do
-  #  old_ami=$(jq -r ".[$i].ImageId" ./delete-queue-${region}.json)
-  #  old_snap=$(jq -r ".[$i].SnapshotId" ./delete-queue-${region}.json)
-  #  old_cd=$(jq ".[$i].CreationDate" ./delete-queue-${region}.json)
-  #  echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] deregistering old ami: ${old_ami}, created: ${old_cd}, in ${region}"
-  #  aws ec2 deregister-image --region ${region} --image-id ${old_ami} || true
-  #  echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] deleting old snapshot: ${old_snap}, for ami: ${old_ami}"
-  #  aws ec2 delete-snapshot --region ${region} --snapshot-id ${old_snap} || true
-  #done
+  aws ec2 describe-images --region ${region} --owners self --filters "Name=name,Values=${tc_worker_type} *" | jq '[ .Images[] | { ImageId, CreationDate, SnapshotId: .BlockDeviceMappings[0].Ebs.SnapshotId } ] | sort_by(.CreationDate) [ 0 : -10 ]' > ./delete-queue-${region}.json
+  jq '.|keys[]' ./delete-queue-${region}.json | while read i; do
+    old_ami=$(jq -r ".[$i].ImageId" ./delete-queue-${region}.json)
+    old_snap=$(jq -r ".[$i].SnapshotId" ./delete-queue-${region}.json)
+    old_cd=$(jq ".[$i].CreationDate" ./delete-queue-${region}.json)
+    echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] deregistering old ami: ${old_ami}, created: ${old_cd}, in ${region}"
+    aws ec2 deregister-image --region ${region} --image-id ${old_ami} || true
+    echo "[opencloudconfig $(date --utc +"%F %T.%3NZ")] deleting old snapshot: ${old_snap}, for ami: ${old_ami}"
+    aws ec2 delete-snapshot --region ${region} --snapshot-id ${old_snap} || true
+  done
 done
 
 #cat ./${tc_worker_type}.json | curl -D ./update-response-headers.txt --silent --header 'Content-Type: application/json' --request POST --data @- http://taskcluster/aws-provisioner/v1/worker-type/${tc_worker_type}/update > ./update-response.json
@@ -413,7 +413,31 @@ yq '.' ./ami-latest.yml > ./ami-latest.json
 
 # harvest instance logs
 export PAPERTRAIL_API_TOKEN=$(curl -s -N ${secrets_url}:updateworkertype | jq -r '.secret.papertrail.token')
-programs=('dsc-run' 'ed25519-public-key' 'fluentd' 'HaltOnIdle' 'MaintainSystem' 'nxlog' 'OpenCloudConfig' 'OpenSSH' 'Service_Control_Manager' 'stderr' 'stdout' 'sysprep-cbs' 'sysprep-ddaclsys' 'sysprep-setupact' 'sysprep-setupapi.app' 'sysprep-setupapi.dev' 'user32')
+programs=(
+  'dsc-run'
+  'ec2config.exe'
+  'ec2-config'
+  'ed25519-public-key'
+  'fluentd'
+  'haltonidle'
+  'maintainsystem'
+  'microsoft-windows-dsc'
+  'microsoft-windows-security-spp'
+  'microsoft-windows-winrm'
+  'nxlog'
+  'occ-dsc'
+  'opencloudconfig'
+  'openssh'
+  'service_control_manager'
+  'stderr'
+  'stdout'
+  'sysprep-cbs'
+  'sysprep-ddaclsys'
+  'sysprep-setupact'
+  'sysprep-setupapi.app'
+  'sysprep-setupapi.dev'
+  'user32'
+)
 for program in ${programs[@]}; do
   if papertrail --system ${aws_instance_id}.${tc_worker_type}.usw2.mozilla.com --min-time "${log_min_time}" "program:${program}" > ./instance-logs/${program}.log && [ -s ./instance-logs/${program}.log ]; then
     rm -f ./instance-logs/no-instance-logs
@@ -421,3 +445,9 @@ for program in ${programs[@]}; do
     rm ./instance-logs/${program}.log
   fi
 done
+all_program_logs_filename=all-programs-$(date +"%Y%m%d%H%M%S" --utc --date "${log_min_time}")-$(date +"%Y%m%d%H%M%S" --utc)
+if papertrail --system ${aws_instance_id}.${tc_worker_type}.usw2.mozilla.com --min-time "${log_min_time}" > ./instance-logs/${all_program_logs_filename}.log && [ -s ./instance-logs/${all_program_logs_filename}.log ]; then
+  rm -f ./instance-logs/no-instance-logs
+elif [ -f ./instance-logs/${all_program_logs_filename}.log ] && [ ! -s ./instance-logs/${all_program_logs_filename}.log ] ; then
+  rm ./instance-logs/${all_program_logs_filename}.log
+fi

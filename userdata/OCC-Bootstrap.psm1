@@ -2051,6 +2051,7 @@ function Set-ChainOfTrustKey {
 function Wait-GenericWorkerStart {
   param (
     [string] $locationType,
+    [string] $workerType,
     [string] $lock,
     [string] $taskClaimSemaphore = 'C:\dsc\task-claim-state.valid'
   )
@@ -2058,9 +2059,8 @@ function Wait-GenericWorkerStart {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if ($locationType -eq 'Azure') {
+    if (($locationType -eq 'Azure') || ($workerType.EndsWith('-beta')) || ($workerType.EndsWith('-b'))) {
       $taskclusterPaths = @(
-        'C:\AzureData\CustomData.bin',
         'C:\generic-worker\generic-worker.exe',
         'C:\generic-worker\generic-worker.yml',
         'C:\generic-worker\worker-runner.exe',
@@ -2956,7 +2956,7 @@ function Invoke-OpenCloudConfig {
         $network = ((Get-NetConnectionProfile).name)
         Set-NetConnectionProfile -Name "$network" -NetworkCategory Private
       }
-      Wait-GenericWorkerStart -locationType $locationType -lock $lock
+      Wait-GenericWorkerStart -locationType $locationType -workerType $workerType -lock $lock
     }
     if (Test-Path -Path $lock -ErrorAction SilentlyContinue) {
       Remove-Item -Path $lock -force -ErrorAction SilentlyContinue

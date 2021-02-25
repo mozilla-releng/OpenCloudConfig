@@ -71,7 +71,7 @@
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.exe.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\gw.exe.conf",
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\gw.exe.conf",
       "DependsOn": [
         {
           "ComponentType": "ExeInstall",
@@ -84,7 +84,7 @@
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.service.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\gw.service.conf",
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\gw.service.conf",
       "DependsOn": [
         {
           "ComponentType": "ExeInstall",
@@ -97,7 +97,7 @@
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/gw.wrapper.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\gw.wrapper.conf",
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\gw.wrapper.conf",
       "DependsOn": [
         {
           "ComponentType": "ExeInstall",
@@ -110,7 +110,7 @@
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/occ.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\occ.conf",
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\occ.conf",
       "DependsOn": [
         {
           "ComponentType": "ExeInstall",
@@ -123,7 +123,7 @@
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1588757",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fluentd/redact.conf",
-      "Target": "C:\\Program Files (x86)\\Stackdriver\\LoggingAgent\\config.d\\redact.conf",
+      "Target": "C:\\Program Files\\Stackdriver\\LoggingAgent\\config.d\\redact.conf",
       "DependsOn": [
         {
           "ComponentType": "ExeInstall",
@@ -865,7 +865,31 @@
       "Path": "C:\\generic-worker"
     },
     {
-      "ComponentName": "GenericWorkerDownload",
+      "ComponentName": "TaskclusterWorkerRunnerDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v41.1.0/start-worker-windows-386",
+      "Target": "C:\\generic-worker\\worker-runner.exe"
+    },
+    {
+      "ComponentName": "WorkerRunnerConfigDownload",
+      "ComponentType": "FileDownload",
+      "DependsOn": [
+        {
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
+        }
+      ],
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-azure.yml",
+      "Target": "C:\\generic-worker\\worker-runner.yml"
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerDownload",
       "ComponentType": "ChecksumFileDownload",
       "DependsOn": [
         {
@@ -873,9 +897,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/generic-worker/releases/download/v16.5.5/generic-worker-multiuser-windows-386.exe",
-      "Target": "C:\\generic-worker\\generic-worker.exe",
-      "sha512": "e8fb575a3d03bf28fbd96659ccee96c325baa7bd2d0edd2f0d3525a59b6fb33646c22f0a9c8ff6e10a14dcbd07bd017be3ee67ccb55f3ba8b8a6fad388ad6184"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v41.1.0/generic-worker-multiuser-windows-386",
+      "Target": "C:\\generic-worker\\generic-worker.exe"
     },
     {
       "ComponentName": "LiveLogDownload",
@@ -886,9 +909,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-386.exe",
-      "Target": "C:\\generic-worker\\livelog.exe",
-      "sha512": "34cdece120f03e3f6b0ae2576d846c3fc38385fc976a5f20d60a50871e1519fc8a938355a607f6a5a4c658c838089571c435f01731d10600513ea63b3b1be01c"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v41.1.0/livelog-windows-386",
+      "Target": "C:\\generic-worker\\livelog.exe"
     },
     {
       "ComponentName": "TaskClusterProxyDownload",
@@ -899,9 +921,8 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.1.0/taskcluster-proxy-windows-386.exe",
-      "Target": "C:\\generic-worker\\taskcluster-proxy.exe",
-      "sha512": "83ec125f0fa8b8989e28cefa3b35c560556bf518c446f406a6320f758f6aaecac8b9e43a234cb1f2bdeb8d5126d68182aecfb2824b22668f3119812e2f587b25"
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v41.1.0/taskcluster-proxy-windows-386",
+      "Target": "C:\\generic-worker\\taskcluster-proxy.exe"
     },
     {
       "ComponentName": "NSSMDownload",
@@ -937,75 +958,928 @@
       }
     },
     {
-      "ComponentName": "GenericWorkerInstall",
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install",
       "ComponentType": "CommandRun",
-      "Command": "C:\\generic-worker\\generic-worker.exe",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
       "Arguments": [
         "install",
-        "service",
-        "--nssm",
-        "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
-        "--config",
-        "C:\\generic-worker\\generic-worker.config",
-        "--configure-for-aws"
+        "TaskclusterGenericWorker",
+        "C:\\generic-worker\\generic-worker.exe"
       ],
       "DependsOn": [
         {
-          "ComponentType": "ChecksumFileDownload",
-          "ComponentName": "GenericWorkerDownload"
+          "ComponentType": "CommandRun",
+          "ComponentName": "NSSMInstall"
         },
         {
           "ComponentType": "ChecksumFileDownload",
-          "ComponentName": "LiveLogDownload"
-        },
+          "ComponentName": "TaskclusterGenericWorkerDownload"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppDirectory",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppDirectory",
+        "C:\\generic-worker"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppParameters",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppParameters",
+        "run",
+        "--config",
+        "C:\\generic-worker\\generic-worker.yml",
+        "--worker-runner-protocol-pipe",
+        "\\\\.\\pipe\\generic-worker"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_DisplayName",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "DisplayName",
+        "\"Taskcluster Generic Worker\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_Description",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "Description",
+        "\"A taskcluster worker that runs on all mainstream platforms\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_Start",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "Start",
+        "SERVICE_DEMAND_START"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_Type",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "Type",
+        "SERVICE_WIN32_OWN_PROCESS"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppPriority",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppPriority",
+        "ABOVE_NORMAL_PRIORITY_CLASS"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppNoConsole",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppNoConsole",
+        "1"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppAffinity",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppAffinity",
+        "All"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppStopMethodSkip",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppStopMethodSkip",
+        "0"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppStopMethodConsole",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppStopMethodConsole",
+        "1500"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppStopMethodWindow",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppStopMethodWindow",
+        "1500"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppStopMethodThreads",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppStopMethodThreads",
+        "1500"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppThrottle",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppThrottle",
+        "1500"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppExit",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppExit",
+        "Default",
+        "Exit"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppRestartDelay",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppRestartDelay",
+        "0"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppStdout",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppStdout",
+        "C:\\log\\taskcluster-generic-worker-service-stdout.log"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppStderr",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppStderr",
+        "C:\\log\\taskcluster-generic-worker-service-stderr.log"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppStdoutCreationDisposition",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppStdoutCreationDisposition",
+        "4"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppStderrCreationDisposition",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppStderrCreationDisposition",
+        "4"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppRotateFiles",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppRotateFiles",
+        "1"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppRotateOnline",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppRotateOnline",
+        "1"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppRotateSeconds",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppRotateSeconds",
+        "3600"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppRotateBytes",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterGenericWorker",
+        "AppRotateBytes",
+        "0"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterGenericWorkerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "install",
+        "TaskclusterWorkerRunner",
+        "C:\\generic-worker\\worker-runner.exe"
+      ],
+      "DependsOn": [
         {
           "ComponentType": "CommandRun",
           "ComponentName": "NSSMInstall"
+        },
+        {
+          "ComponentType": "FileDownload",
+          "ComponentName": "TaskclusterWorkerRunnerDownload"
         }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppDirectory",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppDirectory",
+        "C:\\generic-worker"
       ],
-      "Validate": {
-        "PathsExist": [
-          "C:\\generic-worker\\run-generic-worker.bat",
-          "C:\\generic-worker\\generic-worker.exe"
-        ],
-        "CommandsReturn": [
-          {
-            "Command": "C:\\generic-worker\\generic-worker.exe",
-            "Arguments": [
-              "--version"
-            ],
-            "Like": "generic-worker (multiuser engine) 16.5.5 *"
-          }
-        ]
-      }
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppParameters",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppParameters",
+        "C:\\generic-worker\\worker-runner.yml"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_DisplayName",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "DisplayName",
+        "\"Taskcluster Worker Runner\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Description",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "Description",
+        "\"Interface between workers and Taskcluster services\""
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Start",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "Start",
+        "SERVICE_DEMAND_START"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Type",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "Type",
+        "SERVICE_WIN32_OWN_PROCESS"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppPriority",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppPriority",
+        "ABOVE_NORMAL_PRIORITY_CLASS"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppNoConsole",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppNoConsole",
+        "1"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppAffinity",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppAffinity",
+        "All"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppStopMethodSkip",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppStopMethodSkip",
+        "0"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppStopMethodConsole",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppStopMethodConsole",
+        "1500"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppStopMethodWindow",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppStopMethodWindow",
+        "1500"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppStopMethodThreads",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppStopMethodThreads",
+        "1500"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppThrottle",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppThrottle",
+        "1500"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppExit",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppExit",
+        "Default",
+        "Exit"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppRestartDelay",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppRestartDelay",
+        "0"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppStdout",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppStdout",
+        "C:\\log\\taskcluster-worker-runner-service-stdout.log"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppStderr",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppStderr",
+        "C:\\log\\taskcluster-worker-runner-service-stderr.log"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppStdoutCreationDisposition",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppStdoutCreationDisposition",
+        "4"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppStderrCreationDisposition",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppStderrCreationDisposition",
+        "4"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppRotateFiles",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppRotateFiles",
+        "1"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppRotateOnline",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppRotateOnline",
+        "1"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppRotateSeconds",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppRotateSeconds",
+        "3600"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
+    },
+    {
+      "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppRotateBytes",
+      "ComponentType": "CommandRun",
+      "Comment": "https://github.com/taskcluster/taskcluster/blob/4b385ff/tools/taskcluster-worker-runner/docs/windows-services.md",
+      "Command": "C:\\nssm-2.24-103-gdee49fc\\win32\\nssm.exe",
+      "Arguments": [
+        "set",
+        "TaskclusterWorkerRunner",
+        "AppRotateBytes",
+        "0"
+      ],
+      "DependsOn": [
+        {
+          "ComponentType": "CommandRun",
+          "ComponentName": "TaskclusterWorkerRunnerServiceConfig_Install"
+        }
+      ]
     },
     {
       "ComponentName": "DisableDesktopInterrupt",
       "ComponentType": "ChecksumFileDownload",
       "DependsOn": [
         {
-          "ComponentType": "CommandRun",
-          "ComponentName": "GenericWorkerInstall"
+          "ComponentType": "DirectoryCreate",
+          "ComponentName": "GenericWorkerDirectory"
         }
       ],
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/disable-desktop-interrupt.reg",
       "Target": "C:\\generic-worker\\disable-desktop-interrupt.reg"
-    },
-    {
-      "ComponentName": "GenericWorkerStateWait",
-      "ComponentType": "ChecksumFileDownload",
-      "DependsOn": [
-        {
-          "ComponentType": "CommandRun",
-          "ComponentName": "GenericWorkerInstall"
-        },
-        {
-          "ComponentType": "ChecksumFileDownload",
-          "ComponentName": "DisableDesktopInterrupt"
-        }
-      ],
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-and-reboot.bat",
-      "Target": "C:\\generic-worker\\run-generic-worker.bat"
     },
     {
       "ComponentName": "TaskUserInitScript",
@@ -1738,70 +2612,5 @@
         }
       ]
     }
-  ],
-  "ProvisionerConfiguration": {
-    "instanceTypes": [
-      {
-        "instanceType": "g2.2xlarge",
-        "capacity": 1,
-        "utility": 1,
-        "secrets": {},
-        "scopes": [],
-        "userData": {},
-        "launchSpec": {
-          "BlockDeviceMappings": [
-            {
-              "DeviceName": "/dev/sda1",
-              "Ebs": {
-                "VolumeType": "gp2",
-                "VolumeSize": 30,
-                "DeleteOnTermination": true
-              }
-            },
-            {
-              "DeviceName": "/dev/sdb",
-              "Ebs": {
-                "VolumeType": "gp2",
-                "VolumeSize": 120,
-                "DeleteOnTermination": true
-              }
-            },
-            {
-              "DeviceName": "/dev/sdc",
-              "Ebs": {
-                "VolumeType": "gp2",
-                "VolumeSize": 120,
-                "DeleteOnTermination": true
-              }
-            }
-          ]
-        }
-      }
-    ],
-    "userData": {
-      "genericWorker": {
-        "config": {
-          "cachesDir": "Z:\\caches",
-          "cleanUpTaskDirs": true,
-          "disableReboots": true,
-          "downloadsDir": "Z:\\downloads",
-          "ed25519SigningKeyLocation": "C:\\generic-worker\\ed25519-private.key",
-          "idleTimeoutSecs": 900,
-          "livelogExecutable": "C:\\generic-worker\\livelog.exe",
-          "livelogPUTPort": 60022,
-          "numberOfTasksToRun": 0,
-          "runAfterUserCreation": "C:\\generic-worker\\task-user-init.cmd",
-          "runTasksAsCurrentUser": false,
-          "sentryProject": "generic-worker",
-          "shutdownMachineOnIdle": false,
-          "shutdownMachineOnInternalError": true,
-          "taskclusterProxyExecutable": "C:\\generic-worker\\taskcluster-proxy.exe",
-          "taskclusterProxyPort": 80,
-          "tasksDir": "Z:\\",
-          "wstAudience": "taskcluster-net",
-          "wstServerURL": "https://websocktunnel.tasks.build"
-        }
-      }
-    }
-  }
+  ]
 }

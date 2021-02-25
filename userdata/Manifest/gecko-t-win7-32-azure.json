@@ -1671,7 +1671,7 @@
       "Arguments": [
         "set",
         "TaskclusterWorkerRunner",
-        "AppStd",
+        "AppStdout",
         "C:\\log\\taskcluster-worker-runner-service-stdout.log"
       ],
       "DependsOn": [

@@ -2826,7 +2826,7 @@ function Invoke-OpenCloudConfig {
 
       switch -regex ($workerType) {
         # bypass dsc on azure
-        '^(.*)-azure$' {
+        '^(.*)(-azure|-beta|-gpu-b)$' {
           Invoke-CustomDesiredStateProvider -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev -workerType $workerType
         }
         # bypass dsc on hardware (gecko-t-win10-a64-beta, gecko-t-win10-64-hw*, gecko-t-win10-64-ux*)

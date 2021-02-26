@@ -2059,7 +2059,11 @@ function Wait-GenericWorkerStart {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if (($locationType -eq 'Azure') || ($workerType.EndsWith('-beta')) || ($workerType.EndsWith('-b'))) {
+    if (
+      ($locationType -eq 'Azure')
+      -or $workerType.EndsWith('-beta')
+      -or $workerType.EndsWith('-b')
+    ) {
       $taskclusterPaths = @(
         'C:\generic-worker\generic-worker.exe',
         'C:\generic-worker\generic-worker.yml',

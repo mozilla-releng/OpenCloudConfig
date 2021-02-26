@@ -618,7 +618,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-azure.yml",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-aws.yml",
       "Target": "C:\\generic-worker\\worker-runner.yml"
     },
     {

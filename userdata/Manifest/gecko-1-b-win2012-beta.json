@@ -702,7 +702,7 @@
         "pip",
         "install",
         "--upgrade",
-        "pip==21.0.1"
+        "pip==20.3.4"
       ],
       "Validate": {
         "CommandsReturn": [
@@ -714,7 +714,7 @@
               "show",
               "pip"
             ],
-            "Match": "Version: 21.0.1"
+            "Match": "Version: 20.3.4"
           }
         ]
       }
@@ -1143,7 +1143,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-azure.yml",
+      "Source": "https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/GenericWorker/worker-runner-aws.yml",
       "Target": "C:\\generic-worker\\worker-runner.yml"
     },
     {

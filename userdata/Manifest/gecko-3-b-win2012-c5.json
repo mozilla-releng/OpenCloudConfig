@@ -702,7 +702,7 @@
         "pip",
         "install",
         "--upgrade",
-        "pip==21.0.1"
+        "pip==20.3.4"
       ],
       "Validate": {
         "CommandsReturn": [
@@ -714,7 +714,7 @@
               "show",
               "pip"
             ],
-            "Match": "Version: 21.0.1"
+            "Match": "Version: 20.3.4"
           }
         ]
       }

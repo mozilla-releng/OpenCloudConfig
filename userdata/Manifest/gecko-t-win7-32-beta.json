@@ -157,7 +157,7 @@
       "ComponentName": "NxLogPaperTrailConfiguration",
       "ComponentType": "ChecksumFileDownload",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
-      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win7.conf",
+      "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win7-verbose.conf",
       "Target": "C:\\Program Files\\nxlog\\conf\\nxlog.conf",
       "DependsOn": [
         {

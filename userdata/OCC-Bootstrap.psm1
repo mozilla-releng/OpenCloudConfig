@@ -2226,19 +2226,23 @@ function Set-NxlogConfig {
   process {
     switch -wildcard ($osCaption) {
       'Microsoft Windows 7*' {
-        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win7.conf' -f $sourceOrg, $sourceRepo, $sourceRev)
+        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win7{3}.conf' -f $sourceOrg, $sourceRepo, $sourceRev, $(if ((${env:USERDOMAIN}.Contains("-beta.")) -or (${env:USERDOMAIN}.Contains("-gpu-b.")) -or (${env:USERDOMAIN}.Contains("-azure."))) { '-verbose' } else { '' }))
         $config = ('{0}\nxlog\conf\nxlog.conf' -f $env:ProgramFiles)
       }
       'Microsoft Windows 10*' {
-        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/{3}.conf' -f $sourceOrg, $sourceRepo, $sourceRev, $(if (${env:PROCESSOR_ARCHITEW6432} -eq 'ARM64') { 'win10arm64' } else { 'win10' }))
+        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/{3}{4}.conf' -f $sourceOrg, $sourceRepo, $sourceRev, $(if (${env:PROCESSOR_ARCHITEW6432} -eq 'ARM64') { 'win10arm64' } else { 'win10' }), $(if ((${env:USERDOMAIN}.Contains("-beta.")) -or (${env:USERDOMAIN}.Contains("-gpu-b.")) -or (${env:USERDOMAIN}.Contains("-azure."))) { '-verbose' } else { '' }))
         $config = ('{0}\nxlog\conf\nxlog.conf' -f ${env:ProgramFiles(x86)})
       }
       'Microsoft Windows Server 2012*' {
-        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win2012.conf' -f $sourceOrg, $sourceRepo, $sourceRev)
+        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win2012{3}.conf' -f $sourceOrg, $sourceRepo, $sourceRev, $(if ((${env:USERDOMAIN}.Contains("-beta.")) -or (${env:USERDOMAIN}.Contains("-gpu-b.")) -or (${env:USERDOMAIN}.Contains("-azure."))) { '-verbose' } else { '' }))
         $config = ('{0}\nxlog\conf\nxlog.conf' -f ${env:ProgramFiles(x86)})
       }
       'Microsoft Windows Server 2016*' {
-        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win2016.conf' -f $sourceOrg, $sourceRepo, $sourceRev)
+        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win2016{3}.conf' -f $sourceOrg, $sourceRepo, $sourceRev, $(if ((${env:USERDOMAIN}.Contains("-beta.")) -or (${env:USERDOMAIN}.Contains("-gpu-b.")) -or (${env:USERDOMAIN}.Contains("-azure."))) { '-verbose' } else { '' }))
+        $config = ('{0}\nxlog\conf\nxlog.conf' -f ${env:ProgramFiles(x86)})
+      }
+      'Microsoft Windows Server 2019*' {
+        $url = ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/Configuration/nxlog/win2019{3}.conf' -f $sourceOrg, $sourceRepo, $sourceRev, $(if ((${env:USERDOMAIN}.Contains("-beta.")) -or (${env:USERDOMAIN}.Contains("-gpu-b.")) -or (${env:USERDOMAIN}.Contains("-azure."))) { '-verbose' } else { '' }))
         $config = ('{0}\nxlog\conf\nxlog.conf' -f ${env:ProgramFiles(x86)})
       }
     }

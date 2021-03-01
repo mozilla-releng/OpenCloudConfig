@@ -124,14 +124,14 @@ function Install-Dependencies {
       @{
         'ModuleName' = 'OpenCloudConfig';
         'Repository' = 'PSGallery';
-        'ModuleVersion' = '0.0.56'
+        'ModuleVersion' = '0.0.58'
       }
     ),
     # if modules are detected with a version **less than** specified in ModuleVersion below, they will be purged
     [hashtable[]] $purgeModules = @(
       @{
         'ModuleName' = 'OpenCloudConfig';
-        'ModuleVersion' = '0.0.56'
+        'ModuleVersion' = '0.0.58'
       }
     )
   )

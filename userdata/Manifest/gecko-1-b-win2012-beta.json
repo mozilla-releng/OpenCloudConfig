@@ -2459,6 +2459,14 @@
                 "VolumeSize": 120,
                 "VolumeType": "gp2"
               }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 120,
+                "VolumeType": "gp2"
+              }
             }
           ]
         },
@@ -2487,6 +2495,14 @@
                 "VolumeSize": 120,
                 "VolumeType": "gp2"
               }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 120,
+                "VolumeType": "gp2"
+              }
             }
           ]
         },
@@ -2494,31 +2510,6 @@
         "secrets": {},
         "userData": {}
       }
-    ],
-    "userData": {
-      "genericWorker": {
-        "config": {
-          "cachesDir": "Z:\\caches",
-          "cleanUpTaskDirs": true,
-          "disableReboots": true,
-          "downloadsDir": "Z:\\downloads",
-          "ed25519SigningKeyLocation": "C:\\generic-worker\\ed25519-private.key",
-          "idleTimeoutSecs": 900,
-          "livelogExecutable": "C:\\generic-worker\\livelog.exe",
-          "livelogPUTPort": 60022,
-          "numberOfTasksToRun": 0,
-          "runAfterUserCreation": "C:\\generic-worker\\task-user-init.cmd",
-          "runTasksAsCurrentUser": false,
-          "sentryProject": "generic-worker",
-          "shutdownMachineOnIdle": false,
-          "shutdownMachineOnInternalError": true,
-          "taskclusterProxyExecutable": "C:\\generic-worker\\taskcluster-proxy.exe",
-          "taskclusterProxyPort": 80,
-          "tasksDir": "Z:\\",
-          "wstAudience": "taskcluster-net",
-          "wstServerURL": "https://websocktunnel.tasks.build"
-        }
-      }
-    }
+    ]
   }
 }

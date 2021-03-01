@@ -2612,5 +2612,45 @@
         }
       ]
     }
-  ]
+  ],
+  "ProvisionerConfiguration": {
+    "instanceTypes": [
+      {
+        "instanceType": "g2.2xlarge",
+        "capacity": 1,
+        "utility": 1,
+        "secrets": {},
+        "scopes": [],
+        "userData": {},
+        "launchSpec": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/sda1",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 30,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdb",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 120,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 120,
+                "DeleteOnTermination": true
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
 }

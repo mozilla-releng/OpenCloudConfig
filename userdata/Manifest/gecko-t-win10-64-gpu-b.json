@@ -2705,5 +2705,45 @@
         "\"& { $ll = Get-WinUserLanguageList; if (@($ll | ? { $_.LanguageTag -eq 'ja' }).Length -lt 1) { $ll.Add('ja'); Set-WinUserLanguageList -LanguageList $ll -Force } }\";"
       ]
     }
-  ]
+  ],
+  "ProvisionerConfiguration": {
+    "instanceTypes": [
+      {
+        "capacity": 1,
+        "instanceType": "g3.4xlarge",
+        "launchSpec": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 60,
+                "VolumeType": "gp2"
+              }
+            },
+            {
+              "DeviceName": "xvdy",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 120,
+                "VolumeType": "gp2"
+              }
+            },
+            {
+              "DeviceName": "xvdz",
+              "Ebs": {
+                "DeleteOnTermination": true,
+                "VolumeSize": 120,
+                "VolumeType": "gp2"
+              }
+            }
+          ]
+        },
+        "scopes": [],
+        "secrets": {},
+        "userData": {},
+        "utility": 1
+      }
+    ]
+  }
 }

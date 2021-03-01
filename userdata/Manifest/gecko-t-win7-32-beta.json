@@ -977,7 +977,20 @@
           "ComponentType": "ChecksumFileDownload",
           "ComponentName": "TaskclusterGenericWorkerDownload"
         }
-      ]
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\generic-worker\\generic-worker.exe",
+          "C:\\generic-worker\\generic-worker.yml",
+          "C:\\generic-worker\\worker-runner-cache.json"
+        ],
+        "ServiceStatus": [
+          {
+            "Name": "TaskclusterGenericWorker",
+            "Status": "Running|StartPending|Stopped"
+          }
+        ]
+      }
     },
     {
       "ComponentName": "TaskclusterGenericWorkerServiceConfig_AppDirectory",
@@ -1435,7 +1448,20 @@
           "ComponentType": "FileDownload",
           "ComponentName": "TaskclusterWorkerRunnerDownload"
         }
-      ]
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\generic-worker\\worker-runner.exe",
+          "C:\\generic-worker\\worker-runner.yml",
+          "C:\\generic-worker\\worker-runner-cache.json"
+        ],
+        "ServiceStatus": [
+          {
+            "Name": "TaskclusterWorkerRunner",
+            "Status": "Running|StartPending|Stopped"
+          }
+        ]
+      }
     },
     {
       "ComponentName": "TaskclusterWorkerRunnerServiceConfig_AppDirectory",

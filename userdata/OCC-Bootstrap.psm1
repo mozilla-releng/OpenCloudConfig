@@ -124,14 +124,14 @@ function Install-Dependencies {
       @{
         'ModuleName' = 'OpenCloudConfig';
         'Repository' = 'PSGallery';
-        'ModuleVersion' = '0.0.59'
+        'ModuleVersion' = '0.0.60'
       }
     ),
     # if modules are detected with a version **less than** specified in ModuleVersion below, they will be purged
     [hashtable[]] $purgeModules = @(
       @{
         'ModuleName' = 'OpenCloudConfig';
-        'ModuleVersion' = '0.0.59'
+        'ModuleVersion' = '0.0.60'
       }
     )
   )
@@ -2931,7 +2931,7 @@ function Invoke-OpenCloudConfig {
       Write-Log -message ('{0} :: error purging archived occ/dsc log files. {1}' -f $($MyInvocation.MyCommand.Name), $_.Exception.Message) -severity 'ERROR'
     }
 
-    if ((-not ($isWorker)) -and ($locationType -eq 'Azure')) {
+    if ((-not ($isWorker)) -and (Test-Path -Path 'C:\generic-worker\worker-runner.yml' -ErrorAction SilentlyContinue)) {
       if ((-not (Test-VolumeExists -DriveLetter @('Y'))) -or (-not (Test-VolumeExists -DriveLetter @('Z')))) { # if the y: or z: drive isn't mapped and we're on Azure, map it.
         Set-DriveLetters
       }

@@ -782,6 +782,7 @@
         "-m",
         "pip",
         "install",
+        "--no-warn-script-location",
         "--upgrade",
         "wheel==0.29.0"
       ],

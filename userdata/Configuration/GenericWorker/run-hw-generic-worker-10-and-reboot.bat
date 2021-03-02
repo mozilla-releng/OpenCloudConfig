@@ -56,8 +56,8 @@ rem ping -n 2 127.0.0.1 1>/nul
 rem goto CheckForStateFlag
 
  
-ping -n 2 127.0.0.1 1>/nul
-goto CheckForStateFlag
+rem ping -n 2 127.0.0.1 1>/nul
+rem goto CheckForStateFlag
 
 rem Supressing firewall warnings. Current user needs to be fully logged in.
 rem not an ideal place for this, but it works as needed

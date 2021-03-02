@@ -44,12 +44,16 @@ if exist C:\generic-worker\disable-desktop-interrupt.reg reg import C:\generic-w
 
 
 :CheckForStateFlag
-echo Checking for C:\dsc\task-claim-state.valid file... >> C:\generic-worker\generic-worker-wrapper.log
-if exist C:\dsc\task-claim-state.valid goto RunWorker
-tasklist /FI "IMAGENAME eq powershell.exe" | findstr "powershell.exe" >nul
-if %ERRORLEVEL% == 1 goto loop_reboot
-ping -n 2 127.0.0.1 1>/nul
-goto CheckForStateFlag
+rem Currently the Yoga workers are looping here.
+rem was able to verify the DSc manifest was being applied 
+rem comment out now to see if workers will pick up tasks 
+rem https://bugzilla.mozilla.org/show_bug.cgi?id=1695438
+rem echo Checking for C:\dsc\task-claim-state.valid file... >> C:\generic-worker\generic-worker-wrapper.log
+rem if exist C:\dsc\task-claim-state.valid goto RunWorker
+rem tasklist /FI "IMAGENAME eq powershell.exe" | findstr "powershell.exe" >nul
+rem if %ERRORLEVEL% == 1 goto loop_reboot
+rem ping -n 2 127.0.0.1 1>/nul
+rem goto CheckForStateFlag
 
  
 ping -n 2 127.0.0.1 1>/nul

@@ -95,7 +95,28 @@ function Is-OpenCloudConfigRunning {
 }
 
 function Is-GenericWorkerRunning {
-  return (Is-ConditionTrue -proc 'generic-worker' -predicate (@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -gt 0))
+  return (
+    (Is-ConditionTrue -proc 'generic-worker' -predicate (@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -gt 0)) -or
+    ((Is-ConditionTrue -proc 'taskcluster-generic-worker-service' -predicate (Is-ServiceStateExpected -serviceName 'TaskclusterGenericWorker' -expectedState 'running')) -and (Is-ConditionTrue -proc 'taskcluster-worker-runner-service' -predicate (Is-ServiceStateExpected -serviceName 'TaskclusterWorkerRunner' -expectedState 'running')))
+  );
+}
+
+function Is-ServiceStateExpected {
+  param (
+    [string] $serviceName,
+    [string] $expectedState
+  )
+  $service = (Get-Service -Name $serviceName -ErrorAction 'SilentlyContinue');
+  if (-not ($service)) {
+    Write-Log -message ('{0} :: service: {1}, not detected' -f $($MyInvocation.MyCommand.Name), $serviceName) -severity 'DEBUG';
+    return $false;
+  }
+  if ($service.Status -ne $expectedState) {
+    Write-Log -message ('{0} :: service: {1}, has actual state: {2}, where expected state is: {3}' -f $($MyInvocation.MyCommand.Name), $serviceName, $service.Status, $expectedState) -severity 'DEBUG';
+    return $false;
+  }
+  Write-Log -message ('{0} :: service: {1}, has expected state: {2}' -f $($MyInvocation.MyCommand.Name), $serviceName, $service.Status) -severity 'DEBUG';
+  return $true;
 }
 
 function Is-RdpSessionActive {

@@ -97,7 +97,8 @@ function Is-OpenCloudConfigRunning {
 function Is-GenericWorkerRunning {
   return (
     (Is-ConditionTrue -proc 'generic-worker' -predicate (@(Get-Process | ? { $_.ProcessName -eq 'generic-worker' }).length -gt 0)) -or
-    ((Is-ConditionTrue -proc 'taskcluster-generic-worker-service' -predicate (Is-ServiceStateExpected -serviceName 'TaskclusterGenericWorker' -expectedState 'running')) -and (Is-ConditionTrue -proc 'taskcluster-worker-runner-service' -predicate (Is-ServiceStateExpected -serviceName 'TaskclusterWorkerRunner' -expectedState 'running')))
+    (Is-ConditionTrue -proc 'taskcluster-generic-worker-service' -predicate (Is-ServiceStateExpected -serviceName 'TaskclusterGenericWorker' -expectedState 'running')) -or
+    (Is-ConditionTrue -proc 'taskcluster-worker-runner-service' -predicate (Is-ServiceStateExpected -serviceName 'TaskclusterWorkerRunner' -expectedState 'running'))
   );
 }
 

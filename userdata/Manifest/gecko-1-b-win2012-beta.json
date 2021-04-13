@@ -1153,7 +1153,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v42.0.0/start-worker-windows-amd64",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v43.0.0/start-worker-windows-amd64",
       "Target": "C:\\generic-worker\\worker-runner.exe"
     },
     {
@@ -1177,7 +1177,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v42.0.0/generic-worker-multiuser-windows-amd64",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v43.0.0/generic-worker-multiuser-windows-amd64",
       "Target": "C:\\generic-worker\\generic-worker.exe"
     },
     {
@@ -1189,7 +1189,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v42.0.0/livelog-windows-amd64",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v43.0.0/livelog-windows-amd64",
       "Target": "C:\\generic-worker\\livelog.exe"
     },
     {
@@ -1201,7 +1201,7 @@
           "ComponentName": "GenericWorkerDirectory"
         }
       ],
-      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v42.0.0/taskcluster-proxy-windows-amd64",
+      "Source": "https://github.com/taskcluster/taskcluster/releases/download/v43.0.0/taskcluster-proxy-windows-amd64",
       "Target": "C:\\generic-worker\\taskcluster-proxy.exe"
     },
     {

@@ -145,7 +145,7 @@ case "${tc_worker_type}" in
     root_username=Administrator
     ;;
   gecko-t-win10-64*)
-    aws_base_ami_search_term=${aws_base_ami_search_term:='Windows_10_Enterprise_1803_17134_285_en-US_x64_MBR-VAC-*'}
+    aws_base_ami_search_term=${aws_base_ami_search_term:='Windows_10_Professional_1903_18362_239_en-US_x64-VAC-*'}
     echo "DEBUG: searching for latest base ami for: ${tc_worker_type}, using search term: ${aws_base_ami_search_term}"
     aws_base_ami_id="$(aws ec2 describe-images --region ${aws_region} --owners self --filters "Name=state,Values=available" "Name=name,Values=${aws_base_ami_search_term}" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
     ami_description="Gecko tester for Windows 10 64 bit; worker-type: ${tc_worker_type}, source: ${GITHUB_HEAD_REPO_URL::-4}/commit/${GITHUB_HEAD_SHA:0:7}, deploy: https://tools.taskcluster.net/tasks/${TASK_ID}"

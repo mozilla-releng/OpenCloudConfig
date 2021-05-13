@@ -414,208 +414,208 @@
       ]
     },
     {
-      "ComponentName": "python_3_7_3_win32_core",
+      "ComponentName": "python_3_9_5_win32_core",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/core.msi",
-      "Name": "Python 3.7.3 Core Interpreter (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/core.msi",
+      "Name": "Python 3.9.5 Core Interpreter (32-bit)",
       "ProductId": "33AB9CEA-621E-4064-9FB0-7048E79DB5B5",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "ca302c7a272371e4a9f504c238ad42d63133f23f7f19679067047183d2ab3716579f22d9525d23b48216d3ebdf07562ced65f2cc2abcc8a35f1278f8400a342a"
     },
     {
-      "ComponentName": "python_3_7_3_win32_core_d",
+      "ComponentName": "python_3_9_5_win32_core_d",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/core_d.msi",
-      "Name": "Python 3.7.3 Core Interpreter (32-bit debug)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/core_d.msi",
+      "Name": "Python 3.9.5 Core Interpreter (32-bit debug)",
       "ProductId": "781EB95F-B4AF-40FA-9F54-00F94309BDE1",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "da79add5628f4062c5a7928268bff7de4fd3b1e52a63af0a4d0a607b53428ddc08e3a9a26f6171d52dc6cc4dea073bdabbf55a4e20a6b1ebd0c1f8e4a08ab352"
     },
     {
-      "ComponentName": "python_3_7_3_win32_core_pdb",
+      "ComponentName": "python_3_9_5_win32_core_pdb",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/core_pdb.msi",
-      "Name": "Python 3.7.3 Core Interpreter (32-bit symbols)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/core_pdb.msi",
+      "Name": "Python 3.9.5 Core Interpreter (32-bit symbols)",
       "ProductId": "4953149C-FF53-47F0-AE87-BA0D10C5042F",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "ff322af7cf75a33812244e81239e0cbd2359c5f8e27e91215e504f494f70bd0a5949dddbb989d2a39dc768a87974f10a3f3a8aaad4d2a16d0910139e7182632b"
     },
     {
-      "ComponentName": "python_3_7_3_win32_dev",
+      "ComponentName": "python_3_9_5_win32_dev",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/dev.msi",
-      "Name": "Python 3.7.3 Development Libraries (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/dev.msi",
+      "Name": "Python 3.9.5 Development Libraries (32-bit)",
       "ProductId": "52DDE5D8-B45C-4C1D-81DD-D72317DE8B08",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "bd6c987cdfe4f97250a14330a3f77f0d4971ff87eb2650b653ddaa1714d3382d937f9cf33c1b9af1a0cbe4ac69ea17701789dcd1ee513f24c6a4553b42ba06bf"
     },
     {
-      "ComponentName": "python_3_7_3_win32_dev_d",
+      "ComponentName": "python_3_9_5_win32_dev_d",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/dev_d.msi",
-      "Name": "Python 3.7.3 Development Libraries (32-bit debug)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/dev_d.msi",
+      "Name": "Python 3.9.5 Development Libraries (32-bit debug)",
       "ProductId": "5F6E2AD7-0231-4C17-B7CA-208BDD81E14B",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "5f14fc1a71a6496e1016ed1b989b516e8b32f96e86982863d00d7b0ccc85a2dea47be4e887a6cb937ba33bf572f8aed5c8bd74e668d82d3a8cb8aedc8383631d"
     },
     {
-      "ComponentName": "python_3_7_3_win32_doc",
+      "ComponentName": "python_3_9_5_win32_doc",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/doc.msi",
-      "Name": "Python 3.7.3 Documentation (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/doc.msi",
+      "Name": "Python 3.9.5 Documentation (32-bit)",
       "ProductId": "2BC067C0-B392-49C0-988B-C839C62D8B65",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "34cbb471a1278d1370c85e6d796cbb8b6d44f78b49db50791a61270f1b9c68f62e886a91ca1878af5bc896daafe07489fdd7be51ed3bd8cea9f4796549fbf356"
     },
     {
-      "ComponentName": "python_3_7_3_win32_exe",
+      "ComponentName": "python_3_9_5_win32_exe",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/exe.msi",
-      "Name": "Python 3.7.3 Executables (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/exe.msi",
+      "Name": "Python 3.9.5 Executables (32-bit)",
       "ProductId": "E3E61712-C062-45E7-8348-D7DBF66FACFD",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "6c0622940c7774f2527ad3b61fa41f6f32d77cabc646df2648eec14b7ace52bd6f25a39f9f06d7bced34c90f51c337b83d97bb81e9072b1e4379d5f19900f5cd"
     },
     {
-      "ComponentName": "python_3_7_3_win32_exe_d",
+      "ComponentName": "python_3_9_5_win32_exe_d",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/exe_d.msi",
-      "Name": "Python 3.7.3 Executables (32-bit debug)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/exe_d.msi",
+      "Name": "Python 3.9.5 Executables (32-bit debug)",
       "ProductId": "A37BCC61-603A-461B-AB57-A69245AA845C",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "f13548f9b918314e7aeaa51660a1f88b9c268a6af5a5844e67e6570b4f21d2de3562a462f1ad03505e4c6e8bca3bb9ab9b1e183f2ef7a7970dc7fa03efa4ec66"
     },
     {
-      "ComponentName": "python_3_7_3_win32_exe_pdb",
+      "ComponentName": "python_3_9_5_win32_exe_pdb",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/exe_pdb.msi",
-      "Name": "Python 3.7.3 Executables (32-bit symbols)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/exe_pdb.msi",
+      "Name": "Python 3.9.5 Executables (32-bit symbols)",
       "ProductId": "E354575A-53D7-4BC2-8192-FC61BF4D8869",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "705bff84fa579e24c5c4de92925789c49855e55c424dc963c990b715007eb4640fae14a6c447b4b5a48dbd0bb3a6bafdc9a6dec2cf2b89c1ebd52d555b9787ee"
     },
     {
-      "ComponentName": "python_3_7_3_win32_launcher",
+      "ComponentName": "python_3_9_5_win32_launcher",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/launcher.msi",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/launcher.msi",
       "Name": "Python Launcher",
       "ProductId": "A28C27E4-A725-482A-9C65-61EDC0E4D583",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "b7374b675ee61c53569e556a3b20ea7190d14810f23fa645a035ee6a7b7a6c2fcdbffab255d167bd5650cad735e4470d2764782ce812cf1eba09f35b059a6358"
     },
     {
-      "ComponentName": "python_3_7_3_win32_lib",
+      "ComponentName": "python_3_9_5_win32_lib",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/lib.msi",
-      "Name": "Python 3.7.3 Standard Library (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/lib.msi",
+      "Name": "Python 3.9.5 Standard Library (32-bit)",
       "ProductId": "DC6190E7-D05E-465A-9FB6-7418BC901991",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "9ab3714ace50f87ca760ce31ccbcbab24004118f8dfda2c1395b6aac7703a6b9b208c830d85362e4029421faaf3525f7b56cb2cb248cea0650cd22426d7b7f6d"
     },
     {
-      "ComponentName": "python_3_7_3_win32_lib_d",
+      "ComponentName": "python_3_9_5_win32_lib_d",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/lib_d.msi",
-      "Name": "Python 3.7.3 Standard Library (32-bit debug)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/lib_d.msi",
+      "Name": "Python 3.9.5 Standard Library (32-bit debug)",
       "ProductId": "8C9C7C76-D74A-4DD1-ABC4-77861CD51331",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "3f276d6b270b3ecdf3a2741fa8704bec6a8a884eb42624220c557692bce0f0ea76f007234e213071a196d34070bcb6fb2061e7b0536b8321db6c25f887d12631"
     },
     {
-      "ComponentName": "python_3_7_3_win32_lib_pdb",
+      "ComponentName": "python_3_9_5_win32_lib_pdb",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/lib_pdb.msi",
-      "Name": "Python 3.7.3 Standard Library (32-bit symbols)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/lib_pdb.msi",
+      "Name": "Python 3.9.5 Standard Library (32-bit symbols)",
       "ProductId": "433F0D39-FE8E-4183-B032-D99E33ADB098",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "e54dc2f9bd85b857157d4259eb989bc4a8ae99252128964b53f29ce628d6f0bd9fdf310f75c7346c306e5d5e3edbfda92e438dd05b409eddc0f3ee140afd1a67"
     },
     {
-      "ComponentName": "python_3_7_3_win32_path",
+      "ComponentName": "python_3_9_5_win32_path",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/path.msi",
-      "Name": "Python 3.7.3 Add to Path (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/path.msi",
+      "Name": "Python 3.9.5 Add to Path (32-bit)",
       "ProductId": "2DB1318D-E51C-419B-99D5-D15F7120BD09",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "00897709f7e5095885169431f74316541f39665024d238fe1f5b97dd1a02f2be0405c5bd5fc65766e83e8bb328b3b02dfc744a9ea668485764411023a5c28a45"
     },
     {
-      "ComponentName": "python_3_7_3_win32_pip",
+      "ComponentName": "python_3_9_5_win32_pip",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/pip.msi",
-      "Name": "Python 3.7.3 pip Bootstrap (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/pip.msi",
+      "Name": "Python 3.9.5 pip Bootstrap (32-bit)",
       "ProductId": "9846DC93-4A39-496F-8AE3-0E3AB4EF4385",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "b22a5882a51102b5e524374e8f0ef84488b44dc52968a89a6ad295e39647622e665ae3f8b8869b29e2c48c61257ef39b3b523fe7cff195b1700accf7a5104d11"
     },
     {
-      "ComponentName": "python_3_7_3_win32_tcltk",
+      "ComponentName": "python_3_9_5_win32_tcltk",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/tcltk.msi",
-      "Name": "Python 3.7.3 Tcl/Tk Support (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/tcltk.msi",
+      "Name": "Python 3.9.5 Tcl/Tk Support (32-bit)",
       "ProductId": "1341418F-C713-4943-ACB2-9F4D4743D193",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "fec31b3ebc070e3d334d882bf010795173a0fa3d7fc4178c94aa5eee5ddad6d8cce66e0c07ba50c183760280f969063f6dd120ebc8c2970e61b12c8acc0e739c"
     },
     {
-      "ComponentName": "python_3_7_3_win32_tcltk_d",
+      "ComponentName": "python_3_9_5_win32_tcltk_d",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/tcltk_d.msi",
-      "Name": "Python 3.7.3 Tcl/Tk Support (32-bit debug)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/tcltk_d.msi",
+      "Name": "Python 3.9.5 Tcl/Tk Support (32-bit debug)",
       "ProductId": "9F10336E-63ED-4379-84A9-C49F608CB052",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "882d87ee7459d62580f237d73d10ea4bcf1e68a4a463ceb5dca70e0b8d51e9d12f2c5ef3c10745442dc4599d5a0a05b898779d72f0ec49baec9b01769eba80bf"
     },
     {
-      "ComponentName": "python_3_7_3_win32_tcltk_pdb",
+      "ComponentName": "python_3_9_5_win32_tcltk_pdb",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/tcltk_pdb.msi",
-      "Name": "Python 3.7.3 Tcl/Tk Support (32-bit symbols)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/tcltk_pdb.msi",
+      "Name": "Python 3.9.5 Tcl/Tk Support (32-bit symbols)",
       "ProductId": "FCF5A835-ADE6-4AE2-B33F-A38C32FCCED8",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "a1094b0d4beb1732b58cf84ea1870a0d4e1bcbd88746f4f5ed9a6eaacb5716d39253b8dadeb6bd126b41df6331bfa1d00ce68238d2200f5b0d45c88dcef98015"
     },
     {
-      "ComponentName": "python_3_7_3_win32_test",
+      "ComponentName": "python_3_9_5_win32_test",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/test.msi",
-      "Name": "Python 3.7.3 Test Suite (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/test.msi",
+      "Name": "Python 3.9.5 Test Suite (32-bit)",
       "ProductId": "FE5E4BF9-7487-4CE8-A2AC-F78C6B4BE487",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "24bb8ebadf0d336533f14cb75b014851dc33ab7db93b810810760d4711c9bee60e5634732dbe2044d2fe1ac1ef87e2030d62044fe2fee695315ff29a3ff119a2"
     },
     {
-      "ComponentName": "python_3_7_3_win32_test_d",
+      "ComponentName": "python_3_9_5_win32_test_d",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/test_d.msi",
-      "Name": "Python 3.7.3 Test Suite (32-bit debug)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/test_d.msi",
+      "Name": "Python 3.9.5 Test Suite (32-bit debug)",
       "ProductId": "5070E86E-3458-4639-81F3-7822D37BC5C8",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "8bddb91560079a870bf7dfa9b111521bb317f3f99b722d75c48aa12bc4fe6cf98066e8a2927884d8da4088be14b055cb2ee3b868bb561a5dc1f2ec9c587a6fa0"
     },
     {
-      "ComponentName": "python_3_7_3_win32_test_pdb",
+      "ComponentName": "python_3_9_5_win32_test_pdb",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/test_pdb.msi",
-      "Name": "Python 3.7.3 Test Suite (32-bit symbols)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/test_pdb.msi",
+      "Name": "Python 3.9.5 Test Suite (32-bit symbols)",
       "ProductId": "30FD277B-26A7-4879-B6C0-CEFD3F719835",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "d562ae6b1b7f10c2d8c20afff4512a4b926cbc5905c56dbc4f289f6cc65574a7763600fd8124246536f31d212f2681d3f1e96bc978faec0f4e748556c6a0cfea"
     },
     {
-      "ComponentName": "python_3_7_3_win32_tools",
+      "ComponentName": "python_3_9_5_win32_tools",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/tools.msi",
-      "Name": "Python 3.7.3 Utility Scripts (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/tools.msi",
+      "Name": "Python 3.9.5 Utility Scripts (32-bit)",
       "ProductId": "AE9303AD-EBD0-4C85-A9D0-55B1BA972D11",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "8ea36980ba76714d005143aa7496aa6b6d4496907d10410ebb0e49ae1ca1b5107fa91c3ed7c73ba11f0ea62a3d41729550a7efd182e6a8c1301fccd5e3ee4085"
     },
     {
-      "ComponentName": "python_3_7_3_win32_ucrt",
+      "ComponentName": "python_3_9_5_win32_ucrt",
       "ComponentType": "MsiInstall",
-      "Url": "https://www.python.org/ftp/python/3.7.3/win32/ucrt.msi",
-      "Name": "Python 3.7.3 C Runtime Library (32-bit)",
+      "Url": "https://www.python.org/ftp/python/3.9.5/win32/ucrt.msi",
+      "Name": "Python 3.9.5 C Runtime Library (32-bit)",
       "ProductId": "3518E76D-1BC1-4540-9EB7-2B699EF97463",
       "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3",
       "sha512": "3a0f2595bc7f486432208328e56fb56b4c1dd4ee73979546f761176e8aac72641a5142dfb11599a6dbad1917be19c4422f9795fe7986eadd8b96eeea0d1a4071"
@@ -724,7 +724,7 @@
         },
         {
           "ComponentType": "MsiInstall",
-          "ComponentName": "python_3_7_3_win32_exe"
+          "ComponentName": "python_3_9_5_win32_exe"
         }
       ],
       "Name": "PATH",
@@ -755,7 +755,7 @@
       "DependsOn": [
         {
           "ComponentType": "MsiInstall",
-          "ComponentName": "python_3_7_3_win32_pip"
+          "ComponentName": "python_3_9_5_win32_pip"
         }
       ],
       "Command": "C:\\mozilla-build\\python3\\python3.exe",

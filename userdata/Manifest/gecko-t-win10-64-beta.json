@@ -330,29 +330,6 @@
       "sha512": "db77e882de30f5050489852353d6c171c09b3e70bfd3285d7cda4ea3fc8e7b8df9537ba6430f605c68a1a8c3f33e4763a03d353f915fd755df2a7e26409974c2"
     },
     {
-      "ComponentName": "DeleteMozillaBuildPython3PythonExe",
-      "ComponentType": "CommandRun",
-      "DependsOn": [
-        {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "MozillaBuildSetup"
-        }
-      ],
-      "Command": "cmd.exe",
-      "Arguments": [
-        "/c",
-        "del",
-        "/F",
-        "/Q",
-        "C:\\mozilla-build\\python3\\python.exe"
-      ],
-      "Validate": {
-        "PathsNotExist": [
-          "C:\\mozilla-build\\python3\\python.exe"
-        ]
-      }
-    },
-    {
       "ComponentName": "msys_home",
       "ComponentType": "SymbolicLink",
       "Comment": "Maintenance Toolchain - not essential for building firefox",
@@ -364,6 +341,197 @@
           "ComponentName": "MozillaBuildSetup"
         }
       ]
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_core",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/core.msi",
+      "Name": "Python 3.9.5 Core Interpreter (64-bit)",
+      "ProductId": "33AB9CEA-621E-4064-9FB0-7048E79DB5B5",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_core_d",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/core_d.msi",
+      "Name": "Python 3.9.5 Core Interpreter (64-bit debug)",
+      "ProductId": "781EB95F-B4AF-40FA-9F54-00F94309BDE1",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_core_pdb",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/core_pdb.msi",
+      "Name": "Python 3.9.5 Core Interpreter (64-bit symbols)",
+      "ProductId": "4953149C-FF53-47F0-AE87-BA0D10C5042F",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_dev",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/dev.msi",
+      "Name": "Python 3.9.5 Development Libraries (64-bit)",
+      "ProductId": "52DDE5D8-B45C-4C1D-81DD-D72317DE8B08",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_dev_d",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/dev_d.msi",
+      "Name": "Python 3.9.5 Development Libraries (64-bit debug)",
+      "ProductId": "5F6E2AD7-0231-4C17-B7CA-208BDD81E14B",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_doc",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/doc.msi",
+      "Name": "Python 3.9.5 Documentation (64-bit)",
+      "ProductId": "2BC067C0-B392-49C0-988B-C839C62D8B65",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_exe",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/exe.msi",
+      "Name": "Python 3.9.5 Executables (64-bit)",
+      "ProductId": "E3E61712-C062-45E7-8348-D7DBF66FACFD",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_exe_d",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/exe_d.msi",
+      "Name": "Python 3.9.5 Executables (64-bit debug)",
+      "ProductId": "A37BCC61-603A-461B-AB57-A69245AA845C",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_exe_pdb",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/exe_pdb.msi",
+      "Name": "Python 3.9.5 Executables (64-bit symbols)",
+      "ProductId": "E354575A-53D7-4BC2-8192-FC61BF4D8869",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_launcher",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/launcher.msi",
+      "Name": "Python Launcher",
+      "ProductId": "A28C27E4-A725-482A-9C65-61EDC0E4D583",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_lib",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/lib.msi",
+      "Name": "Python 3.9.5 Standard Library (64-bit)",
+      "ProductId": "DC6190E7-D05E-465A-9FB6-7418BC901991",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_lib_d",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/lib_d.msi",
+      "Name": "Python 3.9.5 Standard Library (64-bit debug)",
+      "ProductId": "8C9C7C76-D74A-4DD1-ABC4-77861CD51331",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_lib_pdb",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/lib_pdb.msi",
+      "Name": "Python 3.9.5 Standard Library (64-bit symbols)",
+      "ProductId": "433F0D39-FE8E-4183-B032-D99E33ADB098",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_path",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/path.msi",
+      "Name": "Python 3.9.5 Add to Path (64-bit)",
+      "ProductId": "2DB1318D-E51C-419B-99D5-D15F7120BD09",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_pip",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/pip.msi",
+      "Name": "Python 3.9.5 pip Bootstrap (64-bit)",
+      "ProductId": "9846DC93-4A39-496F-8AE3-0E3AB4EF4385",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_tcltk",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/tcltk.msi",
+      "Name": "Python 3.9.5 Tcl/Tk Support (64-bit)",
+      "ProductId": "1341418F-C713-4943-ACB2-9F4D4743D193",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_tcltk_d",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/tcltk_d.msi",
+      "Name": "Python 3.9.5 Tcl/Tk Support (64-bit debug)",
+      "ProductId": "9F10336E-63ED-4379-84A9-C49F608CB052",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_tcltk_pdb",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/tcltk_pdb.msi",
+      "Name": "Python 3.9.5 Tcl/Tk Support (64-bit symbols)",
+      "ProductId": "FCF5A835-ADE6-4AE2-B33F-A38C32FCCED8",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_test",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/test.msi",
+      "Name": "Python 3.9.5 Test Suite (64-bit)",
+      "ProductId": "FE5E4BF9-7487-4CE8-A2AC-F78C6B4BE487",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_test_d",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/test_d.msi",
+      "Name": "Python 3.9.5 Test Suite (64-bit debug)",
+      "ProductId": "5070E86E-3458-4639-81F3-7822D37BC5C8",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_test_pdb",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/test_pdb.msi",
+      "Name": "Python 3.9.5 Test Suite (64-bit symbols)",
+      "ProductId": "30FD277B-26A7-4879-B6C0-CEFD3F719835",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_tools",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/tools.msi",
+      "Name": "Python 3.9.5 Utility Scripts (64-bit)",
+      "ProductId": "AE9303AD-EBD0-4C85-A9D0-55B1BA972D11",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "python_3_9_5_amd64_ucrt",
+      "ComponentType": "MsiInstall",
+      "Url": "https://www.python.org/ftp/python/3.9.5/amd64/ucrt.msi",
+      "Name": "Python 3.9.5 C Runtime Library (64-bit)",
+      "ProductId": "3518E76D-1BC1-4540-9EB7-2B699EF97463",
+      "Arguments": "InstallAllUsers=1 TargetDir=C:\\mozilla-build\\python3"
+    },
+    {
+      "ComponentName": "Python3",
+      "ComponentType": "SymbolicLink",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1545339",
+      "Target": "C:\\mozilla-build\\python3\\python.exe",
+      "Link": "C:\\mozilla-build\\python3\\python3.exe"
     },
     {
       "ComponentName": "DeleteMozillaBuildMercurial",
@@ -461,8 +629,8 @@
           "ComponentName": "Mercurial"
         },
         {
-          "ComponentType": "CommandRun",
-          "ComponentName": "DeleteMozillaBuildPython3PythonExe"
+          "ComponentType": "MsiInstall",
+          "ComponentName": "python_3_9_5_amd64_exe"
         }
       ],
       "Name": "PATH",
@@ -486,8 +654,8 @@
       "ComponentType": "CommandRun",
       "DependsOn": [
         {
-          "ComponentType": "ExeInstall",
-          "ComponentName": "MozillaBuildSetup"
+          "ComponentType": "MsiInstall",
+          "ComponentName": "python_3_9_5_amd64_pip"
         }
       ],
       "Command": "C:\\mozilla-build\\python3\\python3.exe",

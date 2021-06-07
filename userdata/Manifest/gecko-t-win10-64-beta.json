@@ -650,12 +650,36 @@
       "Target": "Machine"
     },
     {
+      "ComponentName": "env_PYTHONIOENCODING",
+      "ComponentType": "EnvironmentVariableSet",
+      "Comment": "https://docs.python.org/3/using/cmdline.html#envvar-PYTHONIOENCODING",
+      "Name": "PYTHONIOENCODING",
+      "Value": "UTF-8",
+      "Target": "Machine"
+    },
+    {
+      "ComponentName": "env_PYTHONUTF8",
+      "ComponentType": "EnvironmentVariableSet",
+      "Comment": "https://docs.python.org/3/using/cmdline.html#envvar-PYTHONUTF8",
+      "Name": "PYTHONUTF8",
+      "Value": "1",
+      "Target": "Machine"
+    },
+    {
       "ComponentName": "pip3_upgrade_pip",
       "ComponentType": "CommandRun",
       "DependsOn": [
         {
           "ComponentType": "MsiInstall",
           "ComponentName": "python_3_9_5_amd64_pip"
+        },
+        {
+          "ComponentType": "EnvironmentVariableSet",
+          "ComponentName": "env_PYTHONIOENCODING"
+        },
+        {
+          "ComponentType": "EnvironmentVariableSet",
+          "ComponentName": "env_PYTHONUTF8"
         }
       ],
       "Command": "C:\\mozilla-build\\python3\\python3.exe",
@@ -688,6 +712,14 @@
         {
           "ComponentType": "CommandRun",
           "ComponentName": "pip3_upgrade_pip"
+        },
+        {
+          "ComponentType": "EnvironmentVariableSet",
+          "ComponentName": "env_PYTHONIOENCODING"
+        },
+        {
+          "ComponentType": "EnvironmentVariableSet",
+          "ComponentName": "env_PYTHONUTF8"
         }
       ],
       "Command": "C:\\mozilla-build\\python3\\python3.exe",
@@ -720,6 +752,14 @@
         {
           "ComponentType": "CommandRun",
           "ComponentName": "pip3_upgrade_pip"
+        },
+        {
+          "ComponentType": "EnvironmentVariableSet",
+          "ComponentName": "env_PYTHONIOENCODING"
+        },
+        {
+          "ComponentType": "EnvironmentVariableSet",
+          "ComponentName": "env_PYTHONUTF8"
         }
       ],
       "Command": "C:\\mozilla-build\\python3\\python3.exe",

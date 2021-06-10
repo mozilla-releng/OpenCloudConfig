@@ -2827,21 +2827,8 @@ function Invoke-OpenCloudConfig {
         Write-Log -message ('{0} :: event log source "occ-dsc" detected.' -f $($MyInvocation.MyCommand.Name)) -severity 'DEBUG'
       }
       Install-Dependencies
+      Invoke-CustomDesiredStateProvider -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev -workerType $workerType
 
-      switch -regex ($workerType) {
-        # bypass dsc on azure
-        '^(.*)(-azure|-beta|-gpu-b)$' {
-          Invoke-CustomDesiredStateProvider -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev -workerType $workerType
-        }
-        # bypass dsc on hardware (gecko-t-win10-a64-beta, gecko-t-win10-64-hw*, gecko-t-win10-64-ux*)
-        '^gecko-t-win10-(a64-beta|64-(hw|ux)(-[ab])?)$' {
-          Invoke-CustomDesiredStateProvider -sourceOrg $sourceOrg -sourceRepo $sourceRepo -sourceRev $sourceRev -workerType $workerType
-        }
-        default {
-          Invoke-RemoteDesiredStateConfig -url ('https://raw.githubusercontent.com/{0}/{1}/{2}/userdata/xDynamicConfig.ps1' -f $sourceOrg, $sourceRepo, $sourceRev)
-        }
-      }
-      
       Stop-Transcript
       # end run dsc #################################################################################################################################################
       

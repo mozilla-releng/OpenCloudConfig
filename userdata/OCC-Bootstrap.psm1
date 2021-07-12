@@ -2059,7 +2059,8 @@ function Wait-GenericWorkerStart {
     Write-Log -message ('{0} :: begin - {1:o}' -f $($MyInvocation.MyCommand.Name), (Get-Date).ToUniversalTime()) -severity 'DEBUG'
   }
   process {
-    if (($locationType -eq 'Azure') -or $workerType.EndsWith('-beta') -or $workerType.EndsWith('-b')) {
+    # presence of worker runner indicates recent tc tools
+    if ((Test-Path -Path 'C:\generic-worker\worker-runner.exe' -ErrorAction SilentlyContinue)) {
       $taskclusterPaths = @(
         'C:\generic-worker\generic-worker.exe',
         'C:\generic-worker\generic-worker.yml',

@@ -2524,7 +2524,8 @@
       "ComponentType": "ChecksumFileDownload",
       "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1497308",
       "Source": "https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/etc/hosts",
-      "Target": "C:\\Windows\\System32\\drivers\\etc\\hosts"
+      "Target": "C:\\Windows\\System32\\drivers\\etc\\hosts",
+      "sha512": "b44037cc5f1e156c01a0ea059a1b0416580f8cf344d237b924da21e3eec3765be0205bce8e6876882122cd8b39f87f7710002aa6dba98b05aee336ba5e0be14d"
     },
     {
       "ComponentName": "SetHostsFileContent",

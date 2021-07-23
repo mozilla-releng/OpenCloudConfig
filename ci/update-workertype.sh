@@ -311,8 +311,8 @@ done
 #cat ./${tc_worker_type}.json | jq --arg ec2region $aws_region --arg amiid $aws_ami_id -c '(.regions[] | select(.region == $ec2region) | .launchSpec.ImageId) = $amiid' > ./.${tc_worker_type}.json && rm ./${tc_worker_type}.json && mv ./.${tc_worker_type}.json ./${tc_worker_type}.json
 cat ./workertype-secrets.json | jq --arg ec2region $aws_region --arg amiid $aws_ami_id -c '.secret.latest.amis |= . + [{region:$ec2region,"ami-id":$amiid}]' > ./.workertype-secrets.json && rm ./workertype-secrets.json && mv ./.workertype-secrets.json ./workertype-secrets.json
 
-# purge all but 10 newest workertype amis in region
-aws ec2 describe-images --region ${aws_region} --owners self --filters "Name=name,Values=${tc_worker_type} *" | jq '[ .Images[] | { ImageId, CreationDate, SnapshotId: .BlockDeviceMappings[0].Ebs.SnapshotId } ] | sort_by(.CreationDate) [ 0 : -10 ]' > ./delete-queue-${aws_region}.json
+# purge all but 20 newest workertype amis in region
+aws ec2 describe-images --region ${aws_region} --owners self --filters "Name=name,Values=${tc_worker_type} *" | jq '[ .Images[] | { ImageId, CreationDate, SnapshotId: .BlockDeviceMappings[0].Ebs.SnapshotId } ] | sort_by(.CreationDate) [ 0 : -20 ]' > ./delete-queue-${aws_region}.json
 jq '.|keys[]' ./delete-queue-${aws_region}.json | while read i; do
   old_ami=$(jq -r ".[$i].ImageId" ./delete-queue-${aws_region}.json)
   old_snap=$(jq -r ".[$i].SnapshotId" ./delete-queue-${aws_region}.json)
@@ -342,8 +342,8 @@ for region in ${ami_copy_regions[@]}; do
   #cat ./${tc_worker_type}.json | jq --arg ec2region $region --arg amiid $aws_copied_ami_id -c '(.regions[] | select(.region == $ec2region) | .launchSpec.ImageId) = $amiid' > ./.${tc_worker_type}.json && rm ./${tc_worker_type}.json && mv ./.${tc_worker_type}.json ./${tc_worker_type}.json
   cat ./workertype-secrets.json | jq --arg ec2region $region --arg amiid $aws_copied_ami_id -c '.secret.latest.amis |= . + [{region:$ec2region,"ami-id":$amiid}]' > ./.workertype-secrets.json && rm ./workertype-secrets.json && mv ./.workertype-secrets.json ./workertype-secrets.json
 
-  # purge all but 10 newest workertype amis in region
-  aws ec2 describe-images --region ${region} --owners self --filters "Name=name,Values=${tc_worker_type} *" | jq '[ .Images[] | { ImageId, CreationDate, SnapshotId: .BlockDeviceMappings[0].Ebs.SnapshotId } ] | sort_by(.CreationDate) [ 0 : -10 ]' > ./delete-queue-${region}.json
+  # purge all but 20 newest workertype amis in region
+  aws ec2 describe-images --region ${region} --owners self --filters "Name=name,Values=${tc_worker_type} *" | jq '[ .Images[] | { ImageId, CreationDate, SnapshotId: .BlockDeviceMappings[0].Ebs.SnapshotId } ] | sort_by(.CreationDate) [ 0 : -20 ]' > ./delete-queue-${region}.json
   jq '.|keys[]' ./delete-queue-${region}.json | while read i; do
     old_ami=$(jq -r ".[$i].ImageId" ./delete-queue-${region}.json)
     old_snap=$(jq -r ".[$i].SnapshotId" ./delete-queue-${region}.json)
@@ -367,8 +367,8 @@ done
 
 # set latest timestamp and new credentials
 cat ./workertype-secrets.json | jq --arg timestamp $(date -u +"%Y-%m-%dT%H:%M:%SZ") --arg rootusername $root_username --arg rootpassword "$root_password" -c '.secret.latest.timestamp = $timestamp | .secret.latest.users.root.username = $rootusername | .secret.latest.users.root.password = $rootpassword' > ./.workertype-secrets.json && rm ./workertype-secrets.json && mv ./.workertype-secrets.json ./workertype-secrets.json
-# get previous secrets, move old "latest" to "previous" (list) and discard all but 10 newest records
-curl --silent http://taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig:${tc_worker_type} | jq '.secret.previous = (.secret.previous + [.secret.latest] | sort_by(.timestamp) | reverse [0:10]) | del(.secret.latest)' > ./old-workertype-secrets.json
+# get previous secrets, move old "latest" to "previous" (list) and discard all but 20 newest records
+curl --silent http://taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig:${tc_worker_type} | jq '.secret.previous = (.secret.previous + [.secret.latest] | sort_by(.timestamp) | reverse [0:20]) | del(.secret.latest)' > ./old-workertype-secrets.json
 # combine old and new secrets and update tc secret service
 jq --arg expires $(date -u +"%Y-%m-%dT%H:%M:%SZ" -d "+1 year") -c -s '{secret:{latest:.[1].secret.latest,previous:.[0].secret.previous},expires: $expires}' ./old-workertype-secrets.json ./workertype-secrets.json | curl --silent --header 'Content-Type: application/json' --request PUT --data @- http://taskcluster/secrets/v1/secret/repo:github.com/mozilla-releng/OpenCloudConfig:${tc_worker_type} > ./secret-update-response.json
 # clean up

@@ -1870,7 +1870,7 @@ function Set-ChainOfTrustKey {
   process {
     switch -regex ($workerType) {
       # level 3 builder needs key added by user intervention and must already exist in cot repo
-      '^(gecko|mpd001)-3-b-win2012(-c[45])?$' {
+      '^gecko-3-b-win2012(-c[45])?$' {
         while (-not (Test-Path -Path 'C:\generic-worker\ed25519-private.key' -ErrorAction SilentlyContinue)) {
           Write-Log -message ('{0} :: ed25519 key missing. awaiting user intervention.' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'
           Sleep 60
@@ -2687,7 +2687,7 @@ function Invoke-OpenCloudConfig {
           }
           default {
             switch -regex ($workerType) {
-              '^(comm|gecko|mpd001)-[123]-b-win2012(-c[45])?$' {
+              '^(comm|gecko)-[123]-b-win2012(-c[45])?$' {
                 $timer = [Diagnostics.Stopwatch]::StartNew()
                 while (($timer.Elapsed.TotalMinutes -lt 5) -and ((-not (Test-VolumeExists -DriveLetter @('Y'))) -or (-not (Test-VolumeExists -DriveLetter @('Z'))))) {
                   Write-Log -message ('{0} :: missing cache or task drive. waiting for ec2config to map drives...' -f $($MyInvocation.MyCommand.Name)) -severity 'WARN'

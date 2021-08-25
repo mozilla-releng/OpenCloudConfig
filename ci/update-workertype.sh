@@ -151,7 +151,7 @@ case "${tc_worker_type}" in
     ami_description="Gecko tester for Windows 10 64 bit; worker-type: ${tc_worker_type}, source: ${GITHUB_HEAD_REPO_URL::-4}/commit/${GITHUB_HEAD_SHA:0:7}, deploy: https://tools.taskcluster.net/tasks/${TASK_ID}"
     root_username=Administrator
     ;;
-  mpd001-[13]-b-win2012|gecko-[123]-b-win2012*)
+  gecko-[123]-b-win2012*)
     aws_base_ami_search_term=${aws_base_ami_search_term:='gecko-b-win2012-ena-base-*'}
     echo "DEBUG: searching for latest base ami for: ${tc_worker_type}, using search term: ${aws_base_ami_search_term}"
     aws_base_ami_id="$(aws ec2 describe-images --region ${aws_region} --owners self --filters "Name=state,Values=available" "Name=name,Values=${aws_base_ami_search_term}" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"

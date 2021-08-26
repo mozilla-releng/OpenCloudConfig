@@ -2353,6 +2353,26 @@
           "ComponentName": "programdata_google_auth"
         }
       ]
+    },
+    {
+      "ComponentName": "GitForWin",
+      "ComponentType": "ExeInstall",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1726818",
+      "Url": "https://github.com/git-for-windows/git/releases/download/v2.33.0.windows.2/Git-2.33.0.2-64-bit.exe",
+      "Arguments": [
+        "/VERYSILENT",
+        "/SUPPRESSMSGBOXES",
+        "/NORESTART",
+        "/NOCANCEL",
+        "/SP-",
+        "/COMPONENTS=\"ext,ext\\shellhere,gitlfs,assoc,assoc_sh\"",
+        "/LOG=\"C:\\log\\git-install.log\""
+      ],
+      "Validate": {
+        "PathsExist": [
+          "C:\\Program Files\\Git\\unins000.exe"
+        ]
+      }
     }
   ],
   "ProvisionerConfiguration": {

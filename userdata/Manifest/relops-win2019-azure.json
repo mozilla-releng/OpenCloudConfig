@@ -410,10 +410,10 @@
     {
       "ComponentName": "Mercurial",
       "ComponentType": "MsiInstall",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1490703",
-      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-4.7.1-x64.msi",
-      "Name": "Mercurial 4.7.1 (x64)",
-      "ProductId": "68FA175A-0F28-49AF-9E65-30CE6B60AE1C"
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1738924",
+      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-5.9.3-x64.msi",
+      "Name": "Mercurial 5.9.3 (x64)",
+      "ProductId": "6CBAA69D-20AD-4B50-A715-7477201A02EF"
     },
     {
       "ComponentName": "GrantEveryoneSeCreateSymbolicLinkPrivilege",

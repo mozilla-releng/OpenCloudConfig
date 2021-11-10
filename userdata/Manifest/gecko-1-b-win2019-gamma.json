@@ -657,17 +657,17 @@
     {
       "ComponentName": "Mercurial",
       "ComponentType": "MsiInstall",
-      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1490703",
-      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-4.9.1-x64.msi",
-      "Name": "Mercurial 4.9.1 (x64)",
-      "ProductId": "131C4241-D3E5-4FF4-80F8-50A779085459",
+      "Comment": "https://bugzilla.mozilla.org/show_bug.cgi?id=1738924",
+      "Url": "https://www.mercurial-scm.org/release/windows/mercurial-5.9.3-x64.msi",
+      "Name": "Mercurial 5.9.3 (x64)",
+      "ProductId": "6CBAA69D-20AD-4B50-A715-7477201A02EF",
       "DependsOn": [
         {
           "ComponentType": "FileDownload",
           "ComponentName": "occ_installers_token"
         }
       ],
-      "sha512": "3375bb4fa2045f4f54482ff208daffd43d0c2fded9e03c1f1f8719b5e8eb229fe2017d88599618de30407b7dbc38061cbbd5aa91b221677ccfbda5da60a03ebe"
+      "sha512": "94642dbee4a23e77d872ce5b684d42c21992273a4f85471e55cecc9986849b83caf77614e44d1f615a19bbbf491f8d818ec38af1c3f21080e9b00d8d8cd0809a"
     },
     {
       "ComponentName": "MercurialConfig",
